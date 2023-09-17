@@ -19,18 +19,18 @@ Please note that this list isn't final and I might add new entries over time.
 Many times I have seen people do something like this in their Guix System configuration:
 </p>
 <div class="org-src-container">
-<pre class="src src-scheme"><span style="color: #61bfff;">(</span>modify-services %desktop-services
-                 <span style="color: #ff79c6;">(</span>delete gdm-service-type<span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+<pre class="src src-scheme"><span style="color: #707183;">(</span>modify-services %desktop-services
+                 <span style="color: #7388D6;">(</span>delete gdm-service-type<span style="color: #7388D6;">)</span><span style="color: #707183;">)</span>
 
-<span style="color: #61bfff;">(</span>operating-system
+<span style="color: #707183;">(</span>operating-system
  ...
 
- <span style="color: #ff79c6;">(</span>services
-  <span style="color: #50fa7b;">(</span>append
-   <span style="color: #bd93f9;">(</span>list
-    ...<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span>
-  %desktop-services<span style="color: #ff79c6;">)</span>
- ...<span style="color: #61bfff;">)</span>
+ <span style="color: #7388D6;">(</span>services
+  <span style="color: #909183;">(</span>append
+   <span style="color: #709870;">(</span>list
+    ...<span style="color: #709870;">)</span><span style="color: #909183;">)</span>
+  %desktop-services<span style="color: #7388D6;">)</span>
+ ...<span style="color: #707183;">)</span>
 </pre>
 </div>
 <p>
@@ -43,9 +43,9 @@ What this means in this case is that <code>modify-services</code> produces a bra
 If you want to properly remove GDM from your list of services, you should instead define a new list like so:
 </p>
 <div class="org-src-container">
-<pre class="src src-scheme"><span style="color: #61bfff;">(</span><span style="color: #ff79c6;">define</span> <span style="color: #50fa7b;">%my-services</span>
-  <span style="color: #ff79c6;">(</span>modify-services %desktop-services
-                   <span style="color: #50fa7b;">(</span>delete gdm-service-type<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+<pre class="src src-scheme"><span style="color: #707183;">(</span><span style="color: #0000FF;">define</span> <span style="color: #006699;">%my-services</span>
+  <span style="color: #7388D6;">(</span>modify-services %desktop-services
+                   <span style="color: #909183;">(</span>delete gdm-service-type<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span><span style="color: #707183;">)</span>
 </pre>
 </div>
 <p>
@@ -65,7 +65,7 @@ Sometimes users will install development libraries with Guix, only to find they 
 Usually this can be done very easily with a single command.
 </p>
 <div class="org-src-container">
-<pre class="src src-bash"><span style="color: #ff79c6;">export</span> <span style="color: #ffc9e8; font-style: italic;">LD_LIBRARY_PATH</span>=<span style="color: #f1fa8c;">"</span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">HOME</span><span style="color: #f1fa8c;">/.guix-profile/lib/"</span>
+<pre class="src src-bash"><span style="color: #0000FF;">export</span> <span style="color: #BA36A5; font-style: italic;">LD_LIBRARY_PATH</span>=<span style="color: #008000;">"</span><span style="color: #0000FF;">$</span><span style="color: #D0372D; font-style: italic;">HOME</span><span style="color: #008000;">/.guix-profile/lib/"</span>
 </pre>
 </div>
 <p>
@@ -87,10 +87,10 @@ First I'll need to add Guix into the login environment. This part can be a littl
 A solution that generally works for GDM, as well as for non-graphical tty login is to use your shell's startup file. In the case of bash that is <code>$HOME/.bash_profile</code>. You'll want to add the following.
 </p>
 <div class="org-src-container">
-<pre class="src src-bash"><span style="color: #ff79c6;">if</span> <span style="color: #61bfff;">[</span> -d <span style="color: #f1fa8c;">"/gnu"</span> <span style="color: #61bfff;">]</span> <span style="color: #ff79c6;">&amp;&amp;</span> <span style="color: #61bfff;">[</span> -d <span style="color: #f1fa8c;">"</span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">HOME</span><span style="color: #f1fa8c;">/.guix-profile"</span> <span style="color: #61bfff;">]</span><span style="color: #ff79c6;">;</span> <span style="color: #ff79c6;">then</span>
-    <span style="color: #ffb86c; font-weight: bold;">source</span> <span style="color: #f1fa8c;">"</span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">HOME</span><span style="color: #f1fa8c;">/.guix-profile/etc/profile"</span>
-    <span style="color: #ffb86c; font-weight: bold;">source</span> <span style="color: #f1fa8c;">"</span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">HOME</span><span style="color: #f1fa8c;">/.config/guix/current/etc/profile"</span>
-<span style="color: #ff79c6;">fi</span>
+<pre class="src src-bash"><span style="color: #0000FF;">if</span> <span style="color: #707183;">[</span> -d <span style="color: #008000;">"/gnu"</span> <span style="color: #707183;">]</span> <span style="color: #0000FF;">&amp;&amp;</span> <span style="color: #707183;">[</span> -d <span style="color: #008000;">"</span><span style="color: #0000FF;">$</span><span style="color: #D0372D; font-style: italic;">HOME</span><span style="color: #008000;">/.guix-profile"</span> <span style="color: #707183;">]</span><span style="color: #0000FF;">;</span> <span style="color: #0000FF;">then</span>
+    <span style="color: #006FE0;">source</span> <span style="color: #008000;">"</span><span style="color: #0000FF;">$</span><span style="color: #D0372D; font-style: italic;">HOME</span><span style="color: #008000;">/.guix-profile/etc/profile"</span>
+    <span style="color: #006FE0;">source</span> <span style="color: #008000;">"</span><span style="color: #0000FF;">$</span><span style="color: #D0372D; font-style: italic;">HOME</span><span style="color: #008000;">/.config/guix/current/etc/profile"</span>
+<span style="color: #0000FF;">fi</span>
 </pre>
 </div>
 <p>
@@ -103,10 +103,10 @@ In some cases this approach can actually cause issues on foreign distributions a
 In those cases you should instead use a more minimal setup like so:
 </p>
 <div class="org-src-container">
-<pre class="src src-bash"><span style="color: #ff79c6;">if</span> <span style="color: #61bfff;">[</span> -d <span style="color: #f1fa8c;">"/gnu"</span> <span style="color: #61bfff;">]</span> <span style="color: #ff79c6;">&amp;&amp;</span> <span style="color: #61bfff;">[</span> -d <span style="color: #f1fa8c;">"</span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">HOME</span><span style="color: #f1fa8c;">/.guix-profile"</span> <span style="color: #61bfff;">]</span><span style="color: #ff79c6;">;</span> <span style="color: #ff79c6;">then</span>
-    <span style="color: #ff79c6;">export</span> <span style="color: #f1fa8c; font-style: italic;">PATH</span>=<span style="color: #f1fa8c;">"</span><span style="color: #ff79c6;">$</span><span style="color: #f1fa8c; font-style: italic;">PATH</span><span style="color: #f1fa8c;">:</span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">HOME</span><span style="color: #f1fa8c;">/.guix-profile/bin"</span>
-    <span style="color: #ff79c6;">export</span> <span style="color: #ffc9e8; font-style: italic;">XDG_DATA_DIRS</span>=<span style="color: #f1fa8c;">"</span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">XDG_DATA_DIRS</span><span style="color: #f1fa8c;">:</span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">HOME</span><span style="color: #f1fa8c;">/.guix-profile/share"</span>
-<span style="color: #ff79c6;">fi</span>
+<pre class="src src-bash"><span style="color: #0000FF;">if</span> <span style="color: #707183;">[</span> -d <span style="color: #008000;">"/gnu"</span> <span style="color: #707183;">]</span> <span style="color: #0000FF;">&amp;&amp;</span> <span style="color: #707183;">[</span> -d <span style="color: #008000;">"</span><span style="color: #0000FF;">$</span><span style="color: #D0372D; font-style: italic;">HOME</span><span style="color: #008000;">/.guix-profile"</span> <span style="color: #707183;">]</span><span style="color: #0000FF;">;</span> <span style="color: #0000FF;">then</span>
+    <span style="color: #0000FF;">export</span> <span style="color: #ff0000; font-weight: bold; font-style: italic;">PATH</span>=<span style="color: #008000;">"</span><span style="color: #0000FF;">$</span><span style="color: #ff0000; font-weight: bold; font-style: italic;">PATH</span><span style="color: #008000;">:</span><span style="color: #0000FF;">$</span><span style="color: #D0372D; font-style: italic;">HOME</span><span style="color: #008000;">/.guix-profile/bin"</span>
+    <span style="color: #0000FF;">export</span> <span style="color: #BA36A5; font-style: italic;">XDG_DATA_DIRS</span>=<span style="color: #008000;">"</span><span style="color: #0000FF;">$</span><span style="color: #D0372D; font-style: italic;">XDG_DATA_DIRS</span><span style="color: #008000;">:</span><span style="color: #0000FF;">$</span><span style="color: #D0372D; font-style: italic;">HOME</span><span style="color: #008000;">/.guix-profile/share"</span>
+<span style="color: #0000FF;">fi</span>
 </pre>
 </div>
 
@@ -114,12 +114,12 @@ In those cases you should instead use a more minimal setup like so:
 But this isn't all that's needed. For your shell to properly find all the commands you'll probably need to add some commands into your shell startup file. In the case of bash this file is <code>$HOME/.bashrc</code>.
 </p>
 <div class="org-src-container">
-<pre class="src src-bash"><span style="color: #ff79c6;">if</span> <span style="color: #61bfff;">[</span> -d <span style="color: #f1fa8c;">"/gnu"</span> <span style="color: #61bfff;">]</span> <span style="color: #ff79c6;">&amp;&amp;</span> <span style="color: #61bfff;">[</span> -d <span style="color: #f1fa8c;">"</span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">HOME</span><span style="color: #f1fa8c;">/.guix-profile"</span> <span style="color: #61bfff;">]</span> <span style="color: #ff79c6;">&amp;&amp;</span> <span style="color: #61bfff;">[</span><span style="color: #ff79c6;">[</span> <span style="color: #ff79c6;">$</span><span style="color: #f1fa8c;">-</span> <span style="color: #ff79c6;">==</span> *i* <span style="color: #ff79c6;">]</span><span style="color: #61bfff;">]</span><span style="color: #ff79c6;">;</span> <span style="color: #ff79c6;">then</span>
-    <span style="color: #ffc9e8; font-style: italic;">GUIX_PROFILE</span>=<span style="color: #f1fa8c;">"</span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">HOME</span><span style="color: #f1fa8c;">/.guix-profile"</span>
-    <span style="color: #bd93f9; font-weight: bold;">.</span> <span style="color: #f1fa8c;">"</span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">GUIX_PROFILE</span><span style="color: #f1fa8c;">/etc/profile"</span>
-    <span style="color: #ffc9e8; font-style: italic;">GUIX_PROFILE</span>=<span style="color: #f1fa8c;">"</span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">HOME</span><span style="color: #f1fa8c;">/.config/guix/current"</span>
-    <span style="color: #bd93f9; font-weight: bold;">.</span> <span style="color: #f1fa8c;">"</span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">GUIX_PROFILE</span><span style="color: #f1fa8c;">/etc/profile"</span>
-<span style="color: #ff79c6;">fi</span>
+<pre class="src src-bash"><span style="color: #0000FF;">if</span> <span style="color: #707183;">[</span> -d <span style="color: #008000;">"/gnu"</span> <span style="color: #707183;">]</span> <span style="color: #0000FF;">&amp;&amp;</span> <span style="color: #707183;">[</span> -d <span style="color: #008000;">"</span><span style="color: #0000FF;">$</span><span style="color: #D0372D; font-style: italic;">HOME</span><span style="color: #008000;">/.guix-profile"</span> <span style="color: #707183;">]</span> <span style="color: #0000FF;">&amp;&amp;</span> <span style="color: #707183;">[</span><span style="color: #7388D6;">[</span> <span style="color: #0000FF;">$</span><span style="color: #ff0000; font-weight: bold;">-</span> <span style="color: #0000FF;">==</span> *i* <span style="color: #7388D6;">]</span><span style="color: #707183;">]</span><span style="color: #0000FF;">;</span> <span style="color: #0000FF;">then</span>
+    <span style="color: #BA36A5; font-style: italic;">GUIX_PROFILE</span>=<span style="color: #008000;">"</span><span style="color: #0000FF;">$</span><span style="color: #D0372D; font-style: italic;">HOME</span><span style="color: #008000;">/.guix-profile"</span>
+    <span style="color: #006DAF;">.</span> <span style="color: #008000;">"</span><span style="color: #0000FF;">$</span><span style="color: #D0372D; font-style: italic;">GUIX_PROFILE</span><span style="color: #008000;">/etc/profile"</span>
+    <span style="color: #BA36A5; font-style: italic;">GUIX_PROFILE</span>=<span style="color: #008000;">"</span><span style="color: #0000FF;">$</span><span style="color: #D0372D; font-style: italic;">HOME</span><span style="color: #008000;">/.config/guix/current"</span>
+    <span style="color: #006DAF;">.</span> <span style="color: #008000;">"</span><span style="color: #0000FF;">$</span><span style="color: #D0372D; font-style: italic;">GUIX_PROFILE</span><span style="color: #008000;">/etc/profile"</span>
+<span style="color: #0000FF;">fi</span>
 </pre>
 </div>
 <p>
@@ -139,14 +139,14 @@ When working with Guix packages (or services) you'll often need to import extra 
 To find the location of a package you can use <code>guix show</code> like so:
 </p>
 <div class="org-src-container">
-<pre class="src src-bash"><span style="color: #bd93f9; font-weight: bold;">guix</span> show <span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">PACKAGE</span> <span style="color: #ff79c6;">|</span> <span style="color: #bd93f9; font-weight: bold;">grep</span> location
+<pre class="src src-bash"><span style="color: #006DAF;">guix</span> show <span style="color: #0000FF;">$</span><span style="color: #D0372D; font-style: italic;">PACKAGE</span> <span style="color: #0000FF;">|</span> <span style="color: #006DAF;">grep</span> location
 </pre>
 </div>
 <p>
 For example for <code>curl</code> as the package we get the following output
 </p>
 <div class="org-src-container">
-<pre class="src src-sh"><span style="color: #bd93f9; font-weight: bold;">location:</span> gnu/packages/curl.scm:65:2
+<pre class="src src-sh"><span style="color: #006DAF;">location:</span> gnu/packages/curl.scm:65:2
 </pre>
 </div>
 <p>
@@ -157,7 +157,7 @@ This tells us <code>curl</code> is defined in the <code>(gnu packages curl)</cod
 Unfortunately there is no equal functionality for services, but we can no less find this information easily.
 </p>
 <div class="org-src-container">
-<pre class="src src-bash"><span style="color: #bd93f9; font-weight: bold;">guix</span> system search <span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">SERVICE</span>
+<pre class="src src-bash"><span style="color: #006DAF;">guix</span> system search <span style="color: #0000FF;">$</span><span style="color: #D0372D; font-style: italic;">SERVICE</span>
 </pre>
 </div>
 <p>
@@ -168,7 +168,7 @@ You'll need to manually look for the location of the correct service in the outp
 If you wish to do the reverse - see which modules provide which packages, you can do it like so:
 </p>
 <div class="org-src-container">
-<pre class="src src-bash"><span style="color: #bd93f9; font-weight: bold;">guix</span> package <span style="color: #8be9fd;">--list-available</span> <span style="color: #ff79c6;">|</span> <span style="color: #bd93f9; font-weight: bold;">grep</span> <span style="color: #f1fa8c;">"gnu/packages/admin.scm"</span>
+<pre class="src src-bash"><span style="color: #006DAF;">guix</span> package <span style="color: #D0372D;">--list-available</span> <span style="color: #0000FF;">|</span> <span style="color: #006DAF;">grep</span> <span style="color: #008000;">"gnu/packages/admin.scm"</span>
 </pre>
 </div>
 <p>
@@ -193,21 +193,21 @@ Unfortunately, Guix doesn't provide a straightforward macro to address this issu
 First we need to create a custom package with the modified dependency list. You can put the following in your <code>config.scm</code> for example:
 </p>
 <div class="org-src-container">
-<pre class="src src-scheme"><span style="color: #61bfff;">(</span><span style="color: #ff79c6;">define</span> <span style="color: #50fa7b;">my-gnome</span>
-  <span style="color: #ff79c6;">(</span>package
-   <span style="color: #50fa7b;">(</span>inherit gnome<span style="color: #50fa7b;">)</span>
-   <span style="color: #50fa7b;">(</span>name <span style="color: #f1fa8c;">"my-gnome"</span><span style="color: #50fa7b;">)</span>
-   <span style="color: #50fa7b;">(</span>propagated-inputs
-    <span style="color: #bd93f9;">(</span>modify-inputs <span style="color: #0189cc;">(</span>package-propagated-inputs gnome<span style="color: #0189cc;">)</span>
-                   <span style="color: #0189cc;">(</span>delete <span style="color: #f1fa8c;">"epiphany"</span><span style="color: #0189cc;">)</span>
-                   <span style="color: #0189cc;">(</span>delete <span style="color: #f1fa8c;">"gnome-weather"</span><span style="color: #0189cc;">)</span>
-                   <span style="color: #0189cc;">(</span>delete <span style="color: #f1fa8c;">"simple-scan"</span><span style="color: #0189cc;">)</span>
-                   <span style="color: #0189cc;">(</span>delete <span style="color: #f1fa8c;">"gnome-maps"</span><span style="color: #0189cc;">)</span>
-                   <span style="color: #0189cc;">(</span>delete <span style="color: #f1fa8c;">"cheese"</span><span style="color: #0189cc;">)</span>
-                   <span style="color: #0189cc;">(</span>delete <span style="color: #f1fa8c;">"gnome-boxes"</span><span style="color: #0189cc;">)</span>
-                   <span style="color: #0189cc;">(</span>delete <span style="color: #f1fa8c;">"gnome-console"</span><span style="color: #0189cc;">)</span>
-                   <span style="color: #0189cc;">(</span>delete <span style="color: #f1fa8c;">"gnome-contacts"</span><span style="color: #0189cc;">)</span>
-                   <span style="color: #0189cc;">(</span>append gnome-terminal<span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+<pre class="src src-scheme"><span style="color: #707183;">(</span><span style="color: #0000FF;">define</span> <span style="color: #006699;">my-gnome</span>
+  <span style="color: #7388D6;">(</span>package
+   <span style="color: #909183;">(</span>inherit gnome<span style="color: #909183;">)</span>
+   <span style="color: #909183;">(</span>name <span style="color: #008000;">"my-gnome"</span><span style="color: #909183;">)</span>
+   <span style="color: #909183;">(</span>propagated-inputs
+    <span style="color: #709870;">(</span>modify-inputs <span style="color: #907373;">(</span>package-propagated-inputs gnome<span style="color: #907373;">)</span>
+                   <span style="color: #907373;">(</span>delete <span style="color: #008000;">"epiphany"</span><span style="color: #907373;">)</span>
+                   <span style="color: #907373;">(</span>delete <span style="color: #008000;">"gnome-weather"</span><span style="color: #907373;">)</span>
+                   <span style="color: #907373;">(</span>delete <span style="color: #008000;">"simple-scan"</span><span style="color: #907373;">)</span>
+                   <span style="color: #907373;">(</span>delete <span style="color: #008000;">"gnome-maps"</span><span style="color: #907373;">)</span>
+                   <span style="color: #907373;">(</span>delete <span style="color: #008000;">"cheese"</span><span style="color: #907373;">)</span>
+                   <span style="color: #907373;">(</span>delete <span style="color: #008000;">"gnome-boxes"</span><span style="color: #907373;">)</span>
+                   <span style="color: #907373;">(</span>delete <span style="color: #008000;">"gnome-console"</span><span style="color: #907373;">)</span>
+                   <span style="color: #907373;">(</span>delete <span style="color: #008000;">"gnome-contacts"</span><span style="color: #907373;">)</span>
+                   <span style="color: #907373;">(</span>append gnome-terminal<span style="color: #907373;">)</span><span style="color: #709870;">)</span><span style="color: #909183;">)</span><span style="color: #7388D6;">)</span><span style="color: #707183;">)</span>
 </pre>
 </div>
 <p>
@@ -219,9 +219,9 @@ In some cases your package might use the regular <code>inputs</code> rather than
 Finally you'll need to tell the system service to replace its Gnome package with your customized variant, modify your service configuration like so:
 </p>
 <div class="org-src-container">
-<pre class="src src-scheme"><span style="color: #61bfff;">(</span>service gnome-desktop-service-type
-         <span style="color: #ff79c6;">(</span>gnome-configuration
-          <span style="color: #50fa7b;">(</span>gnome my-gnome<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+<pre class="src src-scheme"><span style="color: #707183;">(</span>service gnome-desktop-service-type
+         <span style="color: #7388D6;">(</span>gnome-configuration
+          <span style="color: #909183;">(</span>gnome my-gnome<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span><span style="color: #707183;">)</span>
 </pre>
 </div>
 <p>
@@ -249,10 +249,10 @@ but you can change this message to whatever string you want!
 Simply add an <code>(issue)</code> declaration into your <code>operating-system</code> (in your <code>config.scm</code>):
 </p>
 <div class="org-src-container">
-<pre class="src src-scheme"><span style="color: #61bfff;">(</span>operating-system
+<pre class="src src-scheme"><span style="color: #707183;">(</span>operating-system
   ...
-  <span style="color: #ff79c6;">(</span>issue <span style="color: #f1fa8c;">"Welcome to my custom fancy Guix system!\n"</span><span style="color: #ff79c6;">)</span>
-  ...<span style="color: #61bfff;">)</span>
+  <span style="color: #7388D6;">(</span>issue <span style="color: #008000;">"Welcome to my custom fancy Guix system!\n"</span><span style="color: #7388D6;">)</span>
+  ...<span style="color: #707183;">)</span>
 </pre>
 </div>
 <p>

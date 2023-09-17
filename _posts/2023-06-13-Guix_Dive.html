@@ -31,7 +31,7 @@ Most of the steps here are taken right from the Guix manual, see <a href="https:
 I'll first need to set up all the necessary dependencies - fortunately Guix makes this very straightforward.
 </p>
 <div class="org-src-container">
-<pre class="src src-bash"><span style="color: #bd93f9; font-weight: bold;">guix</span> install guix guile
+<pre class="src src-bash"><span style="color: #006DAF;">guix</span> install guix guile
 </pre>
 </div>
 
@@ -39,8 +39,8 @@ I'll first need to set up all the necessary dependencies - fortunately Guix make
 Next I'll need the actual Guix development repositories cloned locally, this is a quick process too.
 </p>
 <div class="org-src-container">
-<pre class="src src-bash"><span style="color: #ffb86c; font-weight: bold;">cd</span> <span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">HOME</span>
-<span style="color: #bd93f9; font-weight: bold;">git</span> clone https://git.savannah.gnu.org/git/guix.git
+<pre class="src src-bash"><span style="color: #006FE0;">cd</span> <span style="color: #0000FF;">$</span><span style="color: #D0372D; font-style: italic;">HOME</span>
+<span style="color: #006DAF;">git</span> clone https://git.savannah.gnu.org/git/guix.git
 </pre>
 </div>
 
@@ -48,8 +48,8 @@ Next I'll need the actual Guix development repositories cloned locally, this is 
 Finally I could set up Geiser inside Emacs. Here I use the path I cloned the repository to, <code>$HOME/guix</code> in my case.
 </p>
 <div class="org-src-container">
-<pre class="src src-emacs-lisp"><span style="color: #61bfff;">(</span><span style="color: #ff79c6;">with-eval-after-load</span> 'geiser-guile
-  <span style="color: #ff79c6;">(</span>add-to-list 'geiser-guile-load-path <span style="color: #f1fa8c;">"~/guix"</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+<pre class="src src-emacs-lisp"><span style="color: #707183;">(</span><span style="color: #0000FF;">with-eval-after-load</span> 'geiser-guile
+  <span style="color: #7388D6;">(</span>add-to-list 'geiser-guile-load-path <span style="color: #008000;">"~/guix"</span><span style="color: #7388D6;">)</span><span style="color: #707183;">)</span>
 </pre>
 </div>
 
@@ -57,12 +57,12 @@ Finally I could set up Geiser inside Emacs. Here I use the path I cloned the rep
 I'll also compile all the Guix files now, so I can work in the REPL uninterrupted by compiles. I can use <code>guix shell</code> to ensure I have the fully correct development environment.
 </p>
 <div class="org-src-container">
-<pre class="src src-bash"><span style="color: #ffb86c; font-weight: bold;">cd</span> ~/guix
-<span style="color: #bd93f9; font-weight: bold;">guix</span> shell <span style="color: #8be9fd;">-D</span> guix <span style="color: #8be9fd;">--pure</span>
-<span style="color: #bd93f9; font-weight: bold;">./bootstrap</span>
-<span style="color: #bd93f9; font-weight: bold;">make</span> clean
-<span style="color: #bd93f9; font-weight: bold;">make</span> <span style="color: #8be9fd;">-j10</span>
-<span style="color: #bd93f9; font-weight: bold;">exit</span> <span style="color: #6272a4;"># leave the Guix shell</span>
+<pre class="src src-bash"><span style="color: #006FE0;">cd</span> ~/guix
+<span style="color: #006DAF;">guix</span> shell <span style="color: #D0372D;">-D</span> guix <span style="color: #D0372D;">--pure</span>
+<span style="color: #006DAF;">./bootstrap</span>
+<span style="color: #006DAF;">make</span> clean
+<span style="color: #006DAF;">make</span> <span style="color: #D0372D;">-j10</span>
+<span style="color: #006DAF;">exit</span> <span style="color: #8D8D84; font-style: italic;"># leave the Guix shell</span>
 </pre>
 </div>
 <p>
@@ -82,156 +82,156 @@ I also have a couple of my own little modules for Guix as well as nonguix, but s
 So where exactly does one start hacking on such a complex project? Well I decided to start with the part I was already most familiar with - the Guix System configuration. Here's my current configuration for reference (yes, it's a little lengthy!).
 </p>
 <div class="org-src-container">
-<pre class="src src-scheme"><span style="color: #61bfff;">(</span>add-to-load-path <span style="color: #f1fa8c;">"/etc/guix-modules"</span><span style="color: #61bfff;">)</span>
+<pre class="src src-scheme"><span style="color: #707183;">(</span>add-to-load-path <span style="color: #008000;">"/etc/guix-modules"</span><span style="color: #707183;">)</span>
 
-<span style="color: #61bfff;">(</span><span style="color: #ff79c6;">use-modules</span> <span style="color: #ff79c6;">(</span>gnu<span style="color: #ff79c6;">)</span>
-             <span style="color: #ff79c6;">(</span>gnu services<span style="color: #ff79c6;">)</span>
-             <span style="color: #ff79c6;">(</span>gnu services dbus<span style="color: #ff79c6;">)</span>
-             <span style="color: #ff79c6;">(</span>gnu packages gnome<span style="color: #ff79c6;">)</span>
-             <span style="color: #ff79c6;">(</span>nongnu packages linux<span style="color: #ff79c6;">)</span>
-             <span style="color: #ff79c6;">(</span>nongnu system linux-initrd<span style="color: #ff79c6;">)</span>
-             <span style="color: #ff79c6;">(</span>gnu services virtualization<span style="color: #ff79c6;">)</span>
-             <span style="color: #ff79c6;">(</span>gnu services shepherd<span style="color: #ff79c6;">)</span>
-             <span style="color: #ff79c6;">(</span>gnu services admin<span style="color: #ff79c6;">)</span>
-             <span style="color: #ff79c6;">(</span>guix channels<span style="color: #ff79c6;">)</span>
-             <span style="color: #ff79c6;">(</span>gnu services mcron<span style="color: #ff79c6;">)</span>
-             <span style="color: #ff79c6;">(</span>gnu services docker<span style="color: #ff79c6;">)</span>
-             <span style="color: #ff79c6;">(</span>nil services mount-rshared<span style="color: #ff79c6;">)</span>
-             <span style="color: #ff79c6;">(</span>nil packages gnome<span style="color: #ff79c6;">)</span>
-             <span style="color: #ff79c6;">(</span>gnu packages fonts<span style="color: #ff79c6;">)</span>
-             <span style="color: #ff79c6;">(</span>gnu packages networking<span style="color: #ff79c6;">)</span>
-             <span style="color: #ff79c6;">(</span>guix gexp<span style="color: #ff79c6;">)</span>
-             <span style="color: #ff79c6;">(</span>guix packages<span style="color: #ff79c6;">)</span>
-             <span style="color: #ff79c6;">(</span>srfi srfi-1<span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
-<span style="color: #61bfff;">(</span>use-service-modules linux desktop networking ssh xorg<span style="color: #61bfff;">)</span>
-<span style="color: #61bfff;">(</span>use-package-modules linux package-management<span style="color: #61bfff;">)</span>
+<span style="color: #707183;">(</span><span style="color: #0000FF;">use-modules</span> <span style="color: #7388D6;">(</span>gnu<span style="color: #7388D6;">)</span>
+             <span style="color: #7388D6;">(</span>gnu services<span style="color: #7388D6;">)</span>
+             <span style="color: #7388D6;">(</span>gnu services dbus<span style="color: #7388D6;">)</span>
+             <span style="color: #7388D6;">(</span>gnu packages gnome<span style="color: #7388D6;">)</span>
+             <span style="color: #7388D6;">(</span>nongnu packages linux<span style="color: #7388D6;">)</span>
+             <span style="color: #7388D6;">(</span>nongnu system linux-initrd<span style="color: #7388D6;">)</span>
+             <span style="color: #7388D6;">(</span>gnu services virtualization<span style="color: #7388D6;">)</span>
+             <span style="color: #7388D6;">(</span>gnu services shepherd<span style="color: #7388D6;">)</span>
+             <span style="color: #7388D6;">(</span>gnu services admin<span style="color: #7388D6;">)</span>
+             <span style="color: #7388D6;">(</span>guix channels<span style="color: #7388D6;">)</span>
+             <span style="color: #7388D6;">(</span>gnu services mcron<span style="color: #7388D6;">)</span>
+             <span style="color: #7388D6;">(</span>gnu services docker<span style="color: #7388D6;">)</span>
+             <span style="color: #7388D6;">(</span>nil services mount-rshared<span style="color: #7388D6;">)</span>
+             <span style="color: #7388D6;">(</span>nil packages gnome<span style="color: #7388D6;">)</span>
+             <span style="color: #7388D6;">(</span>gnu packages fonts<span style="color: #7388D6;">)</span>
+             <span style="color: #7388D6;">(</span>gnu packages networking<span style="color: #7388D6;">)</span>
+             <span style="color: #7388D6;">(</span>guix gexp<span style="color: #7388D6;">)</span>
+             <span style="color: #7388D6;">(</span>guix packages<span style="color: #7388D6;">)</span>
+             <span style="color: #7388D6;">(</span>srfi srfi-1<span style="color: #7388D6;">)</span><span style="color: #707183;">)</span>
+<span style="color: #707183;">(</span>use-service-modules linux desktop networking ssh xorg<span style="color: #707183;">)</span>
+<span style="color: #707183;">(</span>use-package-modules linux package-management<span style="color: #707183;">)</span>
 
-<span style="color: #61bfff;">(</span><span style="color: #ff79c6;">define</span> <span style="color: #50fa7b;">%my-services</span>
-  <span style="color: #ff79c6;">(</span>modify-services %desktop-services
-                   <span style="color: #50fa7b;">(</span>delete gdm-service-type<span style="color: #50fa7b;">)</span>
-                   <span style="color: #50fa7b;">(</span>guix-service-type config =&gt; <span style="color: #bd93f9;">(</span>guix-configuration
-                                                 <span style="color: #0189cc;">(</span>inherit config<span style="color: #0189cc;">)</span>
-                                                 <span style="color: #0189cc;">(</span>substitute-urls
-                                                  <span style="color: #61bfff;">(</span>append <span style="color: #ff79c6;">(</span>list <span style="color: #f1fa8c;">"https://substitutes.nonguix.org"</span><span style="color: #ff79c6;">)</span>
-                                                          %default-substitute-urls<span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span>
-                                                 <span style="color: #0189cc;">(</span>authorized-keys
-                                                  <span style="color: #61bfff;">(</span>append <span style="color: #ff79c6;">(</span>list <span style="color: #50fa7b;">(</span>local-file <span style="color: #f1fa8c;">"./signing-key.pub"</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
-                                                          %default-authorized-guix-keys<span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span>
-                   <span style="color: #50fa7b;">(</span>dbus-root-service-type config =&gt;
-                                           <span style="color: #bd93f9;">(</span>dbus-configuration <span style="color: #0189cc;">(</span>inherit config<span style="color: #0189cc;">)</span>
-                                                               <span style="color: #0189cc;">(</span>services <span style="color: #61bfff;">(</span>list libratbag blueman<span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+<span style="color: #707183;">(</span><span style="color: #0000FF;">define</span> <span style="color: #006699;">%my-services</span>
+  <span style="color: #7388D6;">(</span>modify-services %desktop-services
+                   <span style="color: #909183;">(</span>delete gdm-service-type<span style="color: #909183;">)</span>
+                   <span style="color: #909183;">(</span>guix-service-type config =&gt; <span style="color: #709870;">(</span>guix-configuration
+                                                 <span style="color: #907373;">(</span>inherit config<span style="color: #907373;">)</span>
+                                                 <span style="color: #907373;">(</span>substitute-urls
+                                                  <span style="color: #6276BA;">(</span>append <span style="color: #858580;">(</span>list <span style="color: #008000;">"https://substitutes.nonguix.org"</span><span style="color: #858580;">)</span>
+                                                          %default-substitute-urls<span style="color: #6276BA;">)</span><span style="color: #907373;">)</span>
+                                                 <span style="color: #907373;">(</span>authorized-keys
+                                                  <span style="color: #6276BA;">(</span>append <span style="color: #858580;">(</span>list <span style="color: #80A880;">(</span>local-file <span style="color: #008000;">"./signing-key.pub"</span><span style="color: #80A880;">)</span><span style="color: #858580;">)</span>
+                                                          %default-authorized-guix-keys<span style="color: #6276BA;">)</span><span style="color: #907373;">)</span><span style="color: #709870;">)</span><span style="color: #909183;">)</span>
+                   <span style="color: #909183;">(</span>dbus-root-service-type config =&gt;
+                                           <span style="color: #709870;">(</span>dbus-configuration <span style="color: #907373;">(</span>inherit config<span style="color: #907373;">)</span>
+                                                               <span style="color: #907373;">(</span>services <span style="color: #6276BA;">(</span>list libratbag blueman<span style="color: #6276BA;">)</span><span style="color: #907373;">)</span><span style="color: #709870;">)</span><span style="color: #909183;">)</span><span style="color: #7388D6;">)</span><span style="color: #707183;">)</span>
 
-<span style="color: #61bfff;">(</span>operating-system
+<span style="color: #707183;">(</span>operating-system
 
- <span style="color: #ff79c6;">(</span>locale <span style="color: #f1fa8c;">"cs_CZ.utf8"</span><span style="color: #ff79c6;">)</span>
- <span style="color: #ff79c6;">(</span>timezone <span style="color: #f1fa8c;">"Europe/Prague"</span><span style="color: #ff79c6;">)</span>
- <span style="color: #ff79c6;">(</span>keyboard-layout <span style="color: #50fa7b;">(</span>keyboard-layout <span style="color: #f1fa8c;">"cz"</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+ <span style="color: #7388D6;">(</span>locale <span style="color: #008000;">"cs_CZ.utf8"</span><span style="color: #7388D6;">)</span>
+ <span style="color: #7388D6;">(</span>timezone <span style="color: #008000;">"Europe/Prague"</span><span style="color: #7388D6;">)</span>
+ <span style="color: #7388D6;">(</span>keyboard-layout <span style="color: #909183;">(</span>keyboard-layout <span style="color: #008000;">"cz"</span><span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
 
- <span style="color: #ff79c6;">(</span>host-name <span style="color: #f1fa8c;">"eternity"</span><span style="color: #ff79c6;">)</span>
+ <span style="color: #7388D6;">(</span>host-name <span style="color: #008000;">"eternity"</span><span style="color: #7388D6;">)</span>
 
- <span style="color: #ff79c6;">(</span>kernel linux<span style="color: #ff79c6;">)</span>
- <span style="color: #ff79c6;">(</span>initrd microcode-initrd<span style="color: #ff79c6;">)</span>
- <span style="color: #ff79c6;">(</span>firmware <span style="color: #50fa7b;">(</span>list linux-firmware<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+ <span style="color: #7388D6;">(</span>kernel linux<span style="color: #7388D6;">)</span>
+ <span style="color: #7388D6;">(</span>initrd microcode-initrd<span style="color: #7388D6;">)</span>
+ <span style="color: #7388D6;">(</span>firmware <span style="color: #909183;">(</span>list linux-firmware<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
 
- <span style="color: #ff79c6;">(</span>groups 
-  <span style="color: #50fa7b;">(</span>cons* 
-   <span style="color: #bd93f9;">(</span>user-group <span style="color: #0189cc;">(</span>name <span style="color: #f1fa8c;">"games"</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span> <span style="color: #6272a4;">;; </span><span style="color: #6272a4;">For libratbagd</span>
-   <span style="color: #bd93f9;">(</span>user-group <span style="color: #0189cc;">(</span>name <span style="color: #f1fa8c;">"realtime"</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span>
-   %base-groups<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+ <span style="color: #7388D6;">(</span>groups 
+  <span style="color: #909183;">(</span>cons* 
+   <span style="color: #709870;">(</span>user-group <span style="color: #907373;">(</span>name <span style="color: #008000;">"games"</span><span style="color: #907373;">)</span><span style="color: #709870;">)</span> <span style="color: #8D8D84; font-style: italic;">;; </span><span style="color: #8D8D84; font-style: italic;">For libratbagd</span>
+   <span style="color: #709870;">(</span>user-group <span style="color: #907373;">(</span>name <span style="color: #008000;">"realtime"</span><span style="color: #907373;">)</span><span style="color: #709870;">)</span>
+   %base-groups<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
 
- <span style="color: #ff79c6;">(</span>users <span style="color: #50fa7b;">(</span>cons* <span style="color: #bd93f9;">(</span>user-account
-                <span style="color: #0189cc;">(</span>name <span style="color: #f1fa8c;">"nil"</span><span style="color: #0189cc;">)</span>
-                <span style="color: #0189cc;">(</span>comment <span style="color: #f1fa8c;">"(lambda () nil)"</span><span style="color: #0189cc;">)</span>
-                <span style="color: #0189cc;">(</span>group <span style="color: #f1fa8c;">"users"</span><span style="color: #0189cc;">)</span>
-                <span style="color: #0189cc;">(</span>home-directory <span style="color: #f1fa8c;">"/home/nil"</span><span style="color: #0189cc;">)</span>
-                <span style="color: #0189cc;">(</span>supplementary-groups
-                 '<span style="color: #61bfff;">(</span><span style="color: #f1fa8c;">"wheel"</span> <span style="color: #f1fa8c;">"netdev"</span> <span style="color: #f1fa8c;">"audio"</span> <span style="color: #f1fa8c;">"video"</span> <span style="color: #f1fa8c;">"lp"</span> <span style="color: #f1fa8c;">"libvirt"</span> <span style="color: #f1fa8c;">"kvm"</span> <span style="color: #f1fa8c;">"games"</span> <span style="color: #f1fa8c;">"docker"</span> <span style="color: #f1fa8c;">"realtime"</span><span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span>
-               %base-user-accounts<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+ <span style="color: #7388D6;">(</span>users <span style="color: #909183;">(</span>cons* <span style="color: #709870;">(</span>user-account
+                <span style="color: #907373;">(</span>name <span style="color: #008000;">"nil"</span><span style="color: #907373;">)</span>
+                <span style="color: #907373;">(</span>comment <span style="color: #008000;">"(lambda () nil)"</span><span style="color: #907373;">)</span>
+                <span style="color: #907373;">(</span>group <span style="color: #008000;">"users"</span><span style="color: #907373;">)</span>
+                <span style="color: #907373;">(</span>home-directory <span style="color: #008000;">"/home/nil"</span><span style="color: #907373;">)</span>
+                <span style="color: #907373;">(</span>supplementary-groups
+                 '<span style="color: #6276BA;">(</span><span style="color: #008000;">"wheel"</span> <span style="color: #008000;">"netdev"</span> <span style="color: #008000;">"audio"</span> <span style="color: #008000;">"video"</span> <span style="color: #008000;">"lp"</span> <span style="color: #008000;">"libvirt"</span> <span style="color: #008000;">"kvm"</span> <span style="color: #008000;">"games"</span> <span style="color: #008000;">"docker"</span> <span style="color: #008000;">"realtime"</span><span style="color: #6276BA;">)</span><span style="color: #907373;">)</span><span style="color: #709870;">)</span>
+               %base-user-accounts<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
 
- <span style="color: #ff79c6;">(</span>packages
-  <span style="color: #50fa7b;">(</span>append
-   <span style="color: #bd93f9;">(</span><span style="color: #ff79c6;">map</span> specification-&gt;package
-        <span style="color: #0189cc;">(</span>list
-         <span style="color: #f1fa8c;">"nss-certs"</span>
-         <span style="color: #f1fa8c;">"xf86-video-amdgpu"</span>
-         <span style="color: #f1fa8c;">"amdgpu-firmware"</span>
-         <span style="color: #f1fa8c;">"bluez"</span>
-         <span style="color: #f1fa8c;">"blueman"</span>
-         <span style="color: #f1fa8c;">"vim"</span>
-         <span style="color: #f1fa8c;">"sway"</span>
-         <span style="color: #f1fa8c;">"wofi"</span>
-         <span style="color: #f1fa8c;">"libratbag"</span>
-         <span style="color: #f1fa8c;">"git"</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span>
-   %base-packages<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+ <span style="color: #7388D6;">(</span>packages
+  <span style="color: #909183;">(</span>append
+   <span style="color: #709870;">(</span><span style="color: #0000FF;">map</span> specification-&gt;package
+        <span style="color: #907373;">(</span>list
+         <span style="color: #008000;">"nss-certs"</span>
+         <span style="color: #008000;">"xf86-video-amdgpu"</span>
+         <span style="color: #008000;">"amdgpu-firmware"</span>
+         <span style="color: #008000;">"bluez"</span>
+         <span style="color: #008000;">"blueman"</span>
+         <span style="color: #008000;">"vim"</span>
+         <span style="color: #008000;">"sway"</span>
+         <span style="color: #008000;">"wofi"</span>
+         <span style="color: #008000;">"libratbag"</span>
+         <span style="color: #008000;">"git"</span><span style="color: #907373;">)</span><span style="color: #709870;">)</span>
+   %base-packages<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
 
- <span style="color: #ff79c6;">(</span>services
-  <span style="color: #50fa7b;">(</span>append
-   <span style="color: #bd93f9;">(</span>list
-    <span style="color: #0189cc;">(</span>service gdm-service-type
-             <span style="color: #61bfff;">(</span>gdm-configuration
-              <span style="color: #ff79c6;">(</span>wayland? #t<span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span>
-    <span style="color: #0189cc;">(</span>service bluetooth-service-type
-             <span style="color: #61bfff;">(</span>bluetooth-configuration
-              <span style="color: #ff79c6;">(</span>auto-enable? #f<span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span>
+ <span style="color: #7388D6;">(</span>services
+  <span style="color: #909183;">(</span>append
+   <span style="color: #709870;">(</span>list
+    <span style="color: #907373;">(</span>service gdm-service-type
+             <span style="color: #6276BA;">(</span>gdm-configuration
+              <span style="color: #858580;">(</span>wayland? #t<span style="color: #858580;">)</span><span style="color: #6276BA;">)</span><span style="color: #907373;">)</span>
+    <span style="color: #907373;">(</span>service bluetooth-service-type
+             <span style="color: #6276BA;">(</span>bluetooth-configuration
+              <span style="color: #858580;">(</span>auto-enable? #f<span style="color: #858580;">)</span><span style="color: #6276BA;">)</span><span style="color: #907373;">)</span>
 
     mount-rshared-service
 
-    <span style="color: #0189cc;">(</span>pam-limits-service
-     <span style="color: #61bfff;">(</span>list <span style="color: #ff79c6;">(</span>pam-limits-entry <span style="color: #f1fa8c;">"*"</span> 'hard 'nofile 524288<span style="color: #ff79c6;">)</span>
-           <span style="color: #ff79c6;">(</span>pam-limits-entry <span style="color: #f1fa8c;">"@realtime"</span> 'both 'rtprio 99<span style="color: #ff79c6;">)</span>
-           <span style="color: #ff79c6;">(</span>pam-limits-entry <span style="color: #f1fa8c;">"@realtime"</span> 'both 'memlock 'unlimited<span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span>
+    <span style="color: #907373;">(</span>pam-limits-service
+     <span style="color: #6276BA;">(</span>list <span style="color: #858580;">(</span>pam-limits-entry <span style="color: #008000;">"*"</span> 'hard 'nofile 524288<span style="color: #858580;">)</span>
+           <span style="color: #858580;">(</span>pam-limits-entry <span style="color: #008000;">"@realtime"</span> 'both 'rtprio 99<span style="color: #858580;">)</span>
+           <span style="color: #858580;">(</span>pam-limits-entry <span style="color: #008000;">"@realtime"</span> 'both 'memlock 'unlimited<span style="color: #858580;">)</span><span style="color: #6276BA;">)</span><span style="color: #907373;">)</span>
 
-    <span style="color: #0189cc;">(</span>extra-special-file <span style="color: #f1fa8c;">"/lib64/ld-linux-x86-64.so.2"</span>
-                        <span style="color: #61bfff;">(</span>file-append glibc <span style="color: #f1fa8c;">"/lib/ld-linux-x86-64.so.2"</span><span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span>
+    <span style="color: #907373;">(</span>extra-special-file <span style="color: #008000;">"/lib64/ld-linux-x86-64.so.2"</span>
+                        <span style="color: #6276BA;">(</span>file-append glibc <span style="color: #008000;">"/lib/ld-linux-x86-64.so.2"</span><span style="color: #6276BA;">)</span><span style="color: #907373;">)</span>
 
-    <span style="color: #0189cc;">(</span>set-xorg-configuration
-     <span style="color: #61bfff;">(</span>xorg-configuration
-      <span style="color: #ff79c6;">(</span>keyboard-layout keyboard-layout<span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span>
+    <span style="color: #907373;">(</span>set-xorg-configuration
+     <span style="color: #6276BA;">(</span>xorg-configuration
+      <span style="color: #858580;">(</span>keyboard-layout keyboard-layout<span style="color: #858580;">)</span><span style="color: #6276BA;">)</span><span style="color: #907373;">)</span>
 
-    <span style="color: #0189cc;">(</span>service virtlog-service-type
-             <span style="color: #61bfff;">(</span>virtlog-configuration
-              <span style="color: #ff79c6;">(</span>max-clients 1000<span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span>
+    <span style="color: #907373;">(</span>service virtlog-service-type
+             <span style="color: #6276BA;">(</span>virtlog-configuration
+              <span style="color: #858580;">(</span>max-clients 1000<span style="color: #858580;">)</span><span style="color: #6276BA;">)</span><span style="color: #907373;">)</span>
 
-    <span style="color: #0189cc;">(</span>service libvirt-service-type
-             <span style="color: #61bfff;">(</span>libvirt-configuration
-              <span style="color: #ff79c6;">(</span>unix-sock-group <span style="color: #f1fa8c;">"libvirt"</span><span style="color: #ff79c6;">)</span>
-              <span style="color: #ff79c6;">(</span>tls-port <span style="color: #f1fa8c;">"16555"</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span>
+    <span style="color: #907373;">(</span>service libvirt-service-type
+             <span style="color: #6276BA;">(</span>libvirt-configuration
+              <span style="color: #858580;">(</span>unix-sock-group <span style="color: #008000;">"libvirt"</span><span style="color: #858580;">)</span>
+              <span style="color: #858580;">(</span>tls-port <span style="color: #008000;">"16555"</span><span style="color: #858580;">)</span><span style="color: #6276BA;">)</span><span style="color: #907373;">)</span>
 
-    <span style="color: #0189cc;">(</span>service docker-service-type<span style="color: #0189cc;">)</span>
+    <span style="color: #907373;">(</span>service docker-service-type<span style="color: #907373;">)</span>
 
-    <span style="color: #0189cc;">(</span>service zram-device-service-type
-             <span style="color: #61bfff;">(</span>zram-device-configuration
-              <span style="color: #ff79c6;">(</span>size <span style="color: #f1fa8c;">"8172M"</span><span style="color: #ff79c6;">)</span>
-              <span style="color: #ff79c6;">(</span>compression-algorithm 'zstd<span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span>
-   %my-services<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+    <span style="color: #907373;">(</span>service zram-device-service-type
+             <span style="color: #6276BA;">(</span>zram-device-configuration
+              <span style="color: #858580;">(</span>size <span style="color: #008000;">"8172M"</span><span style="color: #858580;">)</span>
+              <span style="color: #858580;">(</span>compression-algorithm 'zstd<span style="color: #858580;">)</span><span style="color: #6276BA;">)</span><span style="color: #907373;">)</span><span style="color: #709870;">)</span>
+   %my-services<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
 
- <span style="color: #ff79c6;">(</span>bootloader
-  <span style="color: #50fa7b;">(</span>bootloader-configuration
-   <span style="color: #bd93f9;">(</span>bootloader grub-efi-bootloader<span style="color: #bd93f9;">)</span>
-   <span style="color: #bd93f9;">(</span>targets '<span style="color: #0189cc;">(</span><span style="color: #f1fa8c;">"/boot/efi"</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span>
-   <span style="color: #bd93f9;">(</span>timeout 3<span style="color: #bd93f9;">)</span>
-   <span style="color: #bd93f9;">(</span>keyboard-layout keyboard-layout<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
- <span style="color: #ff79c6;">(</span>file-systems
-  <span style="color: #50fa7b;">(</span>cons*   
-   <span style="color: #bd93f9;">(</span>file-system
-    <span style="color: #0189cc;">(</span>mount-point <span style="color: #f1fa8c;">"/"</span><span style="color: #0189cc;">)</span>
-    <span style="color: #0189cc;">(</span>device
-     <span style="color: #61bfff;">(</span>uuid <span style="color: #f1fa8c;">""</span>
-           'btrfs<span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span>
-    <span style="color: #0189cc;">(</span>type <span style="color: #f1fa8c;">"btrfs"</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span>
-   <span style="color: #bd93f9;">(</span>file-system
-    <span style="color: #0189cc;">(</span>mount-point <span style="color: #f1fa8c;">"/boot/efi"</span><span style="color: #0189cc;">)</span>
-    <span style="color: #0189cc;">(</span>device
-     <span style="color: #61bfff;">(</span>uuid <span style="color: #f1fa8c;">""</span>
-           'fat32<span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span>
-    <span style="color: #0189cc;">(</span>type <span style="color: #f1fa8c;">"vfat"</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span>
-   <span style="color: #bd93f9;">(</span>file-system <span style="color: #6272a4;">;; </span><span style="color: #6272a4;">Second hard drive</span>
-    <span style="color: #0189cc;">(</span>mount-point <span style="color: #f1fa8c;">"/mnt/media/nil/external"</span><span style="color: #0189cc;">)</span>
-    <span style="color: #0189cc;">(</span>device
-     <span style="color: #61bfff;">(</span>uuid <span style="color: #f1fa8c;">""</span>
-           'ext4<span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span>
-    <span style="color: #0189cc;">(</span>type <span style="color: #f1fa8c;">"ext4"</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span>
-   %base-file-systems<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+ <span style="color: #7388D6;">(</span>bootloader
+  <span style="color: #909183;">(</span>bootloader-configuration
+   <span style="color: #709870;">(</span>bootloader grub-efi-bootloader<span style="color: #709870;">)</span>
+   <span style="color: #709870;">(</span>targets '<span style="color: #907373;">(</span><span style="color: #008000;">"/boot/efi"</span><span style="color: #907373;">)</span><span style="color: #709870;">)</span>
+   <span style="color: #709870;">(</span>timeout 3<span style="color: #709870;">)</span>
+   <span style="color: #709870;">(</span>keyboard-layout keyboard-layout<span style="color: #709870;">)</span><span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
+ <span style="color: #7388D6;">(</span>file-systems
+  <span style="color: #909183;">(</span>cons*   
+   <span style="color: #709870;">(</span>file-system
+    <span style="color: #907373;">(</span>mount-point <span style="color: #008000;">"/"</span><span style="color: #907373;">)</span>
+    <span style="color: #907373;">(</span>device
+     <span style="color: #6276BA;">(</span>uuid <span style="color: #008000;">""</span>
+           'btrfs<span style="color: #6276BA;">)</span><span style="color: #907373;">)</span>
+    <span style="color: #907373;">(</span>type <span style="color: #008000;">"btrfs"</span><span style="color: #907373;">)</span><span style="color: #709870;">)</span>
+   <span style="color: #709870;">(</span>file-system
+    <span style="color: #907373;">(</span>mount-point <span style="color: #008000;">"/boot/efi"</span><span style="color: #907373;">)</span>
+    <span style="color: #907373;">(</span>device
+     <span style="color: #6276BA;">(</span>uuid <span style="color: #008000;">""</span>
+           'fat32<span style="color: #6276BA;">)</span><span style="color: #907373;">)</span>
+    <span style="color: #907373;">(</span>type <span style="color: #008000;">"vfat"</span><span style="color: #907373;">)</span><span style="color: #709870;">)</span>
+   <span style="color: #709870;">(</span>file-system <span style="color: #8D8D84; font-style: italic;">;; </span><span style="color: #8D8D84; font-style: italic;">Second hard drive</span>
+    <span style="color: #907373;">(</span>mount-point <span style="color: #008000;">"/mnt/media/nil/external"</span><span style="color: #907373;">)</span>
+    <span style="color: #907373;">(</span>device
+     <span style="color: #6276BA;">(</span>uuid <span style="color: #008000;">""</span>
+           'ext4<span style="color: #6276BA;">)</span><span style="color: #907373;">)</span>
+    <span style="color: #907373;">(</span>type <span style="color: #008000;">"ext4"</span><span style="color: #907373;">)</span><span style="color: #709870;">)</span>
+   %base-file-systems<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span><span style="color: #707183;">)</span>
 </pre>
 </div>
 
@@ -239,23 +239,23 @@ So where exactly does one start hacking on such a complex project? Well I decide
 I start up a Geiser REPL and begin by importing all my modules, basically just copy-pasting from the header of this file. I had to remove a few modules that I didn't have definitions locally available for.
 </p>
 <div class="org-src-container">
-<pre class="src src-scheme"><span style="color: #61bfff;">(</span><span style="color: #ff79c6;">use-modules</span> <span style="color: #ff79c6;">(</span>gnu<span style="color: #ff79c6;">)</span>
-             <span style="color: #ff79c6;">(</span>gnu services<span style="color: #ff79c6;">)</span>
-             <span style="color: #ff79c6;">(</span>gnu services dbus<span style="color: #ff79c6;">)</span>
-             <span style="color: #ff79c6;">(</span>gnu packages gnome<span style="color: #ff79c6;">)</span>
-             <span style="color: #ff79c6;">(</span>gnu services virtualization<span style="color: #ff79c6;">)</span>
-             <span style="color: #ff79c6;">(</span>gnu services shepherd<span style="color: #ff79c6;">)</span>
-             <span style="color: #ff79c6;">(</span>gnu services admin<span style="color: #ff79c6;">)</span>
-             <span style="color: #ff79c6;">(</span>guix channels<span style="color: #ff79c6;">)</span>
-             <span style="color: #ff79c6;">(</span>gnu services mcron<span style="color: #ff79c6;">)</span>
-             <span style="color: #ff79c6;">(</span>gnu services docker<span style="color: #ff79c6;">)</span>
-             <span style="color: #ff79c6;">(</span>gnu packages fonts<span style="color: #ff79c6;">)</span>
-             <span style="color: #ff79c6;">(</span>gnu packages networking<span style="color: #ff79c6;">)</span>
-             <span style="color: #ff79c6;">(</span>guix gexp<span style="color: #ff79c6;">)</span>
-             <span style="color: #ff79c6;">(</span>guix packages<span style="color: #ff79c6;">)</span>
-             <span style="color: #ff79c6;">(</span>srfi srfi-1<span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
-<span style="color: #61bfff;">(</span>use-service-modules linux desktop networking ssh xorg<span style="color: #61bfff;">)</span>
-<span style="color: #61bfff;">(</span>use-package-modules linux package-management<span style="color: #61bfff;">)</span>
+<pre class="src src-scheme"><span style="color: #707183;">(</span><span style="color: #0000FF;">use-modules</span> <span style="color: #7388D6;">(</span>gnu<span style="color: #7388D6;">)</span>
+             <span style="color: #7388D6;">(</span>gnu services<span style="color: #7388D6;">)</span>
+             <span style="color: #7388D6;">(</span>gnu services dbus<span style="color: #7388D6;">)</span>
+             <span style="color: #7388D6;">(</span>gnu packages gnome<span style="color: #7388D6;">)</span>
+             <span style="color: #7388D6;">(</span>gnu services virtualization<span style="color: #7388D6;">)</span>
+             <span style="color: #7388D6;">(</span>gnu services shepherd<span style="color: #7388D6;">)</span>
+             <span style="color: #7388D6;">(</span>gnu services admin<span style="color: #7388D6;">)</span>
+             <span style="color: #7388D6;">(</span>guix channels<span style="color: #7388D6;">)</span>
+             <span style="color: #7388D6;">(</span>gnu services mcron<span style="color: #7388D6;">)</span>
+             <span style="color: #7388D6;">(</span>gnu services docker<span style="color: #7388D6;">)</span>
+             <span style="color: #7388D6;">(</span>gnu packages fonts<span style="color: #7388D6;">)</span>
+             <span style="color: #7388D6;">(</span>gnu packages networking<span style="color: #7388D6;">)</span>
+             <span style="color: #7388D6;">(</span>guix gexp<span style="color: #7388D6;">)</span>
+             <span style="color: #7388D6;">(</span>guix packages<span style="color: #7388D6;">)</span>
+             <span style="color: #7388D6;">(</span>srfi srfi-1<span style="color: #7388D6;">)</span><span style="color: #707183;">)</span>
+<span style="color: #707183;">(</span>use-service-modules linux desktop networking ssh xorg<span style="color: #707183;">)</span>
+<span style="color: #707183;">(</span>use-package-modules linux package-management<span style="color: #707183;">)</span>
 </pre>
 </div>
 </div>
@@ -269,93 +269,93 @@ I think the best place to begin is the actual <code>operating-system</code> decl
 </p>
 
 <div class="org-src-container">
-<pre class="src src-scheme"><span style="color: #61bfff;">(</span>define-record-type* <span style="color: #bd93f9;">&lt;operating-system&gt;</span> operating-system
+<pre class="src src-scheme"><span style="color: #707183;">(</span>define-record-type* <span style="color: #6434A3;">&lt;operating-system&gt;</span> operating-system
   make-operating-system
   operating-system?
   this-operating-system
 
-  <span style="color: #ff79c6;">(</span>kernel operating-system-kernel                 <span style="color: #6272a4;">; </span><span style="color: #6272a4;">package</span>
-          <span style="color: #50fa7b;">(</span>default linux-libre<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
-  <span style="color: #ff79c6;">(</span>kernel-loadable-modules operating-system-kernel-loadable-modules
-                           <span style="color: #50fa7b;">(</span>default '<span style="color: #bd93f9;">()</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>                <span style="color: #6272a4;">; </span><span style="color: #6272a4;">list of packages</span>
-  <span style="color: #ff79c6;">(</span>kernel-arguments operating-system-user-kernel-arguments
-                    <span style="color: #50fa7b;">(</span>default %default-kernel-arguments<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span> <span style="color: #6272a4;">; </span><span style="color: #6272a4;">list of gexps/strings</span>
-  <span style="color: #ff79c6;">(</span>hurd operating-system-hurd
-        <span style="color: #50fa7b;">(</span>default #f<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>                             <span style="color: #6272a4;">; </span><span style="color: #6272a4;">package</span>
-  <span style="color: #ff79c6;">(</span>bootloader operating-system-bootloader<span style="color: #ff79c6;">)</span>        <span style="color: #6272a4;">; </span><span style="color: #6272a4;">&lt;bootloader-configuration&gt;</span>
-  <span style="color: #ff79c6;">(</span>label operating-system-label                   <span style="color: #6272a4;">; </span><span style="color: #6272a4;">string</span>
-         <span style="color: #50fa7b;">(</span>thunked<span style="color: #50fa7b;">)</span>
-         <span style="color: #50fa7b;">(</span>default <span style="color: #bd93f9;">(</span>operating-system-default-label this-operating-system<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+  <span style="color: #7388D6;">(</span>kernel operating-system-kernel                 <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">package</span>
+          <span style="color: #909183;">(</span>default linux-libre<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
+  <span style="color: #7388D6;">(</span>kernel-loadable-modules operating-system-kernel-loadable-modules
+                           <span style="color: #909183;">(</span>default '<span style="color: #709870;">()</span><span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>                <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">list of packages</span>
+  <span style="color: #7388D6;">(</span>kernel-arguments operating-system-user-kernel-arguments
+                    <span style="color: #909183;">(</span>default %default-kernel-arguments<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span> <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">list of gexps/strings</span>
+  <span style="color: #7388D6;">(</span>hurd operating-system-hurd
+        <span style="color: #909183;">(</span>default #f<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>                             <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">package</span>
+  <span style="color: #7388D6;">(</span>bootloader operating-system-bootloader<span style="color: #7388D6;">)</span>        <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">&lt;bootloader-configuration&gt;</span>
+  <span style="color: #7388D6;">(</span>label operating-system-label                   <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">string</span>
+         <span style="color: #909183;">(</span>thunked<span style="color: #909183;">)</span>
+         <span style="color: #909183;">(</span>default <span style="color: #709870;">(</span>operating-system-default-label this-operating-system<span style="color: #709870;">)</span><span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
 
-  <span style="color: #ff79c6;">(</span>keyboard-layout operating-system-keyboard-layout <span style="color: #6272a4;">;</span><span style="color: #6272a4;">#f | &lt;keyboard-layout&gt;</span>
-                   <span style="color: #50fa7b;">(</span>default #f<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
-  <span style="color: #ff79c6;">(</span>initrd operating-system-initrd                 <span style="color: #6272a4;">; </span><span style="color: #6272a4;">(list fs) -&gt; file-like</span>
-          <span style="color: #50fa7b;">(</span>default base-initrd<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
-  <span style="color: #ff79c6;">(</span>initrd-modules operating-system-initrd-modules <span style="color: #6272a4;">; </span><span style="color: #6272a4;">list of strings</span>
-                  <span style="color: #50fa7b;">(</span>thunked<span style="color: #50fa7b;">)</span>                       <span style="color: #6272a4;">; </span><span style="color: #6272a4;">it's system-dependent</span>
-                  <span style="color: #50fa7b;">(</span>default %base-initrd-modules<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+  <span style="color: #7388D6;">(</span>keyboard-layout operating-system-keyboard-layout <span style="color: #8D8D84; font-style: italic;">;</span><span style="color: #8D8D84; font-style: italic;">#f | &lt;keyboard-layout&gt;</span>
+                   <span style="color: #909183;">(</span>default #f<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
+  <span style="color: #7388D6;">(</span>initrd operating-system-initrd                 <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">(list fs) -&gt; file-like</span>
+          <span style="color: #909183;">(</span>default base-initrd<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
+  <span style="color: #7388D6;">(</span>initrd-modules operating-system-initrd-modules <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">list of strings</span>
+                  <span style="color: #909183;">(</span>thunked<span style="color: #909183;">)</span>                       <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">it's system-dependent</span>
+                  <span style="color: #909183;">(</span>default %base-initrd-modules<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
 
-  <span style="color: #ff79c6;">(</span>firmware operating-system-firmware             <span style="color: #6272a4;">; </span><span style="color: #6272a4;">list of packages</span>
-            <span style="color: #50fa7b;">(</span>default %base-firmware<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+  <span style="color: #7388D6;">(</span>firmware operating-system-firmware             <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">list of packages</span>
+            <span style="color: #909183;">(</span>default %base-firmware<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
 
-  <span style="color: #ff79c6;">(</span>host-name operating-system-host-name<span style="color: #ff79c6;">)</span>          <span style="color: #6272a4;">; </span><span style="color: #6272a4;">string</span>
-  <span style="color: #ff79c6;">(</span>hosts-file %operating-system-hosts-file         <span style="color: #6272a4;">; </span><span style="color: #6272a4;">deprecated</span>
-              <span style="color: #50fa7b;">(</span>default #f<span style="color: #50fa7b;">)</span>
-              <span style="color: #50fa7b;">(</span>sanitize warn-hosts-file-field-deprecation<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+  <span style="color: #7388D6;">(</span>host-name operating-system-host-name<span style="color: #7388D6;">)</span>          <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">string</span>
+  <span style="color: #7388D6;">(</span>hosts-file %operating-system-hosts-file         <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">deprecated</span>
+              <span style="color: #909183;">(</span>default #f<span style="color: #909183;">)</span>
+              <span style="color: #909183;">(</span>sanitize warn-hosts-file-field-deprecation<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
 
-  <span style="color: #ff79c6;">(</span>mapped-devices operating-system-mapped-devices <span style="color: #6272a4;">; </span><span style="color: #6272a4;">list of &lt;mapped-device&gt;</span>
-                  <span style="color: #50fa7b;">(</span>default '<span style="color: #bd93f9;">()</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
-  <span style="color: #ff79c6;">(</span>file-systems operating-system-file-systems<span style="color: #ff79c6;">)</span>    <span style="color: #6272a4;">; </span><span style="color: #6272a4;">list of fs</span>
-  <span style="color: #ff79c6;">(</span>swap-devices operating-system-swap-devices     <span style="color: #6272a4;">; </span><span style="color: #6272a4;">list of string | &lt;swap-space&gt;</span>
-                <span style="color: #50fa7b;">(</span>default '<span style="color: #bd93f9;">()</span><span style="color: #50fa7b;">)</span>
-                <span style="color: #50fa7b;">(</span>delayed<span style="color: #50fa7b;">)</span>
-                <span style="color: #50fa7b;">(</span>sanitize warn-swap-devices-change<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+  <span style="color: #7388D6;">(</span>mapped-devices operating-system-mapped-devices <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">list of &lt;mapped-device&gt;</span>
+                  <span style="color: #909183;">(</span>default '<span style="color: #709870;">()</span><span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
+  <span style="color: #7388D6;">(</span>file-systems operating-system-file-systems<span style="color: #7388D6;">)</span>    <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">list of fs</span>
+  <span style="color: #7388D6;">(</span>swap-devices operating-system-swap-devices     <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">list of string | &lt;swap-space&gt;</span>
+                <span style="color: #909183;">(</span>default '<span style="color: #709870;">()</span><span style="color: #909183;">)</span>
+                <span style="color: #909183;">(</span>delayed<span style="color: #909183;">)</span>
+                <span style="color: #909183;">(</span>sanitize warn-swap-devices-change<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
 
-  <span style="color: #ff79c6;">(</span>users operating-system-users                   <span style="color: #6272a4;">; </span><span style="color: #6272a4;">list of user accounts</span>
-         <span style="color: #50fa7b;">(</span>default %base-user-accounts<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
-  <span style="color: #ff79c6;">(</span>groups operating-system-groups                 <span style="color: #6272a4;">; </span><span style="color: #6272a4;">list of user groups</span>
-          <span style="color: #50fa7b;">(</span>default %base-groups<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+  <span style="color: #7388D6;">(</span>users operating-system-users                   <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">list of user accounts</span>
+         <span style="color: #909183;">(</span>default %base-user-accounts<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
+  <span style="color: #7388D6;">(</span>groups operating-system-groups                 <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">list of user groups</span>
+          <span style="color: #909183;">(</span>default %base-groups<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
 
-  <span style="color: #ff79c6;">(</span>skeletons operating-system-skeletons           <span style="color: #6272a4;">; </span><span style="color: #6272a4;">list of name/file-like value</span>
-             <span style="color: #50fa7b;">(</span>default <span style="color: #bd93f9;">(</span>default-skeletons<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
-  <span style="color: #ff79c6;">(</span>issue operating-system-issue                   <span style="color: #6272a4;">; </span><span style="color: #6272a4;">string</span>
-         <span style="color: #50fa7b;">(</span>default %default-issue<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+  <span style="color: #7388D6;">(</span>skeletons operating-system-skeletons           <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">list of name/file-like value</span>
+             <span style="color: #909183;">(</span>default <span style="color: #709870;">(</span>default-skeletons<span style="color: #709870;">)</span><span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
+  <span style="color: #7388D6;">(</span>issue operating-system-issue                   <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">string</span>
+         <span style="color: #909183;">(</span>default %default-issue<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
 
-  <span style="color: #ff79c6;">(</span>packages operating-system-packages             <span style="color: #6272a4;">; </span><span style="color: #6272a4;">list of (PACKAGE OUTPUT...)</span>
-            <span style="color: #50fa7b;">(</span>default %base-packages<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>             <span style="color: #6272a4;">; </span><span style="color: #6272a4;">or just PACKAGE</span>
+  <span style="color: #7388D6;">(</span>packages operating-system-packages             <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">list of (PACKAGE OUTPUT...)</span>
+            <span style="color: #909183;">(</span>default %base-packages<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>             <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">or just PACKAGE</span>
 
-  <span style="color: #ff79c6;">(</span>timezone operating-system-timezone
-            <span style="color: #50fa7b;">(</span>default <span style="color: #f1fa8c;">"Etc/UTC"</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>                  <span style="color: #6272a4;">; </span><span style="color: #6272a4;">string</span>
-  <span style="color: #ff79c6;">(</span>locale   operating-system-locale               <span style="color: #6272a4;">; </span><span style="color: #6272a4;">string</span>
-            <span style="color: #50fa7b;">(</span>default <span style="color: #f1fa8c;">"en_US.utf8"</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
-  <span style="color: #ff79c6;">(</span>locale-definitions operating-system-locale-definitions <span style="color: #6272a4;">; </span><span style="color: #6272a4;">list of &lt;locale-definition&gt;</span>
-                      <span style="color: #50fa7b;">(</span>default %default-locale-definitions<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
-  <span style="color: #ff79c6;">(</span>locale-libcs operating-system-locale-libcs     <span style="color: #6272a4;">; </span><span style="color: #6272a4;">list of &lt;packages&gt;</span>
-                <span style="color: #50fa7b;">(</span>default %default-locale-libcs<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
-  <span style="color: #ff79c6;">(</span>name-service-switch operating-system-name-service-switch <span style="color: #6272a4;">; </span><span style="color: #6272a4;">&lt;name-service-switch&gt;</span>
-                       <span style="color: #50fa7b;">(</span>default %default-nss<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+  <span style="color: #7388D6;">(</span>timezone operating-system-timezone
+            <span style="color: #909183;">(</span>default <span style="color: #008000;">"Etc/UTC"</span><span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>                  <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">string</span>
+  <span style="color: #7388D6;">(</span>locale   operating-system-locale               <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">string</span>
+            <span style="color: #909183;">(</span>default <span style="color: #008000;">"en_US.utf8"</span><span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
+  <span style="color: #7388D6;">(</span>locale-definitions operating-system-locale-definitions <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">list of &lt;locale-definition&gt;</span>
+                      <span style="color: #909183;">(</span>default %default-locale-definitions<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
+  <span style="color: #7388D6;">(</span>locale-libcs operating-system-locale-libcs     <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">list of &lt;packages&gt;</span>
+                <span style="color: #909183;">(</span>default %default-locale-libcs<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
+  <span style="color: #7388D6;">(</span>name-service-switch operating-system-name-service-switch <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">&lt;name-service-switch&gt;</span>
+                       <span style="color: #909183;">(</span>default %default-nss<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
 
-  <span style="color: #ff79c6;">(</span>essential-services operating-system-essential-services <span style="color: #6272a4;">; </span><span style="color: #6272a4;">list of services</span>
-                      <span style="color: #50fa7b;">(</span>thunked<span style="color: #50fa7b;">)</span>
-                      <span style="color: #50fa7b;">(</span>default <span style="color: #bd93f9;">(</span>operating-system-default-essential-services
-                                this-operating-system<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
-  <span style="color: #ff79c6;">(</span>services operating-system-user-services        <span style="color: #6272a4;">; </span><span style="color: #6272a4;">list of services</span>
-            <span style="color: #50fa7b;">(</span>thunked<span style="color: #50fa7b;">)</span>                     <span style="color: #6272a4;">;</span><span style="color: #6272a4;">allow for system-dependent services</span>
-            <span style="color: #50fa7b;">(</span>default %base-services<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+  <span style="color: #7388D6;">(</span>essential-services operating-system-essential-services <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">list of services</span>
+                      <span style="color: #909183;">(</span>thunked<span style="color: #909183;">)</span>
+                      <span style="color: #909183;">(</span>default <span style="color: #709870;">(</span>operating-system-default-essential-services
+                                this-operating-system<span style="color: #709870;">)</span><span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
+  <span style="color: #7388D6;">(</span>services operating-system-user-services        <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">list of services</span>
+            <span style="color: #909183;">(</span>thunked<span style="color: #909183;">)</span>                     <span style="color: #8D8D84; font-style: italic;">;</span><span style="color: #8D8D84; font-style: italic;">allow for system-dependent services</span>
+            <span style="color: #909183;">(</span>default %base-services<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
 
-  <span style="color: #ff79c6;">(</span>pam-services operating-system-pam-services     <span style="color: #6272a4;">; </span><span style="color: #6272a4;">list of PAM services</span>
-                <span style="color: #50fa7b;">(</span>default <span style="color: #bd93f9;">(</span>base-pam-services<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
-  <span style="color: #ff79c6;">(</span>setuid-programs operating-system-setuid-programs
-                   <span style="color: #50fa7b;">(</span>default %setuid-programs<span style="color: #50fa7b;">)</span>     <span style="color: #6272a4;">; </span><span style="color: #6272a4;">list of &lt;setuid-program&gt;</span>
-                   <span style="color: #50fa7b;">(</span>sanitize ensure-setuid-program-list<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+  <span style="color: #7388D6;">(</span>pam-services operating-system-pam-services     <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">list of PAM services</span>
+                <span style="color: #909183;">(</span>default <span style="color: #709870;">(</span>base-pam-services<span style="color: #709870;">)</span><span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
+  <span style="color: #7388D6;">(</span>setuid-programs operating-system-setuid-programs
+                   <span style="color: #909183;">(</span>default %setuid-programs<span style="color: #909183;">)</span>     <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">list of &lt;setuid-program&gt;</span>
+                   <span style="color: #909183;">(</span>sanitize ensure-setuid-program-list<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
 
-  <span style="color: #ff79c6;">(</span>sudoers-file operating-system-sudoers-file     <span style="color: #6272a4;">; </span><span style="color: #6272a4;">file-like</span>
-                <span style="color: #50fa7b;">(</span>default %sudoers-specification<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+  <span style="color: #7388D6;">(</span>sudoers-file operating-system-sudoers-file     <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">file-like</span>
+                <span style="color: #909183;">(</span>default %sudoers-specification<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
 
-  <span style="color: #ff79c6;">(</span>location operating-system-location             <span style="color: #6272a4;">; </span><span style="color: #6272a4;">&lt;location&gt;</span>
-            <span style="color: #50fa7b;">(</span>default <span style="color: #bd93f9;">(</span>and=&gt; <span style="color: #0189cc;">(</span>current-source-location<span style="color: #0189cc;">)</span>
-                            source-properties-&gt;location<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span>
-            <span style="color: #50fa7b;">(</span>innate<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+  <span style="color: #7388D6;">(</span>location operating-system-location             <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">&lt;location&gt;</span>
+            <span style="color: #909183;">(</span>default <span style="color: #709870;">(</span>and=&gt; <span style="color: #907373;">(</span>current-source-location<span style="color: #907373;">)</span>
+                            source-properties-&gt;location<span style="color: #709870;">)</span><span style="color: #909183;">)</span>
+            <span style="color: #909183;">(</span>innate<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span><span style="color: #707183;">)</span>
 </pre>
 </div>
 <p>
@@ -371,8 +371,8 @@ A record is a fairly straightforward kind of object, one consisting of 2 parts -
 One of the very first keys here looks like this:
 </p>
 <div class="org-src-container">
-<pre class="src src-scheme"><span style="color: #61bfff;">(</span>kernel-arguments operating-system-user-kernel-arguments
-                  <span style="color: #ff79c6;">(</span>default %default-kernel-arguments<span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span> <span style="color: #6272a4;">; </span><span style="color: #6272a4;">list of gexps/strings</span>
+<pre class="src src-scheme"><span style="color: #707183;">(</span>kernel-arguments operating-system-user-kernel-arguments
+                  <span style="color: #7388D6;">(</span>default %default-kernel-arguments<span style="color: #7388D6;">)</span><span style="color: #707183;">)</span> <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">list of gexps/strings</span>
 </pre>
 </div>
 
@@ -385,8 +385,8 @@ The comments here are helpful too, telling us what the supplied type is supposed
 We can see <code>%default-kernel-arguments</code> is being used here. We can check its value by evaluating it within the REPL.
 </p>
 <div class="org-src-container">
-<pre class="src src-scheme">scheme@<span style="color: #61bfff;">(</span>guile-user<span style="color: #61bfff;">)</span>&gt; %default-kernel-arguments
-$5 = <span style="color: #61bfff;">(</span><span style="color: #f1fa8c;">"modprobe.blacklist=usbmouse,usbkbd"</span> <span style="color: #f1fa8c;">"quiet"</span><span style="color: #61bfff;">)</span>
+<pre class="src src-scheme">scheme@<span style="color: #707183;">(</span>guile-user<span style="color: #707183;">)</span>&gt; %default-kernel-arguments
+$5 = <span style="color: #707183;">(</span><span style="color: #008000;">"modprobe.blacklist=usbmouse,usbkbd"</span> <span style="color: #008000;">"quiet"</span><span style="color: #707183;">)</span>
 </pre>
 </div>
 <p>
@@ -397,13 +397,13 @@ So the <code>%default-kernel-arguments</code> is just a list of strings.
 From this we can see that adding a custom kernel argument in the <code>config.scm</code> would be as simple as adding a string to this list like so: 
 </p>
 <div class="org-src-container">
-<pre class="src src-scheme"><span style="color: #61bfff;">(</span>operating-system
+<pre class="src src-scheme"><span style="color: #707183;">(</span>operating-system
   ...
 
-  <span style="color: #ff79c6;">(</span>kernel-arguments <span style="color: #50fa7b;">(</span>cons <span style="color: #f1fa8c;">"nomodeset"</span> %default-kernel-arguments<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+  <span style="color: #7388D6;">(</span>kernel-arguments <span style="color: #909183;">(</span>cons <span style="color: #008000;">"nomodeset"</span> %default-kernel-arguments<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
 
   ...
-  <span style="color: #61bfff;">)</span>
+  <span style="color: #707183;">)</span>
 </pre>
 </div>
 
@@ -424,8 +424,8 @@ With this basic knowledge I can look at some of the more interesting default val
 Let's start by peeking into the default package list, stored as <code>%base-packages</code>.
 </p>
 <div class="org-src-container">
-<pre class="src src-scheme">scheme@<span style="color: #61bfff;">(</span>guile-user<span style="color: #61bfff;">)</span>&gt; %base-packages
-$6 = <span style="color: #61bfff;">(</span>#&lt;package guix-icons@0.1 gnu/packages/package-management.scm:629 7f1836ad24d0&gt; #&lt;package less@608 gnu/packages/less.scm:38 7f183a855210&gt; #&lt;package mg@20221112 gnu/packages/text-editors.scm:502 7f1836bad370&gt; #&lt;package nano@7.2 gnu/packages/nano.scm:32 7f18313429a0&gt; #&lt;package nvi@1.81.6 gnu/packages/nvi.scm:32 7f183042bd10&gt; #&lt;package man-db@2.11.1 gnu/packages/man.scm:128 7f182f1f2d10&gt; #&lt;package info-reader@6.8 gnu/packages/texinfo.scm:195 7f182f720bb0&gt; #&lt;package bash-completion@2.11 gnu/packages/bash.scm:301 7f182f513370&gt; #&lt;package kbd@2.5.1 gnu/packages/linux.scm:3908 7f18311676e0&gt; #&lt;package sudo@1.9.13p2 gnu/packages/admin.scm:1958 7f182fc84d10&gt; #&lt;package guile-readline@3.0.9 gnu/packages/guile.scm:483 7f182f01c0b0&gt; #&lt;package guile-colorized@0.1 gnu/packages/guile-xyz.scm:1130 7f182f55fc60&gt; #&lt;package pciutils@3.8.0 gnu/packages/pciutils.scm:82 7f1836d19210&gt; #&lt;package usbutils@015 gnu/packages/linux.scm:2372 7f183114d420&gt; #&lt;package util-linux-with-udev@2.37.4 gnu/packages/linux.scm:2218 7f183114d790&gt; #&lt;package kmod@29 gnu/packages/linux.scm:4035 7f18311674d0&gt; #&lt;package eudev@3.2.11 gnu/packages/linux.scm:4145 7f1831167370&gt; #&lt;package inetutils@2.3 gnu/packages/admin.scm:893 7f182fc83b00&gt; #&lt;package isc-dhcp@4.4.3-P1 gnu/packages/admin.scm:1399 7f182fc83420&gt; #&lt;package iproute2@6.0.0 gnu/packages/linux.scm:3087 7f1831166630&gt; #&lt;package wget@1.21.3.24 gnu/packages/wget.scm:47 7f182f321f20&gt; #&lt;package iw@5.19 gnu/packages/linux.scm:3389 7f1831166160&gt; #&lt;package wireless-tools@30.pre9 gnu/packages/linux.scm:4507 7f1831181dc0&gt; #&lt;package procps@4.0.3 gnu/packages/linux.scm:2327 7f183114d4d0&gt; #&lt;package psmisc@23.5 gnu/packages/linux.scm:2044 7f183114d8f0&gt; #&lt;package which@2.21 gnu/packages/base.scm:1399 7f1830412000&gt; #&lt;package shadow@4.13 gnu/packages/admin.scm:950 7f182fc83a50&gt; #&lt;package e2fsprogs@1.46.4 gnu/packages/linux.scm:2446 7f183114d2c0&gt; #&lt;package guile@3.0.9 gnu/packages/guile.scm:317 7f182f01c2c0&gt; #&lt;package bash@5.1.16 gnu/packages/bash.scm:133 7f182f5136e0&gt; #&lt;package coreutils@9.1 gnu/packages/base.scm:365 7f182f1fd9a0&gt; #&lt;package findutils@4.9.0 gnu/packages/base.scm:327 7f182f1fda50&gt; #&lt;package grep@3.8 gnu/packages/base.scm:108 7f182f1fddc0&gt; #&lt;package sed@4.8 gnu/packages/base.scm:163 7f182f1fdd10&gt; #&lt;package diffutils@3.8 gnu/packages/base.scm:299 7f182f1fdb00&gt; #&lt;package patch@2.7.6 gnu/packages/base.scm:269 7f182f1fdbb0&gt; #&lt;package gawk@5.2.1 gnu/packages/gawk.scm:40 7f182f16b370&gt; #&lt;package tar@1.34 gnu/packages/base.scm:204 7f182f1fdc60&gt; #&lt;package gzip@1.12 gnu/packages/compression.scm:251 7f182f416630&gt; #&lt;package bzip2@1.0.8 gnu/packages/compression.scm:288 7f182f416580&gt; #&lt;package xz@5.2.8 gnu/packages/compression.scm:494 7f182f416370&gt; #&lt;package lzip@1.23 gnu/packages/compression.scm:625 7f182f4160b0&gt;<span style="color: #61bfff;">)</span>
+<pre class="src src-scheme">scheme@<span style="color: #707183;">(</span>guile-user<span style="color: #707183;">)</span>&gt; %base-packages
+$6 = <span style="color: #707183;">(</span>#&lt;package guix-icons@0.1 gnu/packages/package-management.scm:629 7f1836ad24d0&gt; #&lt;package less@608 gnu/packages/less.scm:38 7f183a855210&gt; #&lt;package mg@20221112 gnu/packages/text-editors.scm:502 7f1836bad370&gt; #&lt;package nano@7.2 gnu/packages/nano.scm:32 7f18313429a0&gt; #&lt;package nvi@1.81.6 gnu/packages/nvi.scm:32 7f183042bd10&gt; #&lt;package man-db@2.11.1 gnu/packages/man.scm:128 7f182f1f2d10&gt; #&lt;package info-reader@6.8 gnu/packages/texinfo.scm:195 7f182f720bb0&gt; #&lt;package bash-completion@2.11 gnu/packages/bash.scm:301 7f182f513370&gt; #&lt;package kbd@2.5.1 gnu/packages/linux.scm:3908 7f18311676e0&gt; #&lt;package sudo@1.9.13p2 gnu/packages/admin.scm:1958 7f182fc84d10&gt; #&lt;package guile-readline@3.0.9 gnu/packages/guile.scm:483 7f182f01c0b0&gt; #&lt;package guile-colorized@0.1 gnu/packages/guile-xyz.scm:1130 7f182f55fc60&gt; #&lt;package pciutils@3.8.0 gnu/packages/pciutils.scm:82 7f1836d19210&gt; #&lt;package usbutils@015 gnu/packages/linux.scm:2372 7f183114d420&gt; #&lt;package util-linux-with-udev@2.37.4 gnu/packages/linux.scm:2218 7f183114d790&gt; #&lt;package kmod@29 gnu/packages/linux.scm:4035 7f18311674d0&gt; #&lt;package eudev@3.2.11 gnu/packages/linux.scm:4145 7f1831167370&gt; #&lt;package inetutils@2.3 gnu/packages/admin.scm:893 7f182fc83b00&gt; #&lt;package isc-dhcp@4.4.3-P1 gnu/packages/admin.scm:1399 7f182fc83420&gt; #&lt;package iproute2@6.0.0 gnu/packages/linux.scm:3087 7f1831166630&gt; #&lt;package wget@1.21.3.24 gnu/packages/wget.scm:47 7f182f321f20&gt; #&lt;package iw@5.19 gnu/packages/linux.scm:3389 7f1831166160&gt; #&lt;package wireless-tools@30.pre9 gnu/packages/linux.scm:4507 7f1831181dc0&gt; #&lt;package procps@4.0.3 gnu/packages/linux.scm:2327 7f183114d4d0&gt; #&lt;package psmisc@23.5 gnu/packages/linux.scm:2044 7f183114d8f0&gt; #&lt;package which@2.21 gnu/packages/base.scm:1399 7f1830412000&gt; #&lt;package shadow@4.13 gnu/packages/admin.scm:950 7f182fc83a50&gt; #&lt;package e2fsprogs@1.46.4 gnu/packages/linux.scm:2446 7f183114d2c0&gt; #&lt;package guile@3.0.9 gnu/packages/guile.scm:317 7f182f01c2c0&gt; #&lt;package bash@5.1.16 gnu/packages/bash.scm:133 7f182f5136e0&gt; #&lt;package coreutils@9.1 gnu/packages/base.scm:365 7f182f1fd9a0&gt; #&lt;package findutils@4.9.0 gnu/packages/base.scm:327 7f182f1fda50&gt; #&lt;package grep@3.8 gnu/packages/base.scm:108 7f182f1fddc0&gt; #&lt;package sed@4.8 gnu/packages/base.scm:163 7f182f1fdd10&gt; #&lt;package diffutils@3.8 gnu/packages/base.scm:299 7f182f1fdb00&gt; #&lt;package patch@2.7.6 gnu/packages/base.scm:269 7f182f1fdbb0&gt; #&lt;package gawk@5.2.1 gnu/packages/gawk.scm:40 7f182f16b370&gt; #&lt;package tar@1.34 gnu/packages/base.scm:204 7f182f1fdc60&gt; #&lt;package gzip@1.12 gnu/packages/compression.scm:251 7f182f416630&gt; #&lt;package bzip2@1.0.8 gnu/packages/compression.scm:288 7f182f416580&gt; #&lt;package xz@5.2.8 gnu/packages/compression.scm:494 7f182f416370&gt; #&lt;package lzip@1.23 gnu/packages/compression.scm:625 7f182f4160b0&gt;<span style="color: #707183;">)</span>
 </pre>
 </div>
 
@@ -437,8 +437,8 @@ This output isn't particularly easy to parse, but it does tell us a few things. 
 I'm not entirely sure what the keys and their accessors are at this point, but I'll guess there's a <code>package-name</code> function. With this I can get a better look at the default package list.
 </p>
 <div class="org-src-container">
-<pre class="src src-scheme">scheme@<span style="color: #61bfff;">(</span>guile-user<span style="color: #61bfff;">)</span>&gt; <span style="color: #61bfff;">(</span><span style="color: #ff79c6;">map</span> package-name %base-packages<span style="color: #61bfff;">)</span>
-$7 = <span style="color: #61bfff;">(</span><span style="color: #f1fa8c;">"guix-icons"</span> <span style="color: #f1fa8c;">"less"</span> <span style="color: #f1fa8c;">"mg"</span> <span style="color: #f1fa8c;">"nano"</span> <span style="color: #f1fa8c;">"nvi"</span> <span style="color: #f1fa8c;">"man-db"</span> <span style="color: #f1fa8c;">"info-reader"</span> <span style="color: #f1fa8c;">"bash-completion"</span> <span style="color: #f1fa8c;">"kbd"</span> <span style="color: #f1fa8c;">"sudo"</span> <span style="color: #f1fa8c;">"guile-readline"</span> <span style="color: #f1fa8c;">"guile-colorized"</span> <span style="color: #f1fa8c;">"pciutils"</span> <span style="color: #f1fa8c;">"usbutils"</span> <span style="color: #f1fa8c;">"util-linux-with-udev"</span> <span style="color: #f1fa8c;">"kmod"</span> <span style="color: #f1fa8c;">"eudev"</span> <span style="color: #f1fa8c;">"inetutils"</span> <span style="color: #f1fa8c;">"isc-dhcp"</span> <span style="color: #f1fa8c;">"iproute2"</span> <span style="color: #f1fa8c;">"wget"</span> <span style="color: #f1fa8c;">"iw"</span> <span style="color: #f1fa8c;">"wireless-tools"</span> <span style="color: #f1fa8c;">"procps"</span> <span style="color: #f1fa8c;">"psmisc"</span> <span style="color: #f1fa8c;">"which"</span> <span style="color: #f1fa8c;">"shadow"</span> <span style="color: #f1fa8c;">"e2fsprogs"</span> <span style="color: #f1fa8c;">"guile"</span> <span style="color: #f1fa8c;">"bash"</span> <span style="color: #f1fa8c;">"coreutils"</span> <span style="color: #f1fa8c;">"findutils"</span> <span style="color: #f1fa8c;">"grep"</span> <span style="color: #f1fa8c;">"sed"</span> <span style="color: #f1fa8c;">"diffutils"</span> <span style="color: #f1fa8c;">"patch"</span> <span style="color: #f1fa8c;">"gawk"</span> <span style="color: #f1fa8c;">"tar"</span> <span style="color: #f1fa8c;">"gzip"</span> <span style="color: #f1fa8c;">"bzip2"</span> <span style="color: #f1fa8c;">"xz"</span> <span style="color: #f1fa8c;">"lzip"</span><span style="color: #61bfff;">)</span>
+<pre class="src src-scheme">scheme@<span style="color: #707183;">(</span>guile-user<span style="color: #707183;">)</span>&gt; <span style="color: #707183;">(</span><span style="color: #0000FF;">map</span> package-name %base-packages<span style="color: #707183;">)</span>
+$7 = <span style="color: #707183;">(</span><span style="color: #008000;">"guix-icons"</span> <span style="color: #008000;">"less"</span> <span style="color: #008000;">"mg"</span> <span style="color: #008000;">"nano"</span> <span style="color: #008000;">"nvi"</span> <span style="color: #008000;">"man-db"</span> <span style="color: #008000;">"info-reader"</span> <span style="color: #008000;">"bash-completion"</span> <span style="color: #008000;">"kbd"</span> <span style="color: #008000;">"sudo"</span> <span style="color: #008000;">"guile-readline"</span> <span style="color: #008000;">"guile-colorized"</span> <span style="color: #008000;">"pciutils"</span> <span style="color: #008000;">"usbutils"</span> <span style="color: #008000;">"util-linux-with-udev"</span> <span style="color: #008000;">"kmod"</span> <span style="color: #008000;">"eudev"</span> <span style="color: #008000;">"inetutils"</span> <span style="color: #008000;">"isc-dhcp"</span> <span style="color: #008000;">"iproute2"</span> <span style="color: #008000;">"wget"</span> <span style="color: #008000;">"iw"</span> <span style="color: #008000;">"wireless-tools"</span> <span style="color: #008000;">"procps"</span> <span style="color: #008000;">"psmisc"</span> <span style="color: #008000;">"which"</span> <span style="color: #008000;">"shadow"</span> <span style="color: #008000;">"e2fsprogs"</span> <span style="color: #008000;">"guile"</span> <span style="color: #008000;">"bash"</span> <span style="color: #008000;">"coreutils"</span> <span style="color: #008000;">"findutils"</span> <span style="color: #008000;">"grep"</span> <span style="color: #008000;">"sed"</span> <span style="color: #008000;">"diffutils"</span> <span style="color: #008000;">"patch"</span> <span style="color: #008000;">"gawk"</span> <span style="color: #008000;">"tar"</span> <span style="color: #008000;">"gzip"</span> <span style="color: #008000;">"bzip2"</span> <span style="color: #008000;">"xz"</span> <span style="color: #008000;">"lzip"</span><span style="color: #707183;">)</span>
 </pre>
 </div>
 <p>
@@ -449,7 +449,7 @@ Great, this is much more readable!
 Seeing as <code>%base-packages</code> is actually just a list, I can also see how easy it is to manipulate it - let's remove <code>nano</code> from the default packages using a simple lambda filter.
 </p>
 <div class="org-src-container">
-<pre class="src src-scheme"><span style="color: #61bfff;">(</span>remove <span style="color: #ff79c6;">(</span><span style="color: #ff79c6;">lambda</span> <span style="color: #50fa7b;">(</span>pkg<span style="color: #50fa7b;">)</span> <span style="color: #50fa7b;">(</span>string= <span style="color: #bd93f9;">(</span>package-name pkg<span style="color: #bd93f9;">)</span> <span style="color: #f1fa8c;">"nano"</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span> %base-packages<span style="color: #61bfff;">)</span>
+<pre class="src src-scheme"><span style="color: #707183;">(</span>remove <span style="color: #7388D6;">(</span><span style="color: #0000FF;">lambda</span> <span style="color: #909183;">(</span>pkg<span style="color: #909183;">)</span> <span style="color: #909183;">(</span>string= <span style="color: #709870;">(</span>package-name pkg<span style="color: #709870;">)</span> <span style="color: #008000;">"nano"</span><span style="color: #909183;">)</span><span style="color: #7388D6;">)</span> %base-packages<span style="color: #707183;">)</span>
 </pre>
 </div>
 <p>
@@ -470,21 +470,21 @@ Looking into the <code>packages</code> section of my system configuration I noti
 </p>
 
 <div class="org-src-container">
-<pre class="src src-scheme"><span style="color: #61bfff;">(</span>packages
- <span style="color: #ff79c6;">(</span>append
-  <span style="color: #50fa7b;">(</span><span style="color: #ff79c6;">map</span> specification-&gt;package
-       <span style="color: #bd93f9;">(</span>list
-        <span style="color: #f1fa8c;">"nss-certs"</span>
-        <span style="color: #f1fa8c;">"xf86-video-amdgpu"</span>
-        <span style="color: #f1fa8c;">"amdgpu-firmware"</span>
-        <span style="color: #f1fa8c;">"bluez"</span>
-        <span style="color: #f1fa8c;">"blueman"</span>
-        <span style="color: #f1fa8c;">"vim"</span>
-        <span style="color: #f1fa8c;">"sway"</span>
-        <span style="color: #f1fa8c;">"wofi"</span>
-        <span style="color: #f1fa8c;">"libratbag"</span>
-        <span style="color: #f1fa8c;">"git"</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span>
-  %base-packages<span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+<pre class="src src-scheme"><span style="color: #707183;">(</span>packages
+ <span style="color: #7388D6;">(</span>append
+  <span style="color: #909183;">(</span><span style="color: #0000FF;">map</span> specification-&gt;package
+       <span style="color: #709870;">(</span>list
+        <span style="color: #008000;">"nss-certs"</span>
+        <span style="color: #008000;">"xf86-video-amdgpu"</span>
+        <span style="color: #008000;">"amdgpu-firmware"</span>
+        <span style="color: #008000;">"bluez"</span>
+        <span style="color: #008000;">"blueman"</span>
+        <span style="color: #008000;">"vim"</span>
+        <span style="color: #008000;">"sway"</span>
+        <span style="color: #008000;">"wofi"</span>
+        <span style="color: #008000;">"libratbag"</span>
+        <span style="color: #008000;">"git"</span><span style="color: #709870;">)</span><span style="color: #909183;">)</span>
+  %base-packages<span style="color: #7388D6;">)</span><span style="color: #707183;">)</span>
 </pre>
 </div>
 
@@ -492,12 +492,12 @@ Looking into the <code>packages</code> section of my system configuration I noti
 In essence it looks like <code>(specification-&gt;package)</code> takes a package name string and returns the first matching package definition it finds. I can verify this by looking at the definition of this function.
 </p>
 <div class="org-src-container">
-<pre class="src src-scheme"><span style="color: #61bfff;">(</span><span style="color: #ff79c6;">define</span> <span style="color: #ff79c6;">(</span><span style="color: #50fa7b;">specification-&gt;package</span> spec<span style="color: #ff79c6;">)</span>
-  <span style="color: #f1fa8c;">"Return a package matching SPEC.  SPEC may be a package name, or a package</span>
-<span style="color: #f1fa8c;">name followed by an at-sign and a version number.  If the version number is not</span>
-<span style="color: #f1fa8c;">present, return the preferred newest version."</span>
-  <span style="color: #ff79c6;">(</span><span style="color: #ff79c6;">let</span> <span style="color: #50fa7b;">(</span><span style="color: #bd93f9;">(</span>name version <span style="color: #0189cc;">(</span>package-name-&gt;name+version spec<span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span>
-    <span style="color: #50fa7b;">(</span>%find-package spec name version<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+<pre class="src src-scheme"><span style="color: #707183;">(</span><span style="color: #0000FF;">define</span> <span style="color: #7388D6;">(</span><span style="color: #006699;">specification-&gt;package</span> spec<span style="color: #7388D6;">)</span>
+  <span style="color: #008000;">"Return a package matching SPEC.  SPEC may be a package name, or a package</span>
+<span style="color: #008000;">name followed by an at-sign and a version number.  If the version number is not</span>
+<span style="color: #008000;">present, return the preferred newest version."</span>
+  <span style="color: #7388D6;">(</span><span style="color: #0000FF;">let</span> <span style="color: #909183;">(</span><span style="color: #709870;">(</span>name version <span style="color: #907373;">(</span>package-name-&gt;name+version spec<span style="color: #907373;">)</span><span style="color: #709870;">)</span><span style="color: #909183;">)</span>
+    <span style="color: #909183;">(</span>%find-package spec name version<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span><span style="color: #707183;">)</span>
 </pre>
 </div>
 <p>
@@ -514,60 +514,60 @@ Let's look into the <code>package</code> record next. This one already looks ver
 </p>
 
 <div class="org-src-container">
-<pre class="src src-scheme"><span style="color: #61bfff;">(</span>define-record-type* <span style="color: #bd93f9;">&lt;package&gt;</span>
+<pre class="src src-scheme"><span style="color: #707183;">(</span>define-record-type* <span style="color: #6434A3;">&lt;package&gt;</span>
   package make-package
   package?
   this-package
-  <span style="color: #ff79c6;">(</span>name   package-name<span style="color: #ff79c6;">)</span>                   <span style="color: #6272a4;">; </span><span style="color: #6272a4;">string</span>
-  <span style="color: #ff79c6;">(</span>version package-version<span style="color: #ff79c6;">)</span>               <span style="color: #6272a4;">; </span><span style="color: #6272a4;">string</span>
-  <span style="color: #ff79c6;">(</span>source package-source<span style="color: #ff79c6;">)</span>                 <span style="color: #6272a4;">; </span><span style="color: #6272a4;">&lt;origin&gt; instance</span>
-  <span style="color: #ff79c6;">(</span>build-system package-build-system<span style="color: #ff79c6;">)</span>     <span style="color: #6272a4;">; </span><span style="color: #6272a4;">&lt;build-system&gt; instance</span>
-  <span style="color: #ff79c6;">(</span>arguments package-arguments            <span style="color: #6272a4;">; </span><span style="color: #6272a4;">arguments for the build method</span>
-             <span style="color: #50fa7b;">(</span>default '<span style="color: #bd93f9;">()</span><span style="color: #50fa7b;">)</span> <span style="color: #50fa7b;">(</span>thunked<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+  <span style="color: #7388D6;">(</span>name   package-name<span style="color: #7388D6;">)</span>                   <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">string</span>
+  <span style="color: #7388D6;">(</span>version package-version<span style="color: #7388D6;">)</span>               <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">string</span>
+  <span style="color: #7388D6;">(</span>source package-source<span style="color: #7388D6;">)</span>                 <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">&lt;origin&gt; instance</span>
+  <span style="color: #7388D6;">(</span>build-system package-build-system<span style="color: #7388D6;">)</span>     <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">&lt;build-system&gt; instance</span>
+  <span style="color: #7388D6;">(</span>arguments package-arguments            <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">arguments for the build method</span>
+             <span style="color: #909183;">(</span>default '<span style="color: #709870;">()</span><span style="color: #909183;">)</span> <span style="color: #909183;">(</span>thunked<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
 
-  <span style="color: #ff79c6;">(</span>inputs package-inputs                  <span style="color: #6272a4;">; </span><span style="color: #6272a4;">input packages or derivations</span>
-          <span style="color: #50fa7b;">(</span>default '<span style="color: #bd93f9;">()</span><span style="color: #50fa7b;">)</span> <span style="color: #50fa7b;">(</span>thunked<span style="color: #50fa7b;">)</span>
-          <span style="color: #50fa7b;">(</span>sanitize sanitize-inputs<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
-  <span style="color: #ff79c6;">(</span>propagated-inputs package-propagated-inputs    <span style="color: #6272a4;">; </span><span style="color: #6272a4;">same, but propagated</span>
-                     <span style="color: #50fa7b;">(</span>default '<span style="color: #bd93f9;">()</span><span style="color: #50fa7b;">)</span> <span style="color: #50fa7b;">(</span>thunked<span style="color: #50fa7b;">)</span>
-                     <span style="color: #50fa7b;">(</span>sanitize sanitize-inputs<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
-  <span style="color: #ff79c6;">(</span>native-inputs package-native-inputs    <span style="color: #6272a4;">; </span><span style="color: #6272a4;">native input packages/derivations</span>
-                 <span style="color: #50fa7b;">(</span>default '<span style="color: #bd93f9;">()</span><span style="color: #50fa7b;">)</span> <span style="color: #50fa7b;">(</span>thunked<span style="color: #50fa7b;">)</span>
-                 <span style="color: #50fa7b;">(</span>sanitize sanitize-inputs<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+  <span style="color: #7388D6;">(</span>inputs package-inputs                  <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">input packages or derivations</span>
+          <span style="color: #909183;">(</span>default '<span style="color: #709870;">()</span><span style="color: #909183;">)</span> <span style="color: #909183;">(</span>thunked<span style="color: #909183;">)</span>
+          <span style="color: #909183;">(</span>sanitize sanitize-inputs<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
+  <span style="color: #7388D6;">(</span>propagated-inputs package-propagated-inputs    <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">same, but propagated</span>
+                     <span style="color: #909183;">(</span>default '<span style="color: #709870;">()</span><span style="color: #909183;">)</span> <span style="color: #909183;">(</span>thunked<span style="color: #909183;">)</span>
+                     <span style="color: #909183;">(</span>sanitize sanitize-inputs<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
+  <span style="color: #7388D6;">(</span>native-inputs package-native-inputs    <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">native input packages/derivations</span>
+                 <span style="color: #909183;">(</span>default '<span style="color: #709870;">()</span><span style="color: #909183;">)</span> <span style="color: #909183;">(</span>thunked<span style="color: #909183;">)</span>
+                 <span style="color: #909183;">(</span>sanitize sanitize-inputs<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
 
-  <span style="color: #ff79c6;">(</span>outputs package-outputs                <span style="color: #6272a4;">; </span><span style="color: #6272a4;">list of strings</span>
-           <span style="color: #50fa7b;">(</span>default '<span style="color: #bd93f9;">(</span><span style="color: #f1fa8c;">"out"</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+  <span style="color: #7388D6;">(</span>outputs package-outputs                <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">list of strings</span>
+           <span style="color: #909183;">(</span>default '<span style="color: #709870;">(</span><span style="color: #008000;">"out"</span><span style="color: #709870;">)</span><span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
 
-                                                  <span style="color: #6272a4;">; </span><span style="color: #6272a4;">lists of</span>
-                                                  <span style="color: #6272a4;">; </span><span style="color: #6272a4;">&lt;search-path-specification&gt;,</span>
-                                                  <span style="color: #6272a4;">; </span><span style="color: #6272a4;">for native and cross</span>
-                                                  <span style="color: #6272a4;">; </span><span style="color: #6272a4;">inputs</span>
-  <span style="color: #ff79c6;">(</span>native-search-paths package-native-search-paths <span style="color: #50fa7b;">(</span>default '<span style="color: #bd93f9;">()</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
-  <span style="color: #ff79c6;">(</span>search-paths package-search-paths <span style="color: #50fa7b;">(</span>default '<span style="color: #bd93f9;">()</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+                                                  <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">lists of</span>
+                                                  <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">&lt;search-path-specification&gt;,</span>
+                                                  <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">for native and cross</span>
+                                                  <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">inputs</span>
+  <span style="color: #7388D6;">(</span>native-search-paths package-native-search-paths <span style="color: #909183;">(</span>default '<span style="color: #709870;">()</span><span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
+  <span style="color: #7388D6;">(</span>search-paths package-search-paths <span style="color: #909183;">(</span>default '<span style="color: #709870;">()</span><span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
 
-  <span style="color: #6272a4;">;; </span><span style="color: #6272a4;">The 'replacement' field is marked as "innate" because it never makes</span>
-  <span style="color: #6272a4;">;; </span><span style="color: #6272a4;">sense to inherit a replacement as is.  See the 'package/inherit' macro.</span>
-  <span style="color: #ff79c6;">(</span>replacement package-replacement                <span style="color: #6272a4;">; </span><span style="color: #6272a4;">package | #f</span>
-               <span style="color: #50fa7b;">(</span>default #f<span style="color: #50fa7b;">)</span> <span style="color: #50fa7b;">(</span>thunked<span style="color: #50fa7b;">)</span> <span style="color: #50fa7b;">(</span>innate<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+  <span style="color: #8D8D84; font-style: italic;">;; </span><span style="color: #8D8D84; font-style: italic;">The 'replacement' field is marked as "innate" because it never makes</span>
+  <span style="color: #8D8D84; font-style: italic;">;; </span><span style="color: #8D8D84; font-style: italic;">sense to inherit a replacement as is.  See the 'package/inherit' macro.</span>
+  <span style="color: #7388D6;">(</span>replacement package-replacement                <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">package | #f</span>
+               <span style="color: #909183;">(</span>default #f<span style="color: #909183;">)</span> <span style="color: #909183;">(</span>thunked<span style="color: #909183;">)</span> <span style="color: #909183;">(</span>innate<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
 
-  <span style="color: #ff79c6;">(</span>synopsis package-synopsis
-            <span style="color: #50fa7b;">(</span>sanitize validate-texinfo<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>          <span style="color: #6272a4;">; </span><span style="color: #6272a4;">one-line description</span>
-  <span style="color: #ff79c6;">(</span>description package-description
-               <span style="color: #50fa7b;">(</span>sanitize validate-texinfo<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>       <span style="color: #6272a4;">; </span><span style="color: #6272a4;">one or two paragraphs</span>
-  <span style="color: #ff79c6;">(</span>license package-license                        <span style="color: #6272a4;">; </span><span style="color: #6272a4;">(list of) &lt;license&gt;</span>
-           <span style="color: #50fa7b;">(</span>sanitize validate-license<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
-  <span style="color: #ff79c6;">(</span>home-page package-home-page<span style="color: #ff79c6;">)</span>                   <span style="color: #6272a4;">; </span><span style="color: #6272a4;">string</span>
-  <span style="color: #ff79c6;">(</span>supported-systems package-supported-systems    <span style="color: #6272a4;">; </span><span style="color: #6272a4;">list of strings</span>
-                     <span style="color: #50fa7b;">(</span>default %supported-systems<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+  <span style="color: #7388D6;">(</span>synopsis package-synopsis
+            <span style="color: #909183;">(</span>sanitize validate-texinfo<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>          <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">one-line description</span>
+  <span style="color: #7388D6;">(</span>description package-description
+               <span style="color: #909183;">(</span>sanitize validate-texinfo<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>       <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">one or two paragraphs</span>
+  <span style="color: #7388D6;">(</span>license package-license                        <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">(list of) &lt;license&gt;</span>
+           <span style="color: #909183;">(</span>sanitize validate-license<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
+  <span style="color: #7388D6;">(</span>home-page package-home-page<span style="color: #7388D6;">)</span>                   <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">string</span>
+  <span style="color: #7388D6;">(</span>supported-systems package-supported-systems    <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">list of strings</span>
+                     <span style="color: #909183;">(</span>default %supported-systems<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
 
-  <span style="color: #ff79c6;">(</span>properties package-properties <span style="color: #50fa7b;">(</span>default '<span style="color: #bd93f9;">()</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>   <span style="color: #6272a4;">; </span><span style="color: #6272a4;">alist for anything else</span>
+  <span style="color: #7388D6;">(</span>properties package-properties <span style="color: #909183;">(</span>default '<span style="color: #709870;">()</span><span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>   <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">alist for anything else</span>
 
-  <span style="color: #ff79c6;">(</span>location package-location-vector
-            <span style="color: #50fa7b;">(</span>default <span style="color: #bd93f9;">(</span>current-location-vector<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span>
-            <span style="color: #50fa7b;">(</span>innate<span style="color: #50fa7b;">)</span> <span style="color: #50fa7b;">(</span>sanitize sanitize-location<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
-  <span style="color: #ff79c6;">(</span>definition-location package-definition-location-code
-                       <span style="color: #50fa7b;">(</span>default <span style="color: #bd93f9;">(</span>current-definition-location<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span>
-                       <span style="color: #50fa7b;">(</span>innate<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+  <span style="color: #7388D6;">(</span>location package-location-vector
+            <span style="color: #909183;">(</span>default <span style="color: #709870;">(</span>current-location-vector<span style="color: #709870;">)</span><span style="color: #909183;">)</span>
+            <span style="color: #909183;">(</span>innate<span style="color: #909183;">)</span> <span style="color: #909183;">(</span>sanitize sanitize-location<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
+  <span style="color: #7388D6;">(</span>definition-location package-definition-location-code
+                       <span style="color: #909183;">(</span>default <span style="color: #709870;">(</span>current-definition-location<span style="color: #709870;">)</span><span style="color: #909183;">)</span>
+                       <span style="color: #909183;">(</span>innate<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span><span style="color: #707183;">)</span>
 </pre>
 </div>
 <p>
@@ -578,10 +578,10 @@ So packages really are just bog standard records!
 So yet again we can use this knowledge to do some fancy stuff. Let's check the inputs of the <code>curl</code> package as an example. 
 </p>
 <div class="org-src-container">
-<pre class="src src-scheme">scheme@<span style="color: #61bfff;">(</span>guile-user<span style="color: #61bfff;">)</span>&gt; ,use<span style="color: #61bfff;">(</span>gnu packages curl<span style="color: #61bfff;">)</span>
+<pre class="src src-scheme">scheme@<span style="color: #707183;">(</span>guile-user<span style="color: #707183;">)</span>&gt; ,use<span style="color: #707183;">(</span>gnu packages curl<span style="color: #707183;">)</span>
 
-scheme@<span style="color: #61bfff;">(</span>guile-user<span style="color: #61bfff;">)</span>&gt; <span style="color: #61bfff;">(</span><span style="color: #ff79c6;">map</span> car <span style="color: #ff79c6;">(</span>package-inputs curl<span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
-$14 = <span style="color: #61bfff;">(</span><span style="color: #f1fa8c;">"gnutls"</span> <span style="color: #f1fa8c;">"libidn"</span> <span style="color: #f1fa8c;">"mit-krb5"</span> <span style="color: #f1fa8c;">"nghttp2"</span> <span style="color: #f1fa8c;">"zlib"</span><span style="color: #61bfff;">)</span>
+scheme@<span style="color: #707183;">(</span>guile-user<span style="color: #707183;">)</span>&gt; <span style="color: #707183;">(</span><span style="color: #0000FF;">map</span> car <span style="color: #7388D6;">(</span>package-inputs curl<span style="color: #7388D6;">)</span><span style="color: #707183;">)</span>
+$14 = <span style="color: #707183;">(</span><span style="color: #008000;">"gnutls"</span> <span style="color: #008000;">"libidn"</span> <span style="color: #008000;">"mit-krb5"</span> <span style="color: #008000;">"nghttp2"</span> <span style="color: #008000;">"zlib"</span><span style="color: #707183;">)</span>
 </pre>
 </div>
 <p>
@@ -594,59 +594,59 @@ You may be unfamiliar with a lot of these functions, but don't worry about that 
 (also nevermind the ugly hacks, this is a package strictly for personal use&#x2026;).
 </p>
 <div class="org-src-container">
-<pre class="src src-scheme"><span style="color: #61bfff;">(</span><span style="color: #ff79c6;">define-public</span> <span style="color: #50fa7b;">brogue-ce</span>
-  <span style="color: #ff79c6;">(</span>package
-   <span style="color: #50fa7b;">(</span>name <span style="color: #f1fa8c;">"brogue-ce"</span><span style="color: #50fa7b;">)</span>
-   <span style="color: #50fa7b;">(</span>version <span style="color: #f1fa8c;">"1.12"</span><span style="color: #50fa7b;">)</span>
-   <span style="color: #50fa7b;">(</span>source <span style="color: #bd93f9;">(</span>origin
-            <span style="color: #0189cc;">(</span>method url-fetch<span style="color: #0189cc;">)</span>
-            <span style="color: #0189cc;">(</span>uri <span style="color: #61bfff;">(</span>string-append <span style="color: #f1fa8c;">"https://github.com/tmewett/BrogueCE/archive/refs/tags/v"</span> version
-                                <span style="color: #f1fa8c;">".tar.gz"</span><span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span>
-            <span style="color: #0189cc;">(</span>sha256
-             <span style="color: #61bfff;">(</span>base32
-              <span style="color: #f1fa8c;">"0a6l7j91iq0mv7zrxnlxx6ll5rfwvgfyk5h1gc9m5qzll1n3zvdf"</span><span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span>
-   <span style="color: #50fa7b;">(</span>build-system gnu-build-system<span style="color: #50fa7b;">)</span>
-   <span style="color: #50fa7b;">(</span>arguments
-    <span style="color: #bd93f9;">(</span>list 
-     <span style="color: #ffb86c;">#:make-flags</span> #~<span style="color: #0189cc;">(</span>list <span style="color: #f1fa8c;">"CC=gcc"</span><span style="color: #0189cc;">)</span>
-     <span style="color: #ffb86c;">#:tests?</span> #f
-     <span style="color: #ffb86c;">#:phases</span>
-     #~<span style="color: #0189cc;">(</span>modify-phases %standard-phases
-                      <span style="color: #61bfff;">(</span>delete 'configure<span style="color: #61bfff;">)</span>
-                      <span style="color: #61bfff;">(</span>add-before 'build 'change-datadir-path
-                                  <span style="color: #ff79c6;">(</span><span style="color: #ff79c6;">lambda</span> _
-                                    <span style="color: #50fa7b;">(</span><span style="color: #ff79c6;">map</span>
-                                     <span style="color: #bd93f9;">(</span><span style="color: #ff79c6;">lambda</span> <span style="color: #61bfff;">(</span>substitutes<span style="color: #61bfff;">)</span>
-                                       <span style="color: #61bfff;">(</span>substitute* <span style="color: #f1fa8c;">"config.mk"</span>
-                                                    <span style="color: #ff79c6;">(</span><span style="color: #50fa7b;">(</span><span style="color: #bd93f9;">(</span>car substitutes<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span>
-                                                     <span style="color: #50fa7b;">(</span>cdr substitutes<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span><span style="color: #bd93f9;">)</span>
-                                     `<span style="color: #bd93f9;">(</span><span style="color: #61bfff;">(</span><span style="color: #f1fa8c;">"^DATADIR := ."</span> . ,<span style="color: #ff79c6;">(</span>string-append <span style="color: #f1fa8c;">"DATADIR := "</span> #$output <span style="color: #f1fa8c;">"/share"</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
-                                       <span style="color: #61bfff;">(</span><span style="color: #f1fa8c;">"^RELEASE := NO"</span> . <span style="color: #f1fa8c;">"RELEASE := YES"</span><span style="color: #61bfff;">)</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
-                      <span style="color: #61bfff;">(</span>replace 'install
-                               <span style="color: #ff79c6;">(</span><span style="color: #ff79c6;">lambda</span> _
-                                 <span style="color: #50fa7b;">(</span>mkdir-p <span style="color: #bd93f9;">(</span>string-append #$output <span style="color: #f1fa8c;">"/bin"</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span>
-                                 <span style="color: #50fa7b;">(</span>copy-file <span style="color: #f1fa8c;">"bin/brogue"</span> <span style="color: #bd93f9;">(</span>string-append #$output <span style="color: #f1fa8c;">"/bin/.brogue_real"</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span>
-                                 <span style="color: #50fa7b;">(</span><span style="color: #ff79c6;">call-with-output-file</span> <span style="color: #bd93f9;">(</span>string-append #$output <span style="color: #f1fa8c;">"/bin/brogue"</span><span style="color: #bd93f9;">)</span> <span style="color: #6272a4;">; </span><span style="color: #6272a4;">Wrap around executable and execute in ~/.local</span>
-                                   <span style="color: #bd93f9;">(</span><span style="color: #ff79c6;">lambda</span> <span style="color: #61bfff;">(</span>file<span style="color: #61bfff;">)</span>
-                                     <span style="color: #61bfff;">(</span>format file <span style="color: #f1fa8c;">"~A"</span> <span style="color: #ff79c6;">(</span>string-append
-                                                        <span style="color: #f1fa8c;">"mkdir -p \"$HOME/.local/share/brogue\" &amp;&amp; cd \"$HOME/.local/share/brogue\" &amp;&amp; "</span>
-                                                        #$output <span style="color: #f1fa8c;">"/bin/.brogue_real"</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span>
-                                 <span style="color: #50fa7b;">(</span>invoke <span style="color: #f1fa8c;">"chmod"</span> <span style="color: #f1fa8c;">"+x"</span> <span style="color: #bd93f9;">(</span>string-append #$output <span style="color: #f1fa8c;">"/bin/brogue"</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span>
-                                 <span style="color: #50fa7b;">(</span>copy-recursively <span style="color: #f1fa8c;">"bin/assets"</span> <span style="color: #bd93f9;">(</span>string-append #$output <span style="color: #f1fa8c;">"/share/assets"</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span>
-                                 <span style="color: #50fa7b;">(</span>make-desktop-entry-file
-                                  <span style="color: #bd93f9;">(</span>string-append  #$output <span style="color: #f1fa8c;">"/share/applications/brogue.desktop"</span><span style="color: #bd93f9;">)</span>
-                                  <span style="color: #ffb86c;">#:name</span> <span style="color: #f1fa8c;">"Brogue"</span>
-                                  <span style="color: #ffb86c;">#:exec</span> <span style="color: #f1fa8c;">"brogue"</span>
-                                  <span style="color: #ffb86c;">#:categories</span> '<span style="color: #bd93f9;">(</span><span style="color: #f1fa8c;">"RolePlaying"</span> <span style="color: #f1fa8c;">"Game"</span><span style="color: #bd93f9;">)</span>
-                                  <span style="color: #ffb86c;">#:keywords</span>
-                                  '<span style="color: #bd93f9;">(</span><span style="color: #f1fa8c;">"adventure"</span> <span style="color: #f1fa8c;">"singleplayer"</span><span style="color: #bd93f9;">)</span>
-                                  <span style="color: #ffb86c;">#:comment</span>
-                                  '<span style="color: #bd93f9;">(</span><span style="color: #61bfff;">(</span>#f <span style="color: #f1fa8c;">"Brave the Dungeons of Doom!"</span><span style="color: #61bfff;">)</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span>
-   <span style="color: #50fa7b;">(</span>inputs <span style="color: #bd93f9;">(</span>list <span style="color: #0189cc;">(</span>sdl-union <span style="color: #61bfff;">(</span>list sdl2 sdl2-image<span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span>
-   <span style="color: #50fa7b;">(</span>synopsis <span style="color: #f1fa8c;">"Brogue CE: A dungeon crawler roguelike"</span><span style="color: #50fa7b;">)</span>
-   <span style="color: #50fa7b;">(</span>description <span style="color: #f1fa8c;">"Community fork of Brogue"</span><span style="color: #50fa7b;">)</span>
-   <span style="color: #50fa7b;">(</span>home-page <span style="color: #f1fa8c;">"https://github.com/tmewett/BrogueCE"</span><span style="color: #50fa7b;">)</span>
-   <span style="color: #50fa7b;">(</span>license agpl3<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+<pre class="src src-scheme"><span style="color: #707183;">(</span><span style="color: #0000FF;">define-public</span> <span style="color: #006699;">brogue-ce</span>
+  <span style="color: #7388D6;">(</span>package
+   <span style="color: #909183;">(</span>name <span style="color: #008000;">"brogue-ce"</span><span style="color: #909183;">)</span>
+   <span style="color: #909183;">(</span>version <span style="color: #008000;">"1.12"</span><span style="color: #909183;">)</span>
+   <span style="color: #909183;">(</span>source <span style="color: #709870;">(</span>origin
+            <span style="color: #907373;">(</span>method url-fetch<span style="color: #907373;">)</span>
+            <span style="color: #907373;">(</span>uri <span style="color: #6276BA;">(</span>string-append <span style="color: #008000;">"https://github.com/tmewett/BrogueCE/archive/refs/tags/v"</span> version
+                                <span style="color: #008000;">".tar.gz"</span><span style="color: #6276BA;">)</span><span style="color: #907373;">)</span>
+            <span style="color: #907373;">(</span>sha256
+             <span style="color: #6276BA;">(</span>base32
+              <span style="color: #008000;">"0a6l7j91iq0mv7zrxnlxx6ll5rfwvgfyk5h1gc9m5qzll1n3zvdf"</span><span style="color: #6276BA;">)</span><span style="color: #907373;">)</span><span style="color: #709870;">)</span><span style="color: #909183;">)</span>
+   <span style="color: #909183;">(</span>build-system gnu-build-system<span style="color: #909183;">)</span>
+   <span style="color: #909183;">(</span>arguments
+    <span style="color: #709870;">(</span>list 
+     <span style="color: #006FE0;">#:make-flags</span> #~<span style="color: #907373;">(</span>list <span style="color: #008000;">"CC=gcc"</span><span style="color: #907373;">)</span>
+     <span style="color: #006FE0;">#:tests?</span> #f
+     <span style="color: #006FE0;">#:phases</span>
+     #~<span style="color: #907373;">(</span>modify-phases %standard-phases
+                      <span style="color: #6276BA;">(</span>delete 'configure<span style="color: #6276BA;">)</span>
+                      <span style="color: #6276BA;">(</span>add-before 'build 'change-datadir-path
+                                  <span style="color: #858580;">(</span><span style="color: #0000FF;">lambda</span> _
+                                    <span style="color: #80A880;">(</span><span style="color: #0000FF;">map</span>
+                                     <span style="color: #887070;">(</span><span style="color: #0000FF;">lambda</span> <span style="color: #707183;">(</span>substitutes<span style="color: #707183;">)</span>
+                                       <span style="color: #707183;">(</span>substitute* <span style="color: #008000;">"config.mk"</span>
+                                                    <span style="color: #7388D6;">(</span><span style="color: #909183;">(</span><span style="color: #709870;">(</span>car substitutes<span style="color: #709870;">)</span><span style="color: #909183;">)</span>
+                                                     <span style="color: #909183;">(</span>cdr substitutes<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span><span style="color: #707183;">)</span><span style="color: #887070;">)</span>
+                                     `<span style="color: #887070;">(</span><span style="color: #707183;">(</span><span style="color: #008000;">"^DATADIR := ."</span> . ,<span style="color: #7388D6;">(</span>string-append <span style="color: #008000;">"DATADIR := "</span> #$output <span style="color: #008000;">"/share"</span><span style="color: #7388D6;">)</span><span style="color: #707183;">)</span>
+                                       <span style="color: #707183;">(</span><span style="color: #008000;">"^RELEASE := NO"</span> . <span style="color: #008000;">"RELEASE := YES"</span><span style="color: #707183;">)</span><span style="color: #887070;">)</span><span style="color: #80A880;">)</span><span style="color: #858580;">)</span><span style="color: #6276BA;">)</span>
+                      <span style="color: #6276BA;">(</span>replace 'install
+                               <span style="color: #858580;">(</span><span style="color: #0000FF;">lambda</span> _
+                                 <span style="color: #80A880;">(</span>mkdir-p <span style="color: #887070;">(</span>string-append #$output <span style="color: #008000;">"/bin"</span><span style="color: #887070;">)</span><span style="color: #80A880;">)</span>
+                                 <span style="color: #80A880;">(</span>copy-file <span style="color: #008000;">"bin/brogue"</span> <span style="color: #887070;">(</span>string-append #$output <span style="color: #008000;">"/bin/.brogue_real"</span><span style="color: #887070;">)</span><span style="color: #80A880;">)</span>
+                                 <span style="color: #80A880;">(</span><span style="color: #0000FF;">call-with-output-file</span> <span style="color: #887070;">(</span>string-append #$output <span style="color: #008000;">"/bin/brogue"</span><span style="color: #887070;">)</span> <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">Wrap around executable and execute in ~/.local</span>
+                                   <span style="color: #887070;">(</span><span style="color: #0000FF;">lambda</span> <span style="color: #707183;">(</span>file<span style="color: #707183;">)</span>
+                                     <span style="color: #707183;">(</span>format file <span style="color: #008000;">"~A"</span> <span style="color: #7388D6;">(</span>string-append
+                                                        <span style="color: #008000;">"mkdir -p \"$HOME/.local/share/brogue\" &amp;&amp; cd \"$HOME/.local/share/brogue\" &amp;&amp; "</span>
+                                                        #$output <span style="color: #008000;">"/bin/.brogue_real"</span><span style="color: #7388D6;">)</span><span style="color: #707183;">)</span><span style="color: #887070;">)</span><span style="color: #80A880;">)</span>
+                                 <span style="color: #80A880;">(</span>invoke <span style="color: #008000;">"chmod"</span> <span style="color: #008000;">"+x"</span> <span style="color: #887070;">(</span>string-append #$output <span style="color: #008000;">"/bin/brogue"</span><span style="color: #887070;">)</span><span style="color: #80A880;">)</span>
+                                 <span style="color: #80A880;">(</span>copy-recursively <span style="color: #008000;">"bin/assets"</span> <span style="color: #887070;">(</span>string-append #$output <span style="color: #008000;">"/share/assets"</span><span style="color: #887070;">)</span><span style="color: #80A880;">)</span>
+                                 <span style="color: #80A880;">(</span>make-desktop-entry-file
+                                  <span style="color: #887070;">(</span>string-append  #$output <span style="color: #008000;">"/share/applications/brogue.desktop"</span><span style="color: #887070;">)</span>
+                                  <span style="color: #006FE0;">#:name</span> <span style="color: #008000;">"Brogue"</span>
+                                  <span style="color: #006FE0;">#:exec</span> <span style="color: #008000;">"brogue"</span>
+                                  <span style="color: #006FE0;">#:categories</span> '<span style="color: #887070;">(</span><span style="color: #008000;">"RolePlaying"</span> <span style="color: #008000;">"Game"</span><span style="color: #887070;">)</span>
+                                  <span style="color: #006FE0;">#:keywords</span>
+                                  '<span style="color: #887070;">(</span><span style="color: #008000;">"adventure"</span> <span style="color: #008000;">"singleplayer"</span><span style="color: #887070;">)</span>
+                                  <span style="color: #006FE0;">#:comment</span>
+                                  '<span style="color: #887070;">(</span><span style="color: #707183;">(</span>#f <span style="color: #008000;">"Brave the Dungeons of Doom!"</span><span style="color: #707183;">)</span><span style="color: #887070;">)</span><span style="color: #80A880;">)</span><span style="color: #858580;">)</span><span style="color: #6276BA;">)</span><span style="color: #907373;">)</span><span style="color: #709870;">)</span><span style="color: #909183;">)</span>
+   <span style="color: #909183;">(</span>inputs <span style="color: #709870;">(</span>list <span style="color: #907373;">(</span>sdl-union <span style="color: #6276BA;">(</span>list sdl2 sdl2-image<span style="color: #6276BA;">)</span><span style="color: #907373;">)</span><span style="color: #709870;">)</span><span style="color: #909183;">)</span>
+   <span style="color: #909183;">(</span>synopsis <span style="color: #008000;">"Brogue CE: A dungeon crawler roguelike"</span><span style="color: #909183;">)</span>
+   <span style="color: #909183;">(</span>description <span style="color: #008000;">"Community fork of Brogue"</span><span style="color: #909183;">)</span>
+   <span style="color: #909183;">(</span>home-page <span style="color: #008000;">"https://github.com/tmewett/BrogueCE"</span><span style="color: #909183;">)</span>
+   <span style="color: #909183;">(</span>license agpl3<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span><span style="color: #707183;">)</span>
 </pre>
 </div>
 

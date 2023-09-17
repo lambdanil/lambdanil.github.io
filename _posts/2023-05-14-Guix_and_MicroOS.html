@@ -80,21 +80,21 @@ We will need to create a <code>btrfs</code> subvolume for the <code>/gnu</code> 
 Here is an example of what the output of this command can look like:
 </p>
 <div class="org-src-container">
-<pre class="src src-sh"><span style="color: #bd93f9; font-weight: bold;">nvme0n1</span>     259:0    0 476,9G  0 disk 
-<span style="color: #bd93f9; font-weight: bold;">&#9500;&#9472;nvme0n1p1</span> 259:1    0   512M  0 part /boot/efi
-<span style="color: #bd93f9; font-weight: bold;">&#9492;&#9472;nvme0n1p2</span> 259:2    0 476,4G  0 part /gnu/store
-                                      <span style="color: #bd93f9; font-weight: bold;">/usr/local</span>
-                                      <span style="color: #bd93f9; font-weight: bold;">/srv</span>
-                                      <span style="color: #bd93f9; font-weight: bold;">/opt</span>
-                                      <span style="color: #bd93f9; font-weight: bold;">/home</span>
-                                      <span style="color: #bd93f9; font-weight: bold;">/gnu</span>
-                                      <span style="color: #bd93f9; font-weight: bold;">/boot/writable</span>
-                                      <span style="color: #bd93f9; font-weight: bold;">/boot/grub2/x86_64-efi</span>
-                                      <span style="color: #bd93f9; font-weight: bold;">/boot/grub2/i386-pc</span>
-                                      <span style="color: #bd93f9; font-weight: bold;">/.snapshots</span>
-                                      <span style="color: #bd93f9; font-weight: bold;">/var</span>
-                                      <span style="color: #bd93f9; font-weight: bold;">/root</span>
-                                      <span style="color: #bd93f9; font-weight: bold;">/</span>
+<pre class="src src-sh"><span style="color: #006DAF;">nvme0n1</span>     259:0    0 476,9G  0 disk 
+<span style="color: #006DAF;">&#9500;&#9472;nvme0n1p1</span> 259:1    0   512M  0 part /boot/efi
+<span style="color: #006DAF;">&#9492;&#9472;nvme0n1p2</span> 259:2    0 476,4G  0 part /gnu/store
+                                      <span style="color: #006DAF;">/usr/local</span>
+                                      <span style="color: #006DAF;">/srv</span>
+                                      <span style="color: #006DAF;">/opt</span>
+                                      <span style="color: #006DAF;">/home</span>
+                                      <span style="color: #006DAF;">/gnu</span>
+                                      <span style="color: #006DAF;">/boot/writable</span>
+                                      <span style="color: #006DAF;">/boot/grub2/x86_64-efi</span>
+                                      <span style="color: #006DAF;">/boot/grub2/i386-pc</span>
+                                      <span style="color: #006DAF;">/.snapshots</span>
+                                      <span style="color: #006DAF;">/var</span>
+                                      <span style="color: #006DAF;">/root</span>
+                                      <span style="color: #006DAF;">/</span>
 
 </pre>
 </div>
@@ -106,11 +106,11 @@ In this instance, the system partition is labeled as <code>nvme0n1p2</code>, but
 We'll need to create the actual subvolume now:
 </p>
 <div class="org-src-container">
-<pre class="src src-sh"><span style="color: #bd93f9; font-weight: bold;">sudo</span> <span style="color: #8be9fd;">-i</span> <span style="color: #6272a4;"># We'll log in as root for the rest of the process</span>
-<span style="color: #bd93f9; font-weight: bold;">mkdir</span> /var/mnt
-<span style="color: #bd93f9; font-weight: bold;">mount</span> /dev/nvme0n1p2 /var/mnt <span style="color: #8be9fd;">-o</span> subvolid=0 <span style="color: #6272a4;"># use your parition name instead</span>
-<span style="color: #bd93f9; font-weight: bold;">btrfs</span> subvolume create /var/mnt/@/gnu
-<span style="color: #bd93f9; font-weight: bold;">umount</span> /var/mnt
+<pre class="src src-sh"><span style="color: #006DAF;">sudo</span> <span style="color: #D0372D;">-i</span> <span style="color: #8D8D84; font-style: italic;"># We'll log in as root for the rest of the process</span>
+<span style="color: #006DAF;">mkdir</span> /var/mnt
+<span style="color: #006DAF;">mount</span> /dev/nvme0n1p2 /var/mnt <span style="color: #D0372D;">-o</span> subvolid=0 <span style="color: #8D8D84; font-style: italic;"># use your parition name instead</span>
+<span style="color: #006DAF;">btrfs</span> subvolume create /var/mnt/@/gnu
+<span style="color: #006DAF;">umount</span> /var/mnt
 </pre>
 </div>
 
@@ -118,10 +118,10 @@ We'll need to create the actual subvolume now:
 Next up we need to create the mountpoint for the subvolume.
 </p>
 <div class="org-src-container">
-<pre class="src src-sh"><span style="color: #bd93f9; font-weight: bold;">transactional-update</span> shell <span style="color: #6272a4;"># enter the shell</span>
-<span style="color: #bd93f9; font-weight: bold;">mkdir</span> /gnu 
-<span style="color: #bd93f9; font-weight: bold;">exit</span> <span style="color: #6272a4;"># exit the shell, we are now back to our host root user</span>
-<span style="color: #bd93f9; font-weight: bold;">exit</span> <span style="color: #6272a4;"># and we log out of the root account</span>
+<pre class="src src-sh"><span style="color: #006DAF;">transactional-update</span> shell <span style="color: #8D8D84; font-style: italic;"># enter the shell</span>
+<span style="color: #006DAF;">mkdir</span> /gnu 
+<span style="color: #006DAF;">exit</span> <span style="color: #8D8D84; font-style: italic;"># exit the shell, we are now back to our host root user</span>
+<span style="color: #006DAF;">exit</span> <span style="color: #8D8D84; font-style: italic;"># and we log out of the root account</span>
 </pre>
 </div>
 
@@ -147,8 +147,8 @@ Open up the file <code>/etc/fstab</code> in your editor of choice - <code>nano</
 </p>
 
 <div class="org-src-container">
-<pre class="src src-sh"><span style="color: #bd93f9; font-weight: bold;">sudo</span> <span style="color: #8be9fd;">-i</span>
-<span style="color: #bd93f9; font-weight: bold;">nano</span> /etc/fstab
+<pre class="src src-sh"><span style="color: #006DAF;">sudo</span> <span style="color: #D0372D;">-i</span>
+<span style="color: #006DAF;">nano</span> /etc/fstab
 </pre>
 </div>
 
@@ -157,19 +157,19 @@ Now you'll see something like this:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-conf-space"><span style="color: #ffc9e8;">UUID=5805f3d4-7a45-435b-bcb4-234ce42633fe</span> / btrfs ro 0 0
-<span style="color: #ffc9e8;">UUID=5805f3d4-7a45-435b-bcb4-234ce42633fe</span> /var btrfs subvol=/@/var,x-initrd.mount 0 0
-<span style="color: #ffc9e8;">UUID=5805f3d4-7a45-435b-bcb4-234ce42633fe</span> /usr/local btrfs subvol=/@/usr/local 0 0
-<span style="color: #ffc9e8;">UUID=5805f3d4-7a45-435b-bcb4-234ce42633fe</span> /srv btrfs subvol=/@/srv 0 0
-<span style="color: #ffc9e8;">UUID=5805f3d4-7a45-435b-bcb4-234ce42633fe</span> /root btrfs subvol=/@/root,x-initrd.mount 0 0
-<span style="color: #ffc9e8;">UUID=5805f3d4-7a45-435b-bcb4-234ce42633fe</span> /opt btrfs subvol=/@/opt 0 0
-<span style="color: #ffc9e8;">UUID=5805f3d4-7a45-435b-bcb4-234ce42633fe</span> /home btrfs subvol=/@/home 0 0
-<span style="color: #ffc9e8;">UUID=5805f3d4-7a45-435b-bcb4-234ce42633fe</span> /boot/writable btrfs subvol=/@/boot/writable 0 0
-<span style="color: #ffc9e8;">UUID=5805f3d4-7a45-435b-bcb4-234ce42633fe</span> /boot/grub2/x86_64-efi btrfs subvol=/@/boot/grub2/x86_64-efi 0 0
-<span style="color: #ffc9e8;">UUID=5805f3d4-7a45-435b-bcb4-234ce42633fe</span> /boot/grub2/i386-pc btrfs subvol=/@/boot/grub2/i386-pc 0 0
-<span style="color: #ffc9e8;">UUID=5805f3d4-7a45-435b-bcb4-234ce42633fe</span> /.snapshots btrfs subvol=/@/.snapshots 0 0
-<span style="color: #ffc9e8;">UUID=9832-F680</span> /boot/efi vfat utf8 0 2
-<span style="color: #ffc9e8;">overlay</span> /etc overlay defaults,lowerdir=/sysroot/var/lib/overlay/3/etc:/sysroot/etc,upperdir=/sysroot/var/lib/overlay/4/etc,workdir=/sysroot/var/lib/overlay/4/work-etc,x-systemd.requires-mounts-for=/var,x-systemd.requires-mounts-for=/sysroot/var,x-initrd.mount 0 0
+<pre class="src src-conf-space"><span style="color: #BA36A5;">UUID=5805f3d4-7a45-435b-bcb4-234ce42633fe</span> / btrfs ro 0 0
+<span style="color: #BA36A5;">UUID=5805f3d4-7a45-435b-bcb4-234ce42633fe</span> /var btrfs subvol=/@/var,x-initrd.mount 0 0
+<span style="color: #BA36A5;">UUID=5805f3d4-7a45-435b-bcb4-234ce42633fe</span> /usr/local btrfs subvol=/@/usr/local 0 0
+<span style="color: #BA36A5;">UUID=5805f3d4-7a45-435b-bcb4-234ce42633fe</span> /srv btrfs subvol=/@/srv 0 0
+<span style="color: #BA36A5;">UUID=5805f3d4-7a45-435b-bcb4-234ce42633fe</span> /root btrfs subvol=/@/root,x-initrd.mount 0 0
+<span style="color: #BA36A5;">UUID=5805f3d4-7a45-435b-bcb4-234ce42633fe</span> /opt btrfs subvol=/@/opt 0 0
+<span style="color: #BA36A5;">UUID=5805f3d4-7a45-435b-bcb4-234ce42633fe</span> /home btrfs subvol=/@/home 0 0
+<span style="color: #BA36A5;">UUID=5805f3d4-7a45-435b-bcb4-234ce42633fe</span> /boot/writable btrfs subvol=/@/boot/writable 0 0
+<span style="color: #BA36A5;">UUID=5805f3d4-7a45-435b-bcb4-234ce42633fe</span> /boot/grub2/x86_64-efi btrfs subvol=/@/boot/grub2/x86_64-efi 0 0
+<span style="color: #BA36A5;">UUID=5805f3d4-7a45-435b-bcb4-234ce42633fe</span> /boot/grub2/i386-pc btrfs subvol=/@/boot/grub2/i386-pc 0 0
+<span style="color: #BA36A5;">UUID=5805f3d4-7a45-435b-bcb4-234ce42633fe</span> /.snapshots btrfs subvol=/@/.snapshots 0 0
+<span style="color: #BA36A5;">UUID=9832-F680</span> /boot/efi vfat utf8 0 2
+<span style="color: #BA36A5;">overlay</span> /etc overlay defaults,lowerdir=/sysroot/var/lib/overlay/3/etc:/sysroot/etc,upperdir=/sysroot/var/lib/overlay/4/etc,workdir=/sysroot/var/lib/overlay/4/work-etc,x-systemd.requires-mounts-for=/var,x-systemd.requires-mounts-for=/sysroot/var,x-initrd.mount 0 0
 </pre>
 </div>
 
@@ -178,7 +178,7 @@ Take note of the <code>UUID</code> used for the <code>/</code> system (that's th
 </p>
 
 <div class="org-src-container">
-<pre class="src src-conf-space"><span style="color: #ffc9e8;">UUID=5805f3d4-7a45-435b-bcb4-234ce42633fe</span> /gnu btrfs subvol=/@/gnu 0 0 <span style="color: #6272a4;"># </span><span style="color: #6272a4;">if you copy-paste make sure to replace the UUID here!</span>
+<pre class="src src-conf-space"><span style="color: #BA36A5;">UUID=5805f3d4-7a45-435b-bcb4-234ce42633fe</span> /gnu btrfs subvol=/@/gnu 0 0 <span style="color: #8D8D84; font-style: italic;"># </span><span style="color: #8D8D84; font-style: italic;">if you copy-paste make sure to replace the UUID here!</span>
 </pre>
 </div>
 
@@ -190,7 +190,7 @@ Save the file, exit and yet again <b>reboot</b> (the reboot here isn't optional!
 Finally once we reboot we can verify everything is mounted correctly:
 </p>
 <div class="org-src-container">
-<pre class="src src-sh"><span style="color: #bd93f9; font-weight: bold;">mount</span> <span style="color: #ff79c6;">|</span> <span style="color: #bd93f9; font-weight: bold;">grep</span> gnu
+<pre class="src src-sh"><span style="color: #006DAF;">mount</span> <span style="color: #0000FF;">|</span> <span style="color: #006DAF;">grep</span> gnu
 </pre>
 </div>
 
@@ -199,7 +199,7 @@ And the output should be something similar to this:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-sh"><span style="color: #bd93f9; font-weight: bold;">/dev/nvme0n1p2</span> on /gnu type btrfs <span style="color: #61bfff;">(</span><span style="color: #bd93f9; font-weight: bold;">rw,relatime,seclabel,ssd,discard=async,space_cache=v2,subvolid=269,subvol=/@/gnu</span><span style="color: #61bfff;">)</span>
+<pre class="src src-sh"><span style="color: #006DAF;">/dev/nvme0n1p2</span> on /gnu type btrfs <span style="color: #707183;">(</span><span style="color: #006DAF;">rw,relatime,seclabel,ssd,discard=async,space_cache=v2,subvolid=269,subvol=/@/gnu</span><span style="color: #707183;">)</span>
 </pre>
 </div>
 
@@ -228,9 +228,9 @@ We can now actually install Guix into the system. The steps we are about to take
 First we download the Guix tarball. 
 </p>
 <div class="org-src-container">
-<pre class="src src-sh"><span style="color: #bd93f9; font-weight: bold;">sudo</span> <span style="color: #8be9fd;">-i</span> <span style="color: #6272a4;"># log in as root</span>
-<span style="color: #ffb86c; font-weight: bold;">cd</span> /tmp
-<span style="color: #bd93f9; font-weight: bold;">wget</span> <span style="color: #f1fa8c;">"https://ftp.gnu.org/gnu/guix/guix-binary-1.4.0.x86_64-linux.tar.xz"</span> <span style="color: #6272a4;"># download the Guix binary</span>
+<pre class="src src-sh"><span style="color: #006DAF;">sudo</span> <span style="color: #D0372D;">-i</span> <span style="color: #8D8D84; font-style: italic;"># log in as root</span>
+<span style="color: #006FE0;">cd</span> /tmp
+<span style="color: #006DAF;">wget</span> <span style="color: #008000;">"https://ftp.gnu.org/gnu/guix/guix-binary-1.4.0.x86_64-linux.tar.xz"</span> <span style="color: #8D8D84; font-style: italic;"># download the Guix binary</span>
 </pre>
 </div>
 
@@ -238,9 +238,9 @@ First we download the Guix tarball.
 Now we verify its signature
 </p>
 <div class="org-src-container">
-<pre class="src src-sh"><span style="color: #bd93f9; font-weight: bold;">wget</span> <span style="color: #f1fa8c;">"https://ftp.gnu.org/gnu/guix/guix-binary-1.4.0.x86_64-linux.tar.xz.sig"</span> <span style="color: #6272a4;"># download the signature</span>
-<span style="color: #bd93f9; font-weight: bold;">wget</span> <span style="color: #f1fa8c;">'https://sv.gnu.org/people/viewgpg.php?user_id=15145'</span> <span style="color: #8be9fd;">-qO</span> <span style="color: #8be9fd;">-</span> <span style="color: #ff79c6;">|</span> <span style="color: #bd93f9; font-weight: bold;">gpg</span> <span style="color: #8be9fd;">--import</span> <span style="color: #8be9fd;">-</span> <span style="color: #6272a4;"># import signature</span>
-<span style="color: #bd93f9; font-weight: bold;">gpg</span> <span style="color: #8be9fd;">--verify</span> guix-binary-1.4.0.x86_64-linux.tar.xz.sig <span style="color: #6272a4;"># and finally verify the file</span>
+<pre class="src src-sh"><span style="color: #006DAF;">wget</span> <span style="color: #008000;">"https://ftp.gnu.org/gnu/guix/guix-binary-1.4.0.x86_64-linux.tar.xz.sig"</span> <span style="color: #8D8D84; font-style: italic;"># download the signature</span>
+<span style="color: #006DAF;">wget</span> <span style="color: #008000;">'https://sv.gnu.org/people/viewgpg.php?user_id=15145'</span> <span style="color: #D0372D;">-qO</span> <span style="color: #D0372D;">-</span> <span style="color: #0000FF;">|</span> <span style="color: #006DAF;">gpg</span> <span style="color: #D0372D;">--import</span> <span style="color: #D0372D;">-</span> <span style="color: #8D8D84; font-style: italic;"># import signature</span>
+<span style="color: #006DAF;">gpg</span> <span style="color: #D0372D;">--verify</span> guix-binary-1.4.0.x86_64-linux.tar.xz.sig <span style="color: #8D8D84; font-style: italic;"># and finally verify the file</span>
 </pre>
 </div>
 
@@ -258,9 +258,9 @@ If the command shows no issues, we have succesfully downloaded Guix.
 We can continue the installation process - make sure you are still logged in as root!
 </p>
 <div class="org-src-container">
-<pre class="src src-sh"><span style="color: #bd93f9; font-weight: bold;">tar</span> <span style="color: #bd93f9; font-weight: bold;">--warning=no-timestamp</span> <span style="color: #8be9fd;">-xf</span> /tmp/guix-binary-1.4.0.x86_64-linux.tar.xz
-<span style="color: #bd93f9; font-weight: bold;">mv</span> var/guix /var/
-<span style="color: #bd93f9; font-weight: bold;">mv</span> gnu/store /gnu/
+<pre class="src src-sh"><span style="color: #006DAF;">tar</span> <span style="color: #808080; font-weight: bold;">--warning=no-timestamp</span> <span style="color: #D0372D;">-xf</span> /tmp/guix-binary-1.4.0.x86_64-linux.tar.xz
+<span style="color: #006DAF;">mv</span> var/guix /var/
+<span style="color: #006DAF;">mv</span> gnu/store /gnu/
 </pre>
 </div>
 
@@ -268,7 +268,7 @@ We can continue the installation process - make sure you are still logged in as 
 I also like to disable copy-on-write for the <code>/gnu</code> directory as it isn't necessary there, this should also help improve speed.
 </p>
 <div class="org-src-container">
-<pre class="src src-sh"><span style="color: #bd93f9; font-weight: bold;">chattr</span> +C <span style="color: #8be9fd;">-R</span> /gnu
+<pre class="src src-sh"><span style="color: #006DAF;">chattr</span> +C <span style="color: #D0372D;">-R</span> /gnu
 </pre>
 </div>
 
@@ -282,11 +282,11 @@ I also like to disable copy-on-write for the <code>/gnu</code> directory as it i
 <h4 id="org4faab32">Set up the environment</h4>
 <div class="outline-text-4" id="text-org4faab32">
 <div class="org-src-container">
-<pre class="src src-sh"><span style="color: #bd93f9; font-weight: bold;">mkdir</span> <span style="color: #8be9fd;">-p</span> ~root/.config/guix
-<span style="color: #bd93f9; font-weight: bold;">ln</span> <span style="color: #8be9fd;">-sf</span> /var/guix/profiles/per-user/root/current-guix ~root/.config/guix/current
+<pre class="src src-sh"><span style="color: #006DAF;">mkdir</span> <span style="color: #D0372D;">-p</span> ~root/.config/guix
+<span style="color: #006DAF;">ln</span> <span style="color: #D0372D;">-sf</span> /var/guix/profiles/per-user/root/current-guix ~root/.config/guix/current
 
-<span style="color: #ff79c6;">export</span> <span style="color: #ffc9e8; font-style: italic;">GUIX_PROFILE</span>=<span style="color: #f1fa8c;">"</span><span style="color: #f1fa8c;">`</span><span style="color: #ffb86c; background-color: #282a36; font-weight: bold;">echo</span><span style="color: #f1fa8c; background-color: #282a36;"> ~root</span><span style="color: #f1fa8c;">`</span><span style="color: #f1fa8c;">/.config/guix/current"</span> 
-<span style="color: #ffb86c; font-weight: bold;">source</span> <span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">GUIX_PROFILE</span>/etc/profile
+<span style="color: #0000FF;">export</span> <span style="color: #BA36A5; font-style: italic;">GUIX_PROFILE</span>=<span style="color: #008000;">"</span><span style="color: #008000;">`</span><span style="color: #006FE0; background-color: #FFFFFF;">echo</span><span style="color: #008000; background-color: #FFFFFF;"> ~root</span><span style="color: #008000;">`</span><span style="color: #008000;">/.config/guix/current"</span> 
+<span style="color: #006FE0;">source</span> <span style="color: #0000FF;">$</span><span style="color: #D0372D; font-style: italic;">GUIX_PROFILE</span>/etc/profile
 </pre>
 </div>
 </div>
@@ -296,7 +296,7 @@ I also like to disable copy-on-write for the <code>/gnu</code> directory as it i
 <h4 id="org91b1e01">Add the build users and groups</h4>
 <div class="outline-text-4" id="text-org91b1e01">
 <div class="org-src-container">
-<pre class="src src-sh"><span style="color: #bd93f9; font-weight: bold;">groupadd</span> <span style="color: #8be9fd;">--system</span> guixbuild <span style="color: #6272a4;"># create the group</span>
+<pre class="src src-sh"><span style="color: #006DAF;">groupadd</span> <span style="color: #D0372D;">--system</span> guixbuild <span style="color: #8D8D84; font-style: italic;"># create the group</span>
 </pre>
 </div>
 
@@ -304,13 +304,13 @@ I also like to disable copy-on-write for the <code>/gnu</code> directory as it i
 <b>This command spans multiple lines, make sure to copy it in its entirety!</b>
 </p>
 <div class="org-src-container">
-<pre class="src src-sh"><span style="color: #ff79c6;">for</span> <span style="color: #8be9fd; font-style: italic;">i</span> <span style="color: #ff79c6;">in</span> <span style="color: #ff79c6;">$</span><span style="color: #61bfff;">(</span><span style="color: #bd93f9; background-color: #282a36; font-weight: bold;">seq</span><span style="color: #f8f8f2; background-color: #282a36;"> </span><span style="color: #8be9fd; background-color: #282a36;">-w</span><span style="color: #f8f8f2; background-color: #282a36;"> 1 10</span><span style="color: #61bfff;">)</span><span style="color: #ff79c6;">;</span> <span style="color: #6272a4;"># and now create the users</span>
-<span style="color: #ff79c6;">do</span>
-  <span style="color: #bd93f9; font-weight: bold;">useradd</span> <span style="color: #8be9fd;">-g</span> guixbuild <span style="color: #8be9fd;">-G</span> guixbuild           \
-          <span style="color: #8be9fd;">-d</span> /var/empty <span style="color: #8be9fd;">-s</span> <span style="color: #ff79c6;">$</span><span style="color: #61bfff;">(</span><span style="color: #bd93f9; background-color: #282a36; font-weight: bold;">which</span><span style="color: #f8f8f2; background-color: #282a36;"> nologin</span><span style="color: #61bfff;">)</span>     \
-          <span style="color: #8be9fd;">-c</span> <span style="color: #f1fa8c;">"Guix build user </span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">i</span><span style="color: #f1fa8c;">"</span> <span style="color: #8be9fd;">--system</span>    \
-          guixbuilder<span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">i</span><span style="color: #ff79c6;">;</span>
-<span style="color: #ff79c6;">done</span>
+<pre class="src src-sh"><span style="color: #0000FF;">for</span> <span style="color: #D0372D; font-style: italic;">i</span> <span style="color: #0000FF;">in</span> <span style="color: #0000FF;">$</span><span style="color: #707183;">(</span><span style="color: #006DAF; background-color: #FFFFFF;">seq</span><span style="color: #333333; background-color: #FFFFFF;"> </span><span style="color: #D0372D; background-color: #FFFFFF;">-w</span><span style="color: #333333; background-color: #FFFFFF;"> 1 10</span><span style="color: #707183;">)</span><span style="color: #0000FF;">;</span> <span style="color: #8D8D84; font-style: italic;"># and now create the users</span>
+<span style="color: #0000FF;">do</span>
+  <span style="color: #006DAF;">useradd</span> <span style="color: #D0372D;">-g</span> guixbuild <span style="color: #D0372D;">-G</span> guixbuild           \
+          <span style="color: #D0372D;">-d</span> /var/empty <span style="color: #D0372D;">-s</span> <span style="color: #0000FF;">$</span><span style="color: #707183;">(</span><span style="color: #006DAF; background-color: #FFFFFF;">which</span><span style="color: #333333; background-color: #FFFFFF;"> nologin</span><span style="color: #707183;">)</span>     \
+          <span style="color: #D0372D;">-c</span> <span style="color: #008000;">"Guix build user </span><span style="color: #0000FF;">$</span><span style="color: #D0372D; font-style: italic;">i</span><span style="color: #008000;">"</span> <span style="color: #D0372D;">--system</span>    \
+          guixbuilder<span style="color: #0000FF;">$</span><span style="color: #D0372D; font-style: italic;">i</span><span style="color: #0000FF;">;</span>
+<span style="color: #0000FF;">done</span>
 </pre>
 </div>
 </div>
@@ -323,8 +323,8 @@ I also like to disable copy-on-write for the <code>/gnu</code> directory as it i
 First we copy the services in the necessary location, then we enable them.
 </p>
 <div class="org-src-container">
-<pre class="src src-sh"><span style="color: #bd93f9; font-weight: bold;">cp</span> ~root/.config/guix/current/lib/systemd/system/gnu-store.mount ~root/.config/guix/current/lib/systemd/system/guix-daemon.service /etc/systemd/system/
-<span style="color: #bd93f9; font-weight: bold;">systemctl</span> enable gnu-store.mount guix-daemon
+<pre class="src src-sh"><span style="color: #006DAF;">cp</span> ~root/.config/guix/current/lib/systemd/system/gnu-store.mount ~root/.config/guix/current/lib/systemd/system/guix-daemon.service /etc/systemd/system/
+<span style="color: #006DAF;">systemctl</span> enable gnu-store.mount guix-daemon
 </pre>
 </div>
 
@@ -341,9 +341,9 @@ First we copy the services in the necessary location, then we enable them.
 At this point we can make the binary available for all users of the system.
 </p>
 <div class="org-src-container">
-<pre class="src src-sh"><span style="color: #bd93f9; font-weight: bold;">mkdir</span> <span style="color: #8be9fd;">-p</span> /usr/local/bin
-<span style="color: #ffb86c; font-weight: bold;">cd</span> /usr/local/bin
-<span style="color: #bd93f9; font-weight: bold;">ln</span> <span style="color: #8be9fd;">-s</span> /var/guix/profiles/per-user/root/current-guix/bin/guix
+<pre class="src src-sh"><span style="color: #006DAF;">mkdir</span> <span style="color: #D0372D;">-p</span> /usr/local/bin
+<span style="color: #006FE0;">cd</span> /usr/local/bin
+<span style="color: #006DAF;">ln</span> <span style="color: #D0372D;">-s</span> /var/guix/profiles/per-user/root/current-guix/bin/guix
 </pre>
 </div>
 
@@ -351,9 +351,9 @@ At this point we can make the binary available for all users of the system.
 It is also a good idea to make the manual available:
 </p>
 <div class="org-src-container">
-<pre class="src src-sh"><span style="color: #bd93f9; font-weight: bold;">mkdir</span> <span style="color: #8be9fd;">-p</span> /usr/local/share/info
-<span style="color: #ffb86c; font-weight: bold;">cd</span> /usr/local/share/info
-<span style="color: #ff79c6;">for</span> <span style="color: #8be9fd; font-style: italic;">i</span> <span style="color: #ff79c6;">in</span> /var/guix/profiles/per-user/root/current-guix/share/info/* <span style="color: #ff79c6;">;</span> <span style="color: #ff79c6;">do</span> <span style="color: #bd93f9; font-weight: bold;">ln</span> <span style="color: #8be9fd;">-s</span> <span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">i</span> <span style="color: #ff79c6;">;</span> <span style="color: #ff79c6;">done</span>
+<pre class="src src-sh"><span style="color: #006DAF;">mkdir</span> <span style="color: #D0372D;">-p</span> /usr/local/share/info
+<span style="color: #006FE0;">cd</span> /usr/local/share/info
+<span style="color: #0000FF;">for</span> <span style="color: #D0372D; font-style: italic;">i</span> <span style="color: #0000FF;">in</span> /var/guix/profiles/per-user/root/current-guix/share/info/* <span style="color: #0000FF;">;</span> <span style="color: #0000FF;">do</span> <span style="color: #006DAF;">ln</span> <span style="color: #D0372D;">-s</span> <span style="color: #0000FF;">$</span><span style="color: #D0372D; font-style: italic;">i</span> <span style="color: #0000FF;">;</span> <span style="color: #0000FF;">done</span>
 </pre>
 </div>
 </div>
@@ -367,8 +367,8 @@ Binary substitutes allow us to avoid building packages locally, (see the <a href
 </p>
 
 <div class="org-src-container">
-<pre class="src src-sh"><span style="color: #bd93f9; font-weight: bold;">guix</span> archive <span style="color: #8be9fd;">--authorize</span> <span style="color: #ff79c6;">&lt;</span> ~root/.config/guix/current/share/guix/ci.guix.gnu.org.pub
-<span style="color: #bd93f9; font-weight: bold;">guix</span> archive <span style="color: #8be9fd;">--authorize</span> <span style="color: #ff79c6;">&lt;</span> ~root/.config/guix/current/share/guix/bordeaux.guix.gnu.org.pub
+<pre class="src src-sh"><span style="color: #006DAF;">guix</span> archive <span style="color: #D0372D;">--authorize</span> <span style="color: #0000FF;">&lt;</span> ~root/.config/guix/current/share/guix/ci.guix.gnu.org.pub
+<span style="color: #006DAF;">guix</span> archive <span style="color: #D0372D;">--authorize</span> <span style="color: #0000FF;">&lt;</span> ~root/.config/guix/current/share/guix/bordeaux.guix.gnu.org.pub
 </pre>
 </div>
 </div>
@@ -387,7 +387,7 @@ Open the file <code>/etc/default/grub</code> with your favorite editor.
 </p>
 
 <div class="org-src-container">
-<pre class="src src-sh"><span style="color: #bd93f9; font-weight: bold;">sudo</span> nano /etc/default/grub
+<pre class="src src-sh"><span style="color: #006DAF;">sudo</span> nano /etc/default/grub
 </pre>
 </div>
 
@@ -395,14 +395,14 @@ Open the file <code>/etc/default/grub</code> with your favorite editor.
 You should be able to find a line that looks like this:
 </p>
 <div class="org-src-container">
-<pre class="src src-conf-space">GRUB_CMDLINE_LINUX_DEFAULT=<span style="color: #f1fa8c;">"splash=silent swapaccount=1 mitigations=auto quiet security=selinux selinux=1 enforcing=1"</span>
+<pre class="src src-conf-space">GRUB_CMDLINE_LINUX_DEFAULT=<span style="color: #008000;">"splash=silent swapaccount=1 mitigations=auto quiet security=selinux selinux=1 enforcing=1"</span>
 </pre>
 </div>
 <p>
 Here change the <code>enforcing</code> variable to 0.
 </p>
 <div class="org-src-container">
-<pre class="src src-conf-space">GRUB_CMDLINE_LINUX_DEFAULT=<span style="color: #f1fa8c;">"splash=silent swapaccount=1 mitigations=auto quiet security=selinux selinux=1 enforcing=0"</span>
+<pre class="src src-conf-space">GRUB_CMDLINE_LINUX_DEFAULT=<span style="color: #008000;">"splash=silent swapaccount=1 mitigations=auto quiet security=selinux selinux=1 enforcing=0"</span>
 </pre>
 </div>
 <p>
@@ -414,7 +414,7 @@ Now we have to regenerate the grub configuration:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-sh"><span style="color: #bd93f9; font-weight: bold;">sudo</span> transactional-update grub.cfg
+<pre class="src src-sh"><span style="color: #006DAF;">sudo</span> transactional-update grub.cfg
 </pre>
 </div>
 
@@ -427,7 +427,7 @@ After the reboot verify the status of the Guix daemon.
 </p>
 
 <div class="org-src-container">
-<pre class="src src-sh"><span style="color: #bd93f9; font-weight: bold;">systemctl</span> status guix-daemon
+<pre class="src src-sh"><span style="color: #006DAF;">systemctl</span> status guix-daemon
 </pre>
 </div>
 
@@ -448,7 +448,7 @@ At this point I'll also mention that Guix requires the <code>/etc/services</code
 We can easily fix this:
 </p>
 <div class="org-src-container">
-<pre class="src src-sh"><span style="color: #bd93f9; font-weight: bold;">sudo</span> ln <span style="color: #8be9fd;">-s</span> /usr/etc/services /etc/services
+<pre class="src src-sh"><span style="color: #006DAF;">sudo</span> ln <span style="color: #D0372D;">-s</span> /usr/etc/services /etc/services
 </pre>
 </div>
 </div>
@@ -469,7 +469,7 @@ This is described in the <a href="https://guix.gnu.org/manual/en/html_node/Appli
 First update our local guix profile, run this as your user:
 </p>
 <div class="org-src-container">
-<pre class="src src-sh"><span style="color: #bd93f9; font-weight: bold;">guix</span> pull
+<pre class="src src-sh"><span style="color: #006DAF;">guix</span> pull
 </pre>
 </div>
 <p>
@@ -480,13 +480,13 @@ This might take a little while.
 Next open up the <code>$HOME/.bash_profile</code> file, this time as your regular user. Then fill it in like so:
 </p>
 <div class="org-src-container">
-<pre class="src src-sh"><span style="color: #ff79c6;">if</span> <span style="color: #61bfff;">[</span> -f ~/.bashrc <span style="color: #61bfff;">]</span><span style="color: #ff79c6;">;</span> <span style="color: #ff79c6;">then</span> <span style="color: #bd93f9; font-weight: bold;">.</span> ~/.bashrc<span style="color: #ff79c6;">;</span> <span style="color: #ff79c6;">fi</span>
+<pre class="src src-sh"><span style="color: #0000FF;">if</span> <span style="color: #707183;">[</span> -f ~/.bashrc <span style="color: #707183;">]</span><span style="color: #0000FF;">;</span> <span style="color: #0000FF;">then</span> <span style="color: #006DAF;">.</span> ~/.bashrc<span style="color: #0000FF;">;</span> <span style="color: #0000FF;">fi</span>
 
-<span style="color: #ff79c6;">if</span> <span style="color: #61bfff;">[</span> ! -f /.dockerenv <span style="color: #61bfff;">]</span> <span style="color: #ff79c6;">&amp;&amp;</span> <span style="color: #61bfff;">[</span> ! -f /run/.containerenv <span style="color: #61bfff;">]</span> <span style="color: #ff79c6;">&amp;&amp;</span> <span style="color: #61bfff;">[</span> -d <span style="color: #f1fa8c;">"</span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">HOME</span><span style="color: #f1fa8c;">/.guix-profile"</span> <span style="color: #61bfff;">]</span><span style="color: #ff79c6;">;</span> <span style="color: #ff79c6;">then</span>
-    <span style="color: #ff79c6;">export</span> <span style="color: #f1fa8c; font-style: italic;">PATH</span>=<span style="color: #f1fa8c;">"</span><span style="color: #ff79c6;">$</span><span style="color: #f1fa8c; font-style: italic;">PATH</span><span style="color: #f1fa8c;">:</span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">HOME</span><span style="color: #f1fa8c;">/.guix-profile/bin"</span>
-    <span style="color: #ff79c6;">export</span> <span style="color: #ffc9e8; font-style: italic;">XDG_DATA_DIRS</span>=<span style="color: #f1fa8c;">"</span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">XDG_DATA_DIRS</span><span style="color: #f1fa8c;">:</span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">HOME</span><span style="color: #f1fa8c;">/.guix-profile/share"</span>
-    <span style="color: #ff79c6;">export</span> <span style="color: #ffc9e8; font-style: italic;">GUIX_LOCPATH</span>=<span style="color: #f1fa8c;">"</span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">HOME</span><span style="color: #f1fa8c;">/.guix-profile/lib/locale"</span>
-<span style="color: #ff79c6;">fi</span>
+<span style="color: #0000FF;">if</span> <span style="color: #707183;">[</span> ! -f /.dockerenv <span style="color: #707183;">]</span> <span style="color: #0000FF;">&amp;&amp;</span> <span style="color: #707183;">[</span> ! -f /run/.containerenv <span style="color: #707183;">]</span> <span style="color: #0000FF;">&amp;&amp;</span> <span style="color: #707183;">[</span> -d <span style="color: #008000;">"</span><span style="color: #0000FF;">$</span><span style="color: #D0372D; font-style: italic;">HOME</span><span style="color: #008000;">/.guix-profile"</span> <span style="color: #707183;">]</span><span style="color: #0000FF;">;</span> <span style="color: #0000FF;">then</span>
+    <span style="color: #0000FF;">export</span> <span style="color: #ff0000; font-weight: bold; font-style: italic;">PATH</span>=<span style="color: #008000;">"</span><span style="color: #0000FF;">$</span><span style="color: #ff0000; font-weight: bold; font-style: italic;">PATH</span><span style="color: #008000;">:</span><span style="color: #0000FF;">$</span><span style="color: #D0372D; font-style: italic;">HOME</span><span style="color: #008000;">/.guix-profile/bin"</span>
+    <span style="color: #0000FF;">export</span> <span style="color: #BA36A5; font-style: italic;">XDG_DATA_DIRS</span>=<span style="color: #008000;">"</span><span style="color: #0000FF;">$</span><span style="color: #D0372D; font-style: italic;">XDG_DATA_DIRS</span><span style="color: #008000;">:</span><span style="color: #0000FF;">$</span><span style="color: #D0372D; font-style: italic;">HOME</span><span style="color: #008000;">/.guix-profile/share"</span>
+    <span style="color: #0000FF;">export</span> <span style="color: #BA36A5; font-style: italic;">GUIX_LOCPATH</span>=<span style="color: #008000;">"</span><span style="color: #0000FF;">$</span><span style="color: #D0372D; font-style: italic;">HOME</span><span style="color: #008000;">/.guix-profile/lib/locale"</span>
+<span style="color: #0000FF;">fi</span>
 </pre>
 </div>
 <p>
@@ -497,12 +497,12 @@ This ensures your desktop environment can properly see all the Guix programs. Yo
 We'll also have to set up the shell to work with Guix properly, open <code>$HOME/.bashrc</code>, then add the following
 </p>
 <div class="org-src-container">
-<pre class="src src-bash"><span style="color: #ff79c6;">if</span> <span style="color: #61bfff;">[</span> ! -f /.dockerenv <span style="color: #61bfff;">]</span> <span style="color: #ff79c6;">&amp;&amp;</span> <span style="color: #61bfff;">[</span> ! -f /run/.containerenv <span style="color: #61bfff;">]</span> <span style="color: #ff79c6;">&amp;&amp;</span> <span style="color: #61bfff;">[</span> -d <span style="color: #f1fa8c;">"</span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">HOME</span><span style="color: #f1fa8c;">/.guix-profile"</span> <span style="color: #61bfff;">]</span> <span style="color: #ff79c6;">&amp;&amp;</span> <span style="color: #61bfff;">[</span><span style="color: #ff79c6;">[</span> <span style="color: #ff79c6;">$</span><span style="color: #f1fa8c;">-</span> <span style="color: #ff79c6;">==</span> *i* <span style="color: #ff79c6;">]</span><span style="color: #61bfff;">]</span><span style="color: #ff79c6;">;</span> <span style="color: #ff79c6;">then</span>
-    <span style="color: #ffc9e8; font-style: italic;">GUIX_PROFILE</span>=<span style="color: #f1fa8c;">"</span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">HOME</span><span style="color: #f1fa8c;">/.guix-profile"</span>
-    <span style="color: #bd93f9; font-weight: bold;">.</span> <span style="color: #f1fa8c;">"</span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">GUIX_PROFILE</span><span style="color: #f1fa8c;">/etc/profile"</span>
-    <span style="color: #ffc9e8; font-style: italic;">GUIX_PROFILE</span>=<span style="color: #f1fa8c;">"</span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">HOME</span><span style="color: #f1fa8c;">/.config/guix/current"</span>
-    <span style="color: #bd93f9; font-weight: bold;">.</span> <span style="color: #f1fa8c;">"</span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">GUIX_PROFILE</span><span style="color: #f1fa8c;">/etc/profile"</span>
-<span style="color: #ff79c6;">fi</span>
+<pre class="src src-bash"><span style="color: #0000FF;">if</span> <span style="color: #707183;">[</span> ! -f /.dockerenv <span style="color: #707183;">]</span> <span style="color: #0000FF;">&amp;&amp;</span> <span style="color: #707183;">[</span> ! -f /run/.containerenv <span style="color: #707183;">]</span> <span style="color: #0000FF;">&amp;&amp;</span> <span style="color: #707183;">[</span> -d <span style="color: #008000;">"</span><span style="color: #0000FF;">$</span><span style="color: #D0372D; font-style: italic;">HOME</span><span style="color: #008000;">/.guix-profile"</span> <span style="color: #707183;">]</span> <span style="color: #0000FF;">&amp;&amp;</span> <span style="color: #707183;">[</span><span style="color: #7388D6;">[</span> <span style="color: #0000FF;">$</span><span style="color: #ff0000; font-weight: bold;">-</span> <span style="color: #0000FF;">==</span> *i* <span style="color: #7388D6;">]</span><span style="color: #707183;">]</span><span style="color: #0000FF;">;</span> <span style="color: #0000FF;">then</span>
+    <span style="color: #BA36A5; font-style: italic;">GUIX_PROFILE</span>=<span style="color: #008000;">"</span><span style="color: #0000FF;">$</span><span style="color: #D0372D; font-style: italic;">HOME</span><span style="color: #008000;">/.guix-profile"</span>
+    <span style="color: #006DAF;">.</span> <span style="color: #008000;">"</span><span style="color: #0000FF;">$</span><span style="color: #D0372D; font-style: italic;">GUIX_PROFILE</span><span style="color: #008000;">/etc/profile"</span>
+    <span style="color: #BA36A5; font-style: italic;">GUIX_PROFILE</span>=<span style="color: #008000;">"</span><span style="color: #0000FF;">$</span><span style="color: #D0372D; font-style: italic;">HOME</span><span style="color: #008000;">/.config/guix/current"</span>
+    <span style="color: #006DAF;">.</span> <span style="color: #008000;">"</span><span style="color: #0000FF;">$</span><span style="color: #D0372D; font-style: italic;">GUIX_PROFILE</span><span style="color: #008000;">/etc/profile"</span>
+<span style="color: #0000FF;">fi</span>
 </pre>
 </div>
 
@@ -510,7 +510,7 @@ We'll also have to set up the shell to work with Guix properly, open <code>$HOME
 Now log out and back in for these changes to take effect. Finally we can install the most essential Guix packages:
 </p>
 <div class="org-src-container">
-<pre class="src src-sh"><span style="color: #bd93f9; font-weight: bold;">guix</span> install glibc-locales nss-certs
+<pre class="src src-sh"><span style="color: #006DAF;">guix</span> install glibc-locales nss-certs
 </pre>
 </div>
 </div>

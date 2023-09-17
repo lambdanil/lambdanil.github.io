@@ -26,9 +26,9 @@ Yet again we can find the default service list by peeking into the <code>operati
 </p>
 
 <div class="org-src-container">
-<pre class="src src-scheme"><span style="color: #61bfff;">(</span>services operating-system-user-services        <span style="color: #6272a4;">; </span><span style="color: #6272a4;">list of services</span>
-          <span style="color: #ff79c6;">(</span>thunked<span style="color: #ff79c6;">)</span>                     <span style="color: #6272a4;">;</span><span style="color: #6272a4;">allow for system-dependent services</span>
-          <span style="color: #ff79c6;">(</span>default %base-services<span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+<pre class="src src-scheme"><span style="color: #707183;">(</span>services operating-system-user-services        <span style="color: #8D8D84; font-style: italic;">; </span><span style="color: #8D8D84; font-style: italic;">list of services</span>
+          <span style="color: #7388D6;">(</span>thunked<span style="color: #7388D6;">)</span>                     <span style="color: #8D8D84; font-style: italic;">;</span><span style="color: #8D8D84; font-style: italic;">allow for system-dependent services</span>
+          <span style="color: #7388D6;">(</span>default %base-services<span style="color: #7388D6;">)</span><span style="color: #707183;">)</span>
 </pre>
 </div>
 
@@ -37,12 +37,12 @@ This time, let's actually find the <code>service</code> record first. Finding th
 Once inside the file we can look for the <code>service</code> record with a simple search and immediately the following definition is found.
 </p>
 <div class="org-src-container">
-<pre class="src src-scheme"><span style="color: #6272a4;">;; </span><span style="color: #6272a4;">Services of a given type.</span>
-<span style="color: #61bfff;">(</span><span style="color: #ff79c6;">define-record-type</span> <span style="color: #bd93f9;">&lt;service&gt;</span>
-  <span style="color: #ff79c6;">(</span>make-service type value<span style="color: #ff79c6;">)</span>
+<pre class="src src-scheme"><span style="color: #8D8D84; font-style: italic;">;; </span><span style="color: #8D8D84; font-style: italic;">Services of a given type.</span>
+<span style="color: #707183;">(</span><span style="color: #0000FF;">define-record-type</span> <span style="color: #6434A3;">&lt;service&gt;</span>
+  <span style="color: #7388D6;">(</span>make-service type value<span style="color: #7388D6;">)</span>
   service?
-  <span style="color: #ff79c6;">(</span>type       service-kind<span style="color: #ff79c6;">)</span>
-  <span style="color: #ff79c6;">(</span>value      service-value<span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+  <span style="color: #7388D6;">(</span>type       service-kind<span style="color: #7388D6;">)</span>
+  <span style="color: #7388D6;">(</span>value      service-value<span style="color: #7388D6;">)</span><span style="color: #707183;">)</span>
 </pre>
 </div>
 <p>
@@ -58,31 +58,31 @@ As you can see services are actually only defined as 2 variables - the service t
 Let's first take a look at the service <code>type.</code> Yet again we can look at the record definition.
 </p>
 <div class="org-src-container">
-<pre class="src src-scheme"><span style="color: #61bfff;">(</span>define-record-type* <span style="color: #bd93f9;">&lt;service-type&gt;</span> service-type make-service-type
+<pre class="src src-scheme"><span style="color: #707183;">(</span>define-record-type* <span style="color: #6434A3;">&lt;service-type&gt;</span> service-type make-service-type
   service-type?
-  <span style="color: #ff79c6;">(</span>name       service-type-name<span style="color: #ff79c6;">)</span>                  <span style="color: #6272a4;">;</span><span style="color: #6272a4;">symbol (for debugging)</span>
+  <span style="color: #7388D6;">(</span>name       service-type-name<span style="color: #7388D6;">)</span>                  <span style="color: #8D8D84; font-style: italic;">;</span><span style="color: #8D8D84; font-style: italic;">symbol (for debugging)</span>
 
-  <span style="color: #6272a4;">;; </span><span style="color: #6272a4;">Things extended by services of this type.</span>
-  <span style="color: #ff79c6;">(</span>extensions service-type-extensions<span style="color: #ff79c6;">)</span>            <span style="color: #6272a4;">;</span><span style="color: #6272a4;">list of &lt;service-extensions&gt;</span>
+  <span style="color: #8D8D84; font-style: italic;">;; </span><span style="color: #8D8D84; font-style: italic;">Things extended by services of this type.</span>
+  <span style="color: #7388D6;">(</span>extensions service-type-extensions<span style="color: #7388D6;">)</span>            <span style="color: #8D8D84; font-style: italic;">;</span><span style="color: #8D8D84; font-style: italic;">list of &lt;service-extensions&gt;</span>
 
-  <span style="color: #6272a4;">;; </span><span style="color: #6272a4;">Given a list of extensions, "compose" them.</span>
-  <span style="color: #ff79c6;">(</span>compose    service-type-compose                <span style="color: #6272a4;">;</span><span style="color: #6272a4;">list of Any -&gt; Any</span>
-              <span style="color: #50fa7b;">(</span>default #f<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+  <span style="color: #8D8D84; font-style: italic;">;; </span><span style="color: #8D8D84; font-style: italic;">Given a list of extensions, "compose" them.</span>
+  <span style="color: #7388D6;">(</span>compose    service-type-compose                <span style="color: #8D8D84; font-style: italic;">;</span><span style="color: #8D8D84; font-style: italic;">list of Any -&gt; Any</span>
+              <span style="color: #909183;">(</span>default #f<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
 
-  <span style="color: #6272a4;">;; </span><span style="color: #6272a4;">Extend the services' own parameters with the extension composition.</span>
-  <span style="color: #ff79c6;">(</span>extend     service-type-extend                 <span style="color: #6272a4;">;</span><span style="color: #6272a4;">list of Any -&gt; parameters</span>
-              <span style="color: #50fa7b;">(</span>default #f<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+  <span style="color: #8D8D84; font-style: italic;">;; </span><span style="color: #8D8D84; font-style: italic;">Extend the services' own parameters with the extension composition.</span>
+  <span style="color: #7388D6;">(</span>extend     service-type-extend                 <span style="color: #8D8D84; font-style: italic;">;</span><span style="color: #8D8D84; font-style: italic;">list of Any -&gt; parameters</span>
+              <span style="color: #909183;">(</span>default #f<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
 
-  <span style="color: #6272a4;">;; </span><span style="color: #6272a4;">Optional default value for instances of this type.</span>
-  <span style="color: #ff79c6;">(</span>default-value service-type-default-value       <span style="color: #6272a4;">;</span><span style="color: #6272a4;">Any</span>
-    <span style="color: #50fa7b;">(</span>default &amp;no-default-value<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+  <span style="color: #8D8D84; font-style: italic;">;; </span><span style="color: #8D8D84; font-style: italic;">Optional default value for instances of this type.</span>
+  <span style="color: #7388D6;">(</span>default-value service-type-default-value       <span style="color: #8D8D84; font-style: italic;">;</span><span style="color: #8D8D84; font-style: italic;">Any</span>
+    <span style="color: #909183;">(</span>default &amp;no-default-value<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
 
-  <span style="color: #6272a4;">;; </span><span style="color: #6272a4;">Meta-data.</span>
-  <span style="color: #ff79c6;">(</span>description  service-type-description<span style="color: #ff79c6;">)</span>         <span style="color: #6272a4;">;</span><span style="color: #6272a4;">string</span>
-  <span style="color: #ff79c6;">(</span>location     service-type-location             <span style="color: #6272a4;">;</span><span style="color: #6272a4;">&lt;location&gt;</span>
-                <span style="color: #50fa7b;">(</span>default <span style="color: #bd93f9;">(</span>and=&gt; <span style="color: #0189cc;">(</span>current-source-location<span style="color: #0189cc;">)</span>
-                                source-properties-&gt;location<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span>
-                <span style="color: #50fa7b;">(</span>innate<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+  <span style="color: #8D8D84; font-style: italic;">;; </span><span style="color: #8D8D84; font-style: italic;">Meta-data.</span>
+  <span style="color: #7388D6;">(</span>description  service-type-description<span style="color: #7388D6;">)</span>         <span style="color: #8D8D84; font-style: italic;">;</span><span style="color: #8D8D84; font-style: italic;">string</span>
+  <span style="color: #7388D6;">(</span>location     service-type-location             <span style="color: #8D8D84; font-style: italic;">;</span><span style="color: #8D8D84; font-style: italic;">&lt;location&gt;</span>
+                <span style="color: #909183;">(</span>default <span style="color: #709870;">(</span>and=&gt; <span style="color: #907373;">(</span>current-source-location<span style="color: #907373;">)</span>
+                                source-properties-&gt;location<span style="color: #709870;">)</span><span style="color: #909183;">)</span>
+                <span style="color: #909183;">(</span>innate<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span><span style="color: #707183;">)</span>
 </pre>
 </div>
 <p>
@@ -95,8 +95,8 @@ I'm going to refer to the Guix documentation as it provides a short and clear ex
 With this we can go ahead and dissect the <code>%desktop-services</code> which I use in my config. Let's start with printing their names, left in for debugging purposes
 </p>
 <div class="org-src-container">
-<pre class="src src-scheme">scheme@<span style="color: #61bfff;">(</span>guile-user<span style="color: #61bfff;">)</span>&gt; <span style="color: #61bfff;">(</span><span style="color: #ff79c6;">map</span> <span style="color: #ff79c6;">(</span><span style="color: #ff79c6;">lambda</span> <span style="color: #50fa7b;">(</span>service<span style="color: #50fa7b;">)</span> <span style="color: #50fa7b;">(</span>service-type-name <span style="color: #bd93f9;">(</span>service-kind service<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span> %desktop-services<span style="color: #61bfff;">)</span>
-$9 = <span style="color: #61bfff;">(</span>gdm screen-locker screen-locker mtp sane polkit-wheel mount-setuid-helpers gdm-file-system fontconfig-file-system network-manager wpa-supplicant network-manager-applet modem-manager usb-modeswitch avahi udisks upower accountsservice cups-pk-helper colord geoclue polkit elogind dbus ntp x11-socket-directory-service pulseaudio alsa login virtual-terminal console-fonts syslog agetty mingetty mingetty mingetty mingetty mingetty mingetty static-networking urandom-seed guix nscd rottlog log-cleanup udev sysctl special-files<span style="color: #61bfff;">)</span>
+<pre class="src src-scheme">scheme@<span style="color: #707183;">(</span>guile-user<span style="color: #707183;">)</span>&gt; <span style="color: #707183;">(</span><span style="color: #0000FF;">map</span> <span style="color: #7388D6;">(</span><span style="color: #0000FF;">lambda</span> <span style="color: #909183;">(</span>service<span style="color: #909183;">)</span> <span style="color: #909183;">(</span>service-type-name <span style="color: #709870;">(</span>service-kind service<span style="color: #709870;">)</span><span style="color: #909183;">)</span><span style="color: #7388D6;">)</span> %desktop-services<span style="color: #707183;">)</span>
+$9 = <span style="color: #707183;">(</span>gdm screen-locker screen-locker mtp sane polkit-wheel mount-setuid-helpers gdm-file-system fontconfig-file-system network-manager wpa-supplicant network-manager-applet modem-manager usb-modeswitch avahi udisks upower accountsservice cups-pk-helper colord geoclue polkit elogind dbus ntp x11-socket-directory-service pulseaudio alsa login virtual-terminal console-fonts syslog agetty mingetty mingetty mingetty mingetty mingetty mingetty static-networking urandom-seed guix nscd rottlog log-cleanup udev sysctl special-files<span style="color: #707183;">)</span>
 </pre>
 </div>
 <p>
@@ -107,11 +107,11 @@ We first extract the service type with <code>service-kind</code>, followed by ex
 This can already give us some ideas for how service lists can be modified, let's remove the <code>gdm</code> service and then print the service list.
 </p>
 <div class="org-src-container">
-<pre class="src src-scheme">scheme@<span style="color: #61bfff;">(</span>guile-user<span style="color: #61bfff;">)</span>&gt;
-  <span style="color: #61bfff;">(</span><span style="color: #ff79c6;">map</span> <span style="color: #ff79c6;">(</span><span style="color: #ff79c6;">lambda</span> <span style="color: #50fa7b;">(</span>service<span style="color: #50fa7b;">)</span> <span style="color: #50fa7b;">(</span>service-type-name <span style="color: #bd93f9;">(</span>service-kind service<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span> 
-       <span style="color: #ff79c6;">(</span>remove <span style="color: #50fa7b;">(</span><span style="color: #ff79c6;">lambda</span> <span style="color: #bd93f9;">(</span>service<span style="color: #bd93f9;">)</span> <span style="color: #bd93f9;">(</span>equal? <span style="color: #0189cc;">(</span>service-type-name <span style="color: #61bfff;">(</span>service-kind service<span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span> 'gdm<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span> %desktop-services<span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+<pre class="src src-scheme">scheme@<span style="color: #707183;">(</span>guile-user<span style="color: #707183;">)</span>&gt;
+  <span style="color: #707183;">(</span><span style="color: #0000FF;">map</span> <span style="color: #7388D6;">(</span><span style="color: #0000FF;">lambda</span> <span style="color: #909183;">(</span>service<span style="color: #909183;">)</span> <span style="color: #909183;">(</span>service-type-name <span style="color: #709870;">(</span>service-kind service<span style="color: #709870;">)</span><span style="color: #909183;">)</span><span style="color: #7388D6;">)</span> 
+       <span style="color: #7388D6;">(</span>remove <span style="color: #909183;">(</span><span style="color: #0000FF;">lambda</span> <span style="color: #709870;">(</span>service<span style="color: #709870;">)</span> <span style="color: #709870;">(</span>equal? <span style="color: #907373;">(</span>service-type-name <span style="color: #6276BA;">(</span>service-kind service<span style="color: #6276BA;">)</span><span style="color: #907373;">)</span> 'gdm<span style="color: #709870;">)</span><span style="color: #909183;">)</span> %desktop-services<span style="color: #7388D6;">)</span><span style="color: #707183;">)</span>
 
-$14 = <span style="color: #61bfff;">(</span>screen-locker screen-locker mtp sane polkit-wheel mount-setuid-helpers gdm-file-system fontconfig-file-system network-manager wpa-supplicant network-manager-applet modem-manager usb-modeswitch avahi udisks upower accountsservice cups-pk-helper colord geoclue polkit elogind dbus ntp x11-socket-directory-service pulseaudio alsa login virtual-terminal console-fonts syslog agetty mingetty mingetty mingetty mingetty mingetty mingetty static-networking urandom-seed guix nscd rottlog log-cleanup udev sysctl special-files<span style="color: #61bfff;">)</span>
+$14 = <span style="color: #707183;">(</span>screen-locker screen-locker mtp sane polkit-wheel mount-setuid-helpers gdm-file-system fontconfig-file-system network-manager wpa-supplicant network-manager-applet modem-manager usb-modeswitch avahi udisks upower accountsservice cups-pk-helper colord geoclue polkit elogind dbus ntp x11-socket-directory-service pulseaudio alsa login virtual-terminal console-fonts syslog agetty mingetty mingetty mingetty mingetty mingetty mingetty static-networking urandom-seed guix nscd rottlog log-cleanup udev sysctl special-files<span style="color: #707183;">)</span>
 </pre>
 </div>
 <p>
@@ -123,20 +123,20 @@ We can also remove services by comparing service types instead.
 If we take a quick peek at the config we can see something like this:
 </p>
 <div class="org-src-container">
-<pre class="src src-scheme"><span style="color: #61bfff;">(</span><span style="color: #ff79c6;">define</span> <span style="color: #50fa7b;">%my-services</span>
-  <span style="color: #ff79c6;">(</span>modify-services %desktop-services
-    <span style="color: #50fa7b;">(</span>delete gdm-service-type<span style="color: #50fa7b;">)</span>
-    <span style="color: #50fa7b;">(</span>guix-service-type config =&gt; <span style="color: #bd93f9;">(</span>guix-configuration
-                                  <span style="color: #0189cc;">(</span>inherit config<span style="color: #0189cc;">)</span>
-                                  <span style="color: #0189cc;">(</span>substitute-urls
-                                   <span style="color: #61bfff;">(</span>append <span style="color: #ff79c6;">(</span>list <span style="color: #f1fa8c;">"https://substitutes.nonguix.org"</span><span style="color: #ff79c6;">)</span>
-                                           %default-substitute-urls<span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span>
-                                  <span style="color: #0189cc;">(</span>authorized-keys
-                                   <span style="color: #61bfff;">(</span>append <span style="color: #ff79c6;">(</span>list <span style="color: #50fa7b;">(</span>local-file <span style="color: #f1fa8c;">"./signing-key.pub"</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
-                                           %default-authorized-guix-keys<span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span>
-    <span style="color: #50fa7b;">(</span>dbus-root-service-type config =&gt;
-                            <span style="color: #bd93f9;">(</span>dbus-configuration <span style="color: #0189cc;">(</span>inherit config<span style="color: #0189cc;">)</span>
-                                                <span style="color: #0189cc;">(</span>services <span style="color: #61bfff;">(</span>list libratbag blueman<span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+<pre class="src src-scheme"><span style="color: #707183;">(</span><span style="color: #0000FF;">define</span> <span style="color: #006699;">%my-services</span>
+  <span style="color: #7388D6;">(</span>modify-services %desktop-services
+    <span style="color: #909183;">(</span>delete gdm-service-type<span style="color: #909183;">)</span>
+    <span style="color: #909183;">(</span>guix-service-type config =&gt; <span style="color: #709870;">(</span>guix-configuration
+                                  <span style="color: #907373;">(</span>inherit config<span style="color: #907373;">)</span>
+                                  <span style="color: #907373;">(</span>substitute-urls
+                                   <span style="color: #6276BA;">(</span>append <span style="color: #858580;">(</span>list <span style="color: #008000;">"https://substitutes.nonguix.org"</span><span style="color: #858580;">)</span>
+                                           %default-substitute-urls<span style="color: #6276BA;">)</span><span style="color: #907373;">)</span>
+                                  <span style="color: #907373;">(</span>authorized-keys
+                                   <span style="color: #6276BA;">(</span>append <span style="color: #858580;">(</span>list <span style="color: #80A880;">(</span>local-file <span style="color: #008000;">"./signing-key.pub"</span><span style="color: #80A880;">)</span><span style="color: #858580;">)</span>
+                                           %default-authorized-guix-keys<span style="color: #6276BA;">)</span><span style="color: #907373;">)</span><span style="color: #709870;">)</span><span style="color: #909183;">)</span>
+    <span style="color: #909183;">(</span>dbus-root-service-type config =&gt;
+                            <span style="color: #709870;">(</span>dbus-configuration <span style="color: #907373;">(</span>inherit config<span style="color: #907373;">)</span>
+                                                <span style="color: #907373;">(</span>services <span style="color: #6276BA;">(</span>list libratbag blueman<span style="color: #6276BA;">)</span><span style="color: #907373;">)</span><span style="color: #709870;">)</span><span style="color: #909183;">)</span><span style="color: #7388D6;">)</span><span style="color: #707183;">)</span>
 </pre>
 </div>
 <p>
@@ -158,33 +158,33 @@ First of all let's find the definition of <code>gdm-service-type</code>. I'll us
 </p>
 
 <div class="org-src-container">
-<pre class="src src-scheme"><span style="color: #61bfff;">(</span><span style="color: #ff79c6;">define</span> <span style="color: #50fa7b;">gdm-service-type</span>
-  <span style="color: #ff79c6;">(</span>handle-xorg-configuration gdm-configuration
-    <span style="color: #50fa7b;">(</span>service-type <span style="color: #bd93f9;">(</span>name 'gdm<span style="color: #bd93f9;">)</span>
-                  <span style="color: #bd93f9;">(</span>extensions
-                   <span style="color: #0189cc;">(</span>list <span style="color: #61bfff;">(</span>service-extension shepherd-root-service-type
-                                            gdm-shepherd-service<span style="color: #61bfff;">)</span>
-                         <span style="color: #61bfff;">(</span>service-extension account-service-type
-                                            <span style="color: #ff79c6;">(</span>const %gdm-accounts<span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
-                         <span style="color: #61bfff;">(</span>service-extension dconf-service-type
-                                            gdm-dconf-profiles<span style="color: #61bfff;">)</span>
-                         <span style="color: #61bfff;">(</span>service-extension pam-root-service-type
-                                            gdm-pam-service<span style="color: #61bfff;">)</span>
-                         <span style="color: #61bfff;">(</span>service-extension polkit-service-type
-                                            gdm-polkit-rules<span style="color: #61bfff;">)</span>
-                         <span style="color: #61bfff;">(</span>service-extension profile-service-type
-                                            gdm-configuration-gnome-shell-assets<span style="color: #61bfff;">)</span>
-                         <span style="color: #61bfff;">(</span>service-extension dbus-root-service-type
-                                            <span style="color: #ff79c6;">(</span>compose list
-                                                     gdm-configuration-gdm<span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
-                         <span style="color: #61bfff;">(</span>service-extension localed-service-type
-                                            <span style="color: #ff79c6;">(</span>compose
+<pre class="src src-scheme"><span style="color: #707183;">(</span><span style="color: #0000FF;">define</span> <span style="color: #006699;">gdm-service-type</span>
+  <span style="color: #7388D6;">(</span>handle-xorg-configuration gdm-configuration
+    <span style="color: #909183;">(</span>service-type <span style="color: #709870;">(</span>name 'gdm<span style="color: #709870;">)</span>
+                  <span style="color: #709870;">(</span>extensions
+                   <span style="color: #907373;">(</span>list <span style="color: #6276BA;">(</span>service-extension shepherd-root-service-type
+                                            gdm-shepherd-service<span style="color: #6276BA;">)</span>
+                         <span style="color: #6276BA;">(</span>service-extension account-service-type
+                                            <span style="color: #858580;">(</span>const %gdm-accounts<span style="color: #858580;">)</span><span style="color: #6276BA;">)</span>
+                         <span style="color: #6276BA;">(</span>service-extension dconf-service-type
+                                            gdm-dconf-profiles<span style="color: #6276BA;">)</span>
+                         <span style="color: #6276BA;">(</span>service-extension pam-root-service-type
+                                            gdm-pam-service<span style="color: #6276BA;">)</span>
+                         <span style="color: #6276BA;">(</span>service-extension polkit-service-type
+                                            gdm-polkit-rules<span style="color: #6276BA;">)</span>
+                         <span style="color: #6276BA;">(</span>service-extension profile-service-type
+                                            gdm-configuration-gnome-shell-assets<span style="color: #6276BA;">)</span>
+                         <span style="color: #6276BA;">(</span>service-extension dbus-root-service-type
+                                            <span style="color: #858580;">(</span>compose list
+                                                     gdm-configuration-gdm<span style="color: #858580;">)</span><span style="color: #6276BA;">)</span>
+                         <span style="color: #6276BA;">(</span>service-extension localed-service-type
+                                            <span style="color: #858580;">(</span>compose
                                              xorg-configuration-keyboard-layout
-                                             gdm-configuration-xorg<span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span>
-                  <span style="color: #bd93f9;">(</span>default-value <span style="color: #0189cc;">(</span>gdm-configuration<span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span>
-                  <span style="color: #bd93f9;">(</span>description
-                   <span style="color: #f1fa8c;">"Run the GNOME Desktop Manager (GDM), a program that allows</span>
-<span style="color: #f1fa8c;">you to log in in a graphical session, whether or not you use GNOME."</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+                                             gdm-configuration-xorg<span style="color: #858580;">)</span><span style="color: #6276BA;">)</span><span style="color: #907373;">)</span><span style="color: #709870;">)</span>
+                  <span style="color: #709870;">(</span>default-value <span style="color: #907373;">(</span>gdm-configuration<span style="color: #907373;">)</span><span style="color: #709870;">)</span>
+                  <span style="color: #709870;">(</span>description
+                   <span style="color: #008000;">"Run the GNOME Desktop Manager (GDM), a program that allows</span>
+<span style="color: #008000;">you to log in in a graphical session, whether or not you use GNOME."</span><span style="color: #709870;">)</span><span style="color: #909183;">)</span><span style="color: #7388D6;">)</span><span style="color: #707183;">)</span>
 </pre>
 </div>
 <p>
@@ -195,27 +195,27 @@ Here we can see which services are extended by GDM.
 The logical next step is the <code>gdm-configuration</code> which is another record that looks as follows:
 </p>
 <div class="org-src-container">
-<pre class="src src-scheme"><span style="color: #61bfff;">(</span>define-record-type* <span style="color: #bd93f9;">&lt;gdm-configuration&gt;</span>
+<pre class="src src-scheme"><span style="color: #707183;">(</span>define-record-type* <span style="color: #6434A3;">&lt;gdm-configuration&gt;</span>
   gdm-configuration make-gdm-configuration
   gdm-configuration?
-  <span style="color: #ff79c6;">(</span>gdm gdm-configuration-gdm <span style="color: #50fa7b;">(</span>default gdm<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
-  <span style="color: #ff79c6;">(</span>allow-empty-passwords? gdm-configuration-allow-empty-passwords? <span style="color: #50fa7b;">(</span>default #t<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
-  <span style="color: #ff79c6;">(</span>auto-login? gdm-configuration-auto-login? <span style="color: #50fa7b;">(</span>default #f<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
-  <span style="color: #ff79c6;">(</span>auto-suspend? gdm-configuration-auto-suspend? <span style="color: #50fa7b;">(</span>default #t<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
-  <span style="color: #ff79c6;">(</span>dbus-daemon gdm-configuration-dbus-daemon <span style="color: #50fa7b;">(</span>default dbus-daemon-wrapper<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
-  <span style="color: #ff79c6;">(</span>debug? gdm-configuration-debug? <span style="color: #50fa7b;">(</span>default #f<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
-  <span style="color: #ff79c6;">(</span>default-user gdm-configuration-default-user <span style="color: #50fa7b;">(</span>default #f<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
-  <span style="color: #ff79c6;">(</span>gnome-shell-assets gdm-configuration-gnome-shell-assets
-                      <span style="color: #50fa7b;">(</span>default <span style="color: #bd93f9;">(</span>list adwaita-icon-theme font-abattis-cantarell<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
-  <span style="color: #ff79c6;">(</span>xorg-configuration gdm-configuration-xorg
-                      <span style="color: #50fa7b;">(</span>default <span style="color: #bd93f9;">(</span>xorg-configuration<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
-  <span style="color: #ff79c6;">(</span>x-session gdm-configuration-x-session
-             <span style="color: #50fa7b;">(</span>default <span style="color: #bd93f9;">(</span>xinitrc<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
-  <span style="color: #ff79c6;">(</span>xdmcp? gdm-configuration-xdmcp?
-          <span style="color: #50fa7b;">(</span>default #f<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
-  <span style="color: #ff79c6;">(</span>wayland? gdm-configuration-wayland? <span style="color: #50fa7b;">(</span>default #f<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
-  <span style="color: #ff79c6;">(</span>wayland-session gdm-configuration-wayland-session
-                   <span style="color: #50fa7b;">(</span>default gdm-wayland-session-wrapper<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+  <span style="color: #7388D6;">(</span>gdm gdm-configuration-gdm <span style="color: #909183;">(</span>default gdm<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
+  <span style="color: #7388D6;">(</span>allow-empty-passwords? gdm-configuration-allow-empty-passwords? <span style="color: #909183;">(</span>default #t<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
+  <span style="color: #7388D6;">(</span>auto-login? gdm-configuration-auto-login? <span style="color: #909183;">(</span>default #f<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
+  <span style="color: #7388D6;">(</span>auto-suspend? gdm-configuration-auto-suspend? <span style="color: #909183;">(</span>default #t<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
+  <span style="color: #7388D6;">(</span>dbus-daemon gdm-configuration-dbus-daemon <span style="color: #909183;">(</span>default dbus-daemon-wrapper<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
+  <span style="color: #7388D6;">(</span>debug? gdm-configuration-debug? <span style="color: #909183;">(</span>default #f<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
+  <span style="color: #7388D6;">(</span>default-user gdm-configuration-default-user <span style="color: #909183;">(</span>default #f<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
+  <span style="color: #7388D6;">(</span>gnome-shell-assets gdm-configuration-gnome-shell-assets
+                      <span style="color: #909183;">(</span>default <span style="color: #709870;">(</span>list adwaita-icon-theme font-abattis-cantarell<span style="color: #709870;">)</span><span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
+  <span style="color: #7388D6;">(</span>xorg-configuration gdm-configuration-xorg
+                      <span style="color: #909183;">(</span>default <span style="color: #709870;">(</span>xorg-configuration<span style="color: #709870;">)</span><span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
+  <span style="color: #7388D6;">(</span>x-session gdm-configuration-x-session
+             <span style="color: #909183;">(</span>default <span style="color: #709870;">(</span>xinitrc<span style="color: #709870;">)</span><span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
+  <span style="color: #7388D6;">(</span>xdmcp? gdm-configuration-xdmcp?
+          <span style="color: #909183;">(</span>default #f<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
+  <span style="color: #7388D6;">(</span>wayland? gdm-configuration-wayland? <span style="color: #909183;">(</span>default #f<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
+  <span style="color: #7388D6;">(</span>wayland-session gdm-configuration-wayland-session
+                   <span style="color: #909183;">(</span>default gdm-wayland-session-wrapper<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span><span style="color: #707183;">)</span>
 </pre>
 </div>
 <p>
@@ -230,56 +230,56 @@ The <code>gdm</code> slot is rather interesting here as it defines which package
 If we want to look into how the service configuration is defined then <code>gdm-shepherd-service</code> is what we're looking for.
 </p>
 <div class="org-src-container">
-<pre class="src src-scheme"><span style="color: #61bfff;">(</span><span style="color: #ff79c6;">define</span> <span style="color: #ff79c6;">(</span><span style="color: #50fa7b;">gdm-shepherd-service</span> config<span style="color: #ff79c6;">)</span>
-  <span style="color: #ff79c6;">(</span><span style="color: #ff79c6;">define</span> <span style="color: #50fa7b;">config-file</span>
-    <span style="color: #50fa7b;">(</span>gdm-configuration-file config<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+<pre class="src src-scheme"><span style="color: #707183;">(</span><span style="color: #0000FF;">define</span> <span style="color: #7388D6;">(</span><span style="color: #006699;">gdm-shepherd-service</span> config<span style="color: #7388D6;">)</span>
+  <span style="color: #7388D6;">(</span><span style="color: #0000FF;">define</span> <span style="color: #006699;">config-file</span>
+    <span style="color: #909183;">(</span>gdm-configuration-file config<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
 
-  <span style="color: #ff79c6;">(</span>list <span style="color: #50fa7b;">(</span>shepherd-service
-         <span style="color: #bd93f9;">(</span>documentation <span style="color: #f1fa8c;">"Xorg display server (GDM)"</span><span style="color: #bd93f9;">)</span>
-         <span style="color: #bd93f9;">(</span>provision '<span style="color: #0189cc;">(</span>xorg-server<span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span>
-         <span style="color: #bd93f9;">(</span>requirement '<span style="color: #0189cc;">(</span>dbus-system pam user-processes host-name udev elogind<span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span>
-         <span style="color: #bd93f9;">(</span>start #~<span style="color: #0189cc;">(</span><span style="color: #ff79c6;">lambda</span> <span style="color: #61bfff;">()</span>
-                    <span style="color: #61bfff;">(</span>fork+exec-command
-                     <span style="color: #ff79c6;">(</span>list #$<span style="color: #50fa7b;">(</span>file-append <span style="color: #bd93f9;">(</span>gdm-configuration-gdm config<span style="color: #bd93f9;">)</span>
-                                          <span style="color: #f1fa8c;">"/bin/gdm"</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
-                     <span style="color: #ffb86c;">#:environment-variables</span>
-                     <span style="color: #ff79c6;">(</span>list #$@<span style="color: #50fa7b;">(</span><span style="color: #ff79c6;">if</span> <span style="color: #bd93f9;">(</span>gdm-configuration-auto-suspend? config<span style="color: #bd93f9;">)</span>
-                                  #~<span style="color: #bd93f9;">()</span>
-                                  #~<span style="color: #bd93f9;">(</span><span style="color: #f1fa8c;">"DCONF_PROFILE=/etc/dconf/profile/gdm"</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span>
-                           <span style="color: #50fa7b;">(</span>string-append <span style="color: #f1fa8c;">"GDM_CUSTOM_CONF="</span> #$config-file<span style="color: #50fa7b;">)</span>
-                           <span style="color: #50fa7b;">(</span>string-append
-                            <span style="color: #f1fa8c;">"GDM_DBUS_DAEMON="</span>
-                            #$<span style="color: #bd93f9;">(</span>gdm-configuration-dbus-daemon config<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span>
-                           <span style="color: #50fa7b;">(</span>string-append
-                            <span style="color: #f1fa8c;">"GDM_X_SERVER="</span>
-                            #$<span style="color: #bd93f9;">(</span>xorg-wrapper
-                               <span style="color: #61bfff;">(</span>gdm-configuration-xorg config<span style="color: #61bfff;">)</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span>
-                           <span style="color: #50fa7b;">(</span>string-append
-                            <span style="color: #f1fa8c;">"GDM_X_SESSION="</span>
-                            #$<span style="color: #bd93f9;">(</span>gdm-configuration-x-session config<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span>
-                           <span style="color: #50fa7b;">(</span>string-append
-                            <span style="color: #f1fa8c;">"XDG_DATA_DIRS="</span>
-                            <span style="color: #bd93f9;">(</span><span style="color: #61bfff;">(</span><span style="color: #ff79c6;">lambda</span> <span style="color: #ff79c6;">(</span>ls<span style="color: #ff79c6;">)</span> <span style="color: #ff79c6;">(</span>string-join ls <span style="color: #f1fa8c;">":"</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
-                             <span style="color: #61bfff;">(</span><span style="color: #ff79c6;">map</span> <span style="color: #ff79c6;">(</span><span style="color: #ff79c6;">lambda</span> <span style="color: #50fa7b;">(</span>path<span style="color: #50fa7b;">)</span>
-                                    <span style="color: #50fa7b;">(</span>string-append path <span style="color: #f1fa8c;">"/share"</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
-                                  <span style="color: #6272a4;">;; </span><span style="color: #6272a4;">XXX: Remove gnome-shell below when GDM</span>
-                                  <span style="color: #6272a4;">;; </span><span style="color: #6272a4;">can depend on GNOME Shell directly.</span>
-                                  <span style="color: #ff79c6;">(</span>cons #$gnome-shell
-                                        '#$<span style="color: #50fa7b;">(</span>gdm-configuration-gnome-shell-assets
-                                            config<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span>
-                           <span style="color: #6272a4;">;; </span><span style="color: #6272a4;">Add XCURSOR_PATH so that mutter can find its</span>
-                           <span style="color: #6272a4;">;; </span><span style="color: #6272a4;">cursors.  gdm doesn't login so doesn't source</span>
-                           <span style="color: #6272a4;">;; </span><span style="color: #6272a4;">the corresponding line in /etc/profile.</span>
-                           <span style="color: #f1fa8c;">"XCURSOR_PATH=/run/current-system/profile/share/icons"</span>
-                           <span style="color: #50fa7b;">(</span>string-append
-                            <span style="color: #f1fa8c;">"GDK_PIXBUF_MODULE_FILE="</span>
-                            #$gnome-shell <span style="color: #f1fa8c;">"/"</span> #$%gdk-pixbuf-loaders-cache-file<span style="color: #50fa7b;">)</span>
-                           <span style="color: #50fa7b;">(</span>string-append
-                            <span style="color: #f1fa8c;">"GDM_WAYLAND_SESSION="</span>
-                            #$<span style="color: #bd93f9;">(</span>gdm-configuration-wayland-session config<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span>
-         <span style="color: #bd93f9;">(</span>stop #~<span style="color: #0189cc;">(</span>make-kill-destructor<span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span>
-         <span style="color: #bd93f9;">(</span>actions <span style="color: #0189cc;">(</span>list <span style="color: #61bfff;">(</span>shepherd-configuration-action config-file<span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span>
-         <span style="color: #bd93f9;">(</span>respawn? #t<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+  <span style="color: #7388D6;">(</span>list <span style="color: #909183;">(</span>shepherd-service
+         <span style="color: #709870;">(</span>documentation <span style="color: #008000;">"Xorg display server (GDM)"</span><span style="color: #709870;">)</span>
+         <span style="color: #709870;">(</span>provision '<span style="color: #907373;">(</span>xorg-server<span style="color: #907373;">)</span><span style="color: #709870;">)</span>
+         <span style="color: #709870;">(</span>requirement '<span style="color: #907373;">(</span>dbus-system pam user-processes host-name udev elogind<span style="color: #907373;">)</span><span style="color: #709870;">)</span>
+         <span style="color: #709870;">(</span>start #~<span style="color: #907373;">(</span><span style="color: #0000FF;">lambda</span> <span style="color: #6276BA;">()</span>
+                    <span style="color: #6276BA;">(</span>fork+exec-command
+                     <span style="color: #858580;">(</span>list #$<span style="color: #80A880;">(</span>file-append <span style="color: #887070;">(</span>gdm-configuration-gdm config<span style="color: #887070;">)</span>
+                                          <span style="color: #008000;">"/bin/gdm"</span><span style="color: #80A880;">)</span><span style="color: #858580;">)</span>
+                     <span style="color: #006FE0;">#:environment-variables</span>
+                     <span style="color: #858580;">(</span>list #$@<span style="color: #80A880;">(</span><span style="color: #0000FF;">if</span> <span style="color: #887070;">(</span>gdm-configuration-auto-suspend? config<span style="color: #887070;">)</span>
+                                  #~<span style="color: #887070;">()</span>
+                                  #~<span style="color: #887070;">(</span><span style="color: #008000;">"DCONF_PROFILE=/etc/dconf/profile/gdm"</span><span style="color: #887070;">)</span><span style="color: #80A880;">)</span>
+                           <span style="color: #80A880;">(</span>string-append <span style="color: #008000;">"GDM_CUSTOM_CONF="</span> #$config-file<span style="color: #80A880;">)</span>
+                           <span style="color: #80A880;">(</span>string-append
+                            <span style="color: #008000;">"GDM_DBUS_DAEMON="</span>
+                            #$<span style="color: #887070;">(</span>gdm-configuration-dbus-daemon config<span style="color: #887070;">)</span><span style="color: #80A880;">)</span>
+                           <span style="color: #80A880;">(</span>string-append
+                            <span style="color: #008000;">"GDM_X_SERVER="</span>
+                            #$<span style="color: #887070;">(</span>xorg-wrapper
+                               <span style="color: #707183;">(</span>gdm-configuration-xorg config<span style="color: #707183;">)</span><span style="color: #887070;">)</span><span style="color: #80A880;">)</span>
+                           <span style="color: #80A880;">(</span>string-append
+                            <span style="color: #008000;">"GDM_X_SESSION="</span>
+                            #$<span style="color: #887070;">(</span>gdm-configuration-x-session config<span style="color: #887070;">)</span><span style="color: #80A880;">)</span>
+                           <span style="color: #80A880;">(</span>string-append
+                            <span style="color: #008000;">"XDG_DATA_DIRS="</span>
+                            <span style="color: #887070;">(</span><span style="color: #707183;">(</span><span style="color: #0000FF;">lambda</span> <span style="color: #7388D6;">(</span>ls<span style="color: #7388D6;">)</span> <span style="color: #7388D6;">(</span>string-join ls <span style="color: #008000;">":"</span><span style="color: #7388D6;">)</span><span style="color: #707183;">)</span>
+                             <span style="color: #707183;">(</span><span style="color: #0000FF;">map</span> <span style="color: #7388D6;">(</span><span style="color: #0000FF;">lambda</span> <span style="color: #909183;">(</span>path<span style="color: #909183;">)</span>
+                                    <span style="color: #909183;">(</span>string-append path <span style="color: #008000;">"/share"</span><span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
+                                  <span style="color: #8D8D84; font-style: italic;">;; </span><span style="color: #8D8D84; font-style: italic;">XXX: Remove gnome-shell below when GDM</span>
+                                  <span style="color: #8D8D84; font-style: italic;">;; </span><span style="color: #8D8D84; font-style: italic;">can depend on GNOME Shell directly.</span>
+                                  <span style="color: #7388D6;">(</span>cons #$gnome-shell
+                                        '#$<span style="color: #909183;">(</span>gdm-configuration-gnome-shell-assets
+                                            config<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span><span style="color: #707183;">)</span><span style="color: #887070;">)</span><span style="color: #80A880;">)</span>
+                           <span style="color: #8D8D84; font-style: italic;">;; </span><span style="color: #8D8D84; font-style: italic;">Add XCURSOR_PATH so that mutter can find its</span>
+                           <span style="color: #8D8D84; font-style: italic;">;; </span><span style="color: #8D8D84; font-style: italic;">cursors.  gdm doesn't login so doesn't source</span>
+                           <span style="color: #8D8D84; font-style: italic;">;; </span><span style="color: #8D8D84; font-style: italic;">the corresponding line in /etc/profile.</span>
+                           <span style="color: #008000;">"XCURSOR_PATH=/run/current-system/profile/share/icons"</span>
+                           <span style="color: #80A880;">(</span>string-append
+                            <span style="color: #008000;">"GDK_PIXBUF_MODULE_FILE="</span>
+                            #$gnome-shell <span style="color: #008000;">"/"</span> #$%gdk-pixbuf-loaders-cache-file<span style="color: #80A880;">)</span>
+                           <span style="color: #80A880;">(</span>string-append
+                            <span style="color: #008000;">"GDM_WAYLAND_SESSION="</span>
+                            #$<span style="color: #887070;">(</span>gdm-configuration-wayland-session config<span style="color: #887070;">)</span><span style="color: #80A880;">)</span><span style="color: #858580;">)</span><span style="color: #6276BA;">)</span><span style="color: #907373;">)</span><span style="color: #709870;">)</span>
+         <span style="color: #709870;">(</span>stop #~<span style="color: #907373;">(</span>make-kill-destructor<span style="color: #907373;">)</span><span style="color: #709870;">)</span>
+         <span style="color: #709870;">(</span>actions <span style="color: #907373;">(</span>list <span style="color: #6276BA;">(</span>shepherd-configuration-action config-file<span style="color: #6276BA;">)</span><span style="color: #907373;">)</span><span style="color: #709870;">)</span>
+         <span style="color: #709870;">(</span>respawn? #t<span style="color: #709870;">)</span><span style="color: #909183;">)</span><span style="color: #7388D6;">)</span><span style="color: #707183;">)</span>
 </pre>
 </div>
 <p>
@@ -308,31 +308,31 @@ One of the common questions I've seen asked by Guix users is how one would go ab
 I'll be modifying Gnome as it ships with a lot of unnecessary stuff by default. Let's start with the <code>gnome-desktop-service-type</code>.
 </p>
 <div class="org-src-container">
-<pre class="src src-scheme"><span style="color: #61bfff;">(</span><span style="color: #ff79c6;">define</span> <span style="color: #50fa7b;">gnome-desktop-service-type</span>
-  <span style="color: #ff79c6;">(</span>service-type
-   <span style="color: #50fa7b;">(</span>name 'gnome-desktop<span style="color: #50fa7b;">)</span>
-   <span style="color: #50fa7b;">(</span>extensions
-    <span style="color: #bd93f9;">(</span>list <span style="color: #0189cc;">(</span>service-extension udev-service-type
-                             gnome-udev-rules<span style="color: #0189cc;">)</span>
-          <span style="color: #0189cc;">(</span>service-extension polkit-service-type
-                             gnome-polkit-settings<span style="color: #0189cc;">)</span>
-          <span style="color: #0189cc;">(</span>service-extension setuid-program-service-type
-                             gnome-setuid-programs<span style="color: #0189cc;">)</span>
-          <span style="color: #0189cc;">(</span>service-extension profile-service-type
-                             <span style="color: #61bfff;">(</span>compose list gnome-desktop-configuration-gnome<span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span>
-   <span style="color: #50fa7b;">(</span>default-value <span style="color: #bd93f9;">(</span>gnome-desktop-configuration<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span>
-   <span style="color: #50fa7b;">(</span>description <span style="color: #f1fa8c;">"Run the GNOME desktop environment."</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+<pre class="src src-scheme"><span style="color: #707183;">(</span><span style="color: #0000FF;">define</span> <span style="color: #006699;">gnome-desktop-service-type</span>
+  <span style="color: #7388D6;">(</span>service-type
+   <span style="color: #909183;">(</span>name 'gnome-desktop<span style="color: #909183;">)</span>
+   <span style="color: #909183;">(</span>extensions
+    <span style="color: #709870;">(</span>list <span style="color: #907373;">(</span>service-extension udev-service-type
+                             gnome-udev-rules<span style="color: #907373;">)</span>
+          <span style="color: #907373;">(</span>service-extension polkit-service-type
+                             gnome-polkit-settings<span style="color: #907373;">)</span>
+          <span style="color: #907373;">(</span>service-extension setuid-program-service-type
+                             gnome-setuid-programs<span style="color: #907373;">)</span>
+          <span style="color: #907373;">(</span>service-extension profile-service-type
+                             <span style="color: #6276BA;">(</span>compose list gnome-desktop-configuration-gnome<span style="color: #6276BA;">)</span><span style="color: #907373;">)</span><span style="color: #709870;">)</span><span style="color: #909183;">)</span>
+   <span style="color: #909183;">(</span>default-value <span style="color: #709870;">(</span>gnome-desktop-configuration<span style="color: #709870;">)</span><span style="color: #909183;">)</span>
+   <span style="color: #909183;">(</span>description <span style="color: #008000;">"Run the GNOME desktop environment."</span><span style="color: #909183;">)</span><span style="color: #7388D6;">)</span><span style="color: #707183;">)</span>
 </pre>
 </div>
 <p>
 The <code>gnome-desktop-configuration</code> is what we want here, let's pull up its definition.
 </p>
 <div class="org-src-container">
-<pre class="src src-scheme"><span style="color: #61bfff;">(</span>define-record-type* <span style="color: #bd93f9;">&lt;gnome-desktop-configuration&gt;</span> gnome-desktop-configuration
+<pre class="src src-scheme"><span style="color: #707183;">(</span>define-record-type* <span style="color: #6434A3;">&lt;gnome-desktop-configuration&gt;</span> gnome-desktop-configuration
   make-gnome-desktop-configuration
   gnome-desktop-configuration?
-  <span style="color: #ff79c6;">(</span>gnome gnome-desktop-configuration-gnome
-         <span style="color: #50fa7b;">(</span>default gnome<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+  <span style="color: #7388D6;">(</span>gnome gnome-desktop-configuration-gnome
+         <span style="color: #909183;">(</span>default gnome<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span><span style="color: #707183;">)</span>
 </pre>
 </div>
 <p>
@@ -344,21 +344,21 @@ So let's make that stripped-down version of Gnome and remove all the stuff we do
 We haven't been through defining packages yet, so this here is a bit of magic we will investigate some other time.
 </p>
 <div class="org-src-container">
-<pre class="src src-scheme"><span style="color: #61bfff;">(</span><span style="color: #ff79c6;">define</span> <span style="color: #50fa7b;">my-gnome</span>
-  <span style="color: #ff79c6;">(</span>package
-   <span style="color: #50fa7b;">(</span>inherit gnome<span style="color: #50fa7b;">)</span>
-   <span style="color: #50fa7b;">(</span>name <span style="color: #f1fa8c;">"my-gnome"</span><span style="color: #50fa7b;">)</span>
-   <span style="color: #50fa7b;">(</span>propagated-inputs
-    <span style="color: #bd93f9;">(</span>modify-inputs <span style="color: #0189cc;">(</span>package-propagated-inputs gnome<span style="color: #0189cc;">)</span>
-                   <span style="color: #0189cc;">(</span>delete <span style="color: #f1fa8c;">"epiphany"</span><span style="color: #0189cc;">)</span>
-                   <span style="color: #0189cc;">(</span>delete <span style="color: #f1fa8c;">"gnome-weather"</span><span style="color: #0189cc;">)</span>
-                   <span style="color: #0189cc;">(</span>delete <span style="color: #f1fa8c;">"simple-scan"</span><span style="color: #0189cc;">)</span>
-                   <span style="color: #0189cc;">(</span>delete <span style="color: #f1fa8c;">"gnome-maps"</span><span style="color: #0189cc;">)</span>
-                   <span style="color: #0189cc;">(</span>delete <span style="color: #f1fa8c;">"cheese"</span><span style="color: #0189cc;">)</span>
-                   <span style="color: #0189cc;">(</span>delete <span style="color: #f1fa8c;">"gnome-boxes"</span><span style="color: #0189cc;">)</span>
-                   <span style="color: #0189cc;">(</span>delete <span style="color: #f1fa8c;">"gnome-console"</span><span style="color: #0189cc;">)</span>
-                   <span style="color: #0189cc;">(</span>delete <span style="color: #f1fa8c;">"gnome-contacts"</span><span style="color: #0189cc;">)</span>
-                   <span style="color: #0189cc;">(</span>append gnome-terminal<span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+<pre class="src src-scheme"><span style="color: #707183;">(</span><span style="color: #0000FF;">define</span> <span style="color: #006699;">my-gnome</span>
+  <span style="color: #7388D6;">(</span>package
+   <span style="color: #909183;">(</span>inherit gnome<span style="color: #909183;">)</span>
+   <span style="color: #909183;">(</span>name <span style="color: #008000;">"my-gnome"</span><span style="color: #909183;">)</span>
+   <span style="color: #909183;">(</span>propagated-inputs
+    <span style="color: #709870;">(</span>modify-inputs <span style="color: #907373;">(</span>package-propagated-inputs gnome<span style="color: #907373;">)</span>
+                   <span style="color: #907373;">(</span>delete <span style="color: #008000;">"epiphany"</span><span style="color: #907373;">)</span>
+                   <span style="color: #907373;">(</span>delete <span style="color: #008000;">"gnome-weather"</span><span style="color: #907373;">)</span>
+                   <span style="color: #907373;">(</span>delete <span style="color: #008000;">"simple-scan"</span><span style="color: #907373;">)</span>
+                   <span style="color: #907373;">(</span>delete <span style="color: #008000;">"gnome-maps"</span><span style="color: #907373;">)</span>
+                   <span style="color: #907373;">(</span>delete <span style="color: #008000;">"cheese"</span><span style="color: #907373;">)</span>
+                   <span style="color: #907373;">(</span>delete <span style="color: #008000;">"gnome-boxes"</span><span style="color: #907373;">)</span>
+                   <span style="color: #907373;">(</span>delete <span style="color: #008000;">"gnome-console"</span><span style="color: #907373;">)</span>
+                   <span style="color: #907373;">(</span>delete <span style="color: #008000;">"gnome-contacts"</span><span style="color: #907373;">)</span>
+                   <span style="color: #907373;">(</span>append gnome-terminal<span style="color: #907373;">)</span><span style="color: #709870;">)</span><span style="color: #909183;">)</span><span style="color: #7388D6;">)</span><span style="color: #707183;">)</span>
 </pre>
 </div>
 <p>
@@ -370,16 +370,16 @@ Now we construct service type such that is uses a custom <code>gnome-configurati
 This is practically all just playing around with the records we looked at above.
 </p>
 <div class="org-src-container">
-<pre class="src src-scheme"><span style="color: #61bfff;">(</span>operating-system
+<pre class="src src-scheme"><span style="color: #707183;">(</span>operating-system
   ...
-  <span style="color: #ff79c6;">(</span>services
-   <span style="color: #50fa7b;">(</span>cons* 
-    <span style="color: #bd93f9;">(</span>service gnome-desktop-service-type
-             <span style="color: #0189cc;">(</span>gnome-configuration
-              <span style="color: #61bfff;">(</span>gnome my-gnome<span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span>
-    %desktop-services<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+  <span style="color: #7388D6;">(</span>services
+   <span style="color: #909183;">(</span>cons* 
+    <span style="color: #709870;">(</span>service gnome-desktop-service-type
+             <span style="color: #907373;">(</span>gnome-configuration
+              <span style="color: #6276BA;">(</span>gnome my-gnome<span style="color: #6276BA;">)</span><span style="color: #907373;">)</span><span style="color: #709870;">)</span>
+    %desktop-services<span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
   ...
-<span style="color: #61bfff;">)</span>
+<span style="color: #707183;">)</span>
 </pre>
 </div>
 </div>
