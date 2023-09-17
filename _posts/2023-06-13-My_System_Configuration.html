@@ -1,0 +1,137 @@
+---
+layout: post
+title: My System Configuration
+permalink: /:title/
+tags: [emacs, dotfiles]
+---
+
+<p>
+This is an extended excerpt from my personal dotfiles, one which I think is worth a separate post.
+Here is a link to the full configuration for those interested <a href="https://raw.githack.com/CuBeRJAN/emacs-stuff/main/README.html">https://raw.githack.com/CuBeRJAN/emacs-stuff/main/README.html</a>.
+</p>
+
+<p>
+&#x2014;
+</p>
+
+<p>
+Let's talk about my system configuration - how I handle it and why.
+</p>
+
+<div id="outline-container-org4b818e6" class="outline-2">
+<h2 id="org4b818e6">The why</h2>
+<div class="outline-text-2" id="text-org4b818e6">
+<p>
+There are multiple important ideas in place here.
+</p>
+</div>
+
+<div id="outline-container-org4f40dc7" class="outline-3">
+<h3 id="org4f40dc7">Reproducibility</h3>
+<div class="outline-text-3" id="text-org4f40dc7">
+<p>
+I should be able to deploy this configuration quickly and easily, achieving an identical (= reasonably close to identical) result every time.
+Most importantly all of the relevant dotfiles should be present and should be set up in a way that allows them to work when deployed anywhere. Every file that is relevant to reproducing this configuration should be present.
+To ensure this is the case I sometimes try to set up my environment in a virtual machine so that I can check if I missed any important files.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org6e09d24" class="outline-3">
+<h3 id="org6e09d24">Separation</h3>
+<div class="outline-text-3" id="text-org6e09d24">
+<p>
+The user environment should exist almost entirely separately from the system environment. 
+</p>
+</div>
+</div>
+
+<div id="outline-container-org1244467" class="outline-3">
+<h3 id="org1244467">Modularity</h3>
+<div class="outline-text-3" id="text-org1244467">
+<p>
+I should be able to easily pick which parts of the configuration I want to deploy.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org4c6c3b1" class="outline-3">
+<h3 id="org4c6c3b1">Organization</h3>
+<div class="outline-text-3" id="text-org4c6c3b1">
+<p>
+There should be no confusion over how to deploy this system, nor should there be any confusion over where individual files belong, etc. All files should have their own clearly defined place.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgaa9f76b" class="outline-3">
+<h3 id="orgaa9f76b">Maintainability</h3>
+<div class="outline-text-3" id="text-orgaa9f76b">
+<p>
+The configuration should be easy to keep current, it should also be robust and reliable.
+</p>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-orge8b53d2" class="outline-2">
+<h2 id="orge8b53d2">The implementation</h2>
+<div class="outline-text-2" id="text-orge8b53d2">
+<p>
+I'll start by outlining the structure, then I'll go over each step and explain its role.
+</p>
+</div>
+
+<div id="outline-container-orga857b43" class="outline-3">
+<h3 id="orga857b43">README.org</h3>
+<div class="outline-text-3" id="text-orga857b43">
+<p>
+I chose to implement my configuration in <code>org</code> as it allows me to clearly document every single little piece of the system, something which is very important to me.
+</p>
+
+<p>
+The centerpiece of this implementation is the <code>README.org</code> file. This file includes all of the plaintext dotfiles that are part of this system, as well as information about every other file.
+Using <code>org</code> to describe these files allows for the configuration to remain readable and properly organized. Each chapter in this file corresponds to a single "module" (more on these below).
+</p>
+
+<p>
+This <code>org</code> file is then <code>tangled</code> into the <code>configs</code> directory, where the individual files are placed into separate directories, or as I called them above, "modules".
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgd76cb16" class="outline-3">
+<h3 id="orgd76cb16">Modules</h3>
+<div class="outline-text-3" id="text-orgd76cb16">
+<p>
+Each module is a group of files that fullfill a certain role.
+These modules should be self-reliant and shouldn't depend on other modules. In practice there are a few exceptions - for example some modules rely on the <code>guix</code> module to ship dependencies.
+Non-plaintext modules are also present in the <code>configs</code> directory. These aren't tangled but are still described in the <code>org</code> file.
+These are mostly things that cannot be defined in plaintext such as fonts, icons, wallpapers and similar.
+</p>
+
+<p>
+All of these modules are symlinked into the home directory using GNU Stow. Using the modules in this way allows picking out specific parts of the configuration.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org64853b2" class="outline-3">
+<h3 id="org64853b2">Packages</h3>
+<div class="outline-text-3" id="text-org64853b2">
+<p>
+The GNU Guix package manager is used for installing dependencies. This means the dependencies for this environment can be installed anywhere where Guix can run, further separating the user environment from the rest of the system and ensuring better reliability.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgc2bdb40" class="outline-2">
+<h2 id="orgc2bdb40">Conclusion</h2>
+<div class="outline-text-2" id="text-orgc2bdb40">
+<p>
+I have put a lot of effort into keeping my configuration clean and organized, so much so that it almost reads more like a book than a program. I think literate configuration is a very great tool, and one everyone interested should try.
+</p>
+</div>
+</div>

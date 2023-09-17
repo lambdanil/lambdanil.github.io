@@ -1,0 +1,280 @@
+---
+layout: post
+title: Guix Tips and Common Mistakes
+permalink: /:title/
+tags: [scheme, guix]
+---
+<p>
+I have spent some time in online spaces dedicated to the discussion of Guix. As such, I am familiar with a lot of the mistakes new Guix users make, and I would like to go over some of the most common ones now.
+</p>
+
+<p>
+Please note that this list isn't final and I might add new entries over time.
+</p>
+
+<div id="outline-container-orgfe2ebed" class="outline-2">
+<h2 id="orgfe2ebed">Modifying lists</h2>
+<div class="outline-text-2" id="text-orgfe2ebed">
+<p>
+Many times I have seen people do something like this in their Guix System configuration:
+</p>
+<div class="org-src-container">
+<pre class="src src-scheme"><span style="color: #61bfff;">(</span>modify-services %desktop-services
+                 <span style="color: #ff79c6;">(</span>delete gdm-service-type<span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+
+<span style="color: #61bfff;">(</span>operating-system
+ ...
+
+ <span style="color: #ff79c6;">(</span>services
+  <span style="color: #50fa7b;">(</span>append
+   <span style="color: #bd93f9;">(</span>list
+    ...<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span>
+  %desktop-services<span style="color: #ff79c6;">)</span>
+ ...<span style="color: #61bfff;">)</span>
+</pre>
+</div>
+<p>
+The intent here is, to remove the GDM service from the system. When the user then reconfigures the system, they'll be surprised to see GDM starting again.
+The issue with this approach is pretty simple - the <code>modify</code> macros are non-destructive.
+</p>
+
+<p>
+What this means in this case is that <code>modify-services</code> produces a brand new list, while <code>%desktop-services</code> stays unmodified.
+If you want to properly remove GDM from your list of services, you should instead define a new list like so:
+</p>
+<div class="org-src-container">
+<pre class="src src-scheme"><span style="color: #61bfff;">(</span><span style="color: #ff79c6;">define</span> <span style="color: #50fa7b;">%my-services</span>
+  <span style="color: #ff79c6;">(</span>modify-services %desktop-services
+                   <span style="color: #50fa7b;">(</span>delete gdm-service-type<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+</pre>
+</div>
+<p>
+Then you can use your new <code>%my-services</code> list in place of the old <code>%desktop-services</code> in the <code>services</code> declaration.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org9e54ae5" class="outline-2">
+<h2 id="org9e54ae5">Using Guix to build software</h2>
+<div class="outline-text-2" id="text-org9e54ae5">
+<p>
+Sometimes users will install development libraries with Guix, only to find they are unable to compile their projects. The solution here is very straightforward, you need to add the Guix libraries into your library path.
+</p>
+
+<p>
+Usually this can be done very easily with a single command.
+</p>
+<div class="org-src-container">
+<pre class="src src-bash"><span style="color: #ff79c6;">export</span> <span style="color: #ffc9e8; font-style: italic;">LD_LIBRARY_PATH</span>=<span style="color: #f1fa8c;">"</span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">HOME</span><span style="color: #f1fa8c;">/.guix-profile/lib/"</span>
+</pre>
+</div>
+<p>
+This is assuming the default Guix profile path.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org86e6034" class="outline-2">
+<h2 id="org86e6034">Setting up the Guix environment correctly</h2>
+<div class="outline-text-2" id="text-org86e6034">
+<p>
+On foreign distributions running Guix is is necessary to source your profile correctly, otherwise you won't be able to access programs installed via Guix in the terminal, or even in your application menu.
+The Guix documentation goes over this issue only very briefly, and without much concrete explanation. Here's my approach to sourcing my Guix profile correctly.
+</p>
+
+<p>
+First I'll need to add Guix into the login environment. This part can be a little complicated, as the login environment is handled differently by different login managers and desktop environments.
+A solution that generally works for GDM, as well as for non-graphical tty login is to use your shell's startup file. In the case of bash that is <code>$HOME/.bash_profile</code>. You'll want to add the following.
+</p>
+<div class="org-src-container">
+<pre class="src src-bash"><span style="color: #ff79c6;">if</span> <span style="color: #61bfff;">[</span> -d <span style="color: #f1fa8c;">"/gnu"</span> <span style="color: #61bfff;">]</span> <span style="color: #ff79c6;">&amp;&amp;</span> <span style="color: #61bfff;">[</span> -d <span style="color: #f1fa8c;">"</span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">HOME</span><span style="color: #f1fa8c;">/.guix-profile"</span> <span style="color: #61bfff;">]</span><span style="color: #ff79c6;">;</span> <span style="color: #ff79c6;">then</span>
+    <span style="color: #ffb86c; font-weight: bold;">source</span> <span style="color: #f1fa8c;">"</span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">HOME</span><span style="color: #f1fa8c;">/.guix-profile/etc/profile"</span>
+    <span style="color: #ffb86c; font-weight: bold;">source</span> <span style="color: #f1fa8c;">"</span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">HOME</span><span style="color: #f1fa8c;">/.config/guix/current/etc/profile"</span>
+<span style="color: #ff79c6;">fi</span>
+</pre>
+</div>
+<p>
+This ensures that the Guix profile actually exists first.
+Note that using the shell login file this way isn't supported by all login managers - in those cases you should find how to set up the environment correctly specifically for your login manager.
+</p>
+
+<p>
+In some cases this approach can actually cause issues on foreign distributions as the system confuses Guix and native binaries. I have seen this cause strange bugs on Gnome as an example.
+In those cases you should instead use a more minimal setup like so:
+</p>
+<div class="org-src-container">
+<pre class="src src-bash"><span style="color: #ff79c6;">if</span> <span style="color: #61bfff;">[</span> -d <span style="color: #f1fa8c;">"/gnu"</span> <span style="color: #61bfff;">]</span> <span style="color: #ff79c6;">&amp;&amp;</span> <span style="color: #61bfff;">[</span> -d <span style="color: #f1fa8c;">"</span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">HOME</span><span style="color: #f1fa8c;">/.guix-profile"</span> <span style="color: #61bfff;">]</span><span style="color: #ff79c6;">;</span> <span style="color: #ff79c6;">then</span>
+    <span style="color: #ff79c6;">export</span> <span style="color: #f1fa8c; font-style: italic;">PATH</span>=<span style="color: #f1fa8c;">"</span><span style="color: #ff79c6;">$</span><span style="color: #f1fa8c; font-style: italic;">PATH</span><span style="color: #f1fa8c;">:</span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">HOME</span><span style="color: #f1fa8c;">/.guix-profile/bin"</span>
+    <span style="color: #ff79c6;">export</span> <span style="color: #ffc9e8; font-style: italic;">XDG_DATA_DIRS</span>=<span style="color: #f1fa8c;">"</span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">XDG_DATA_DIRS</span><span style="color: #f1fa8c;">:</span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">HOME</span><span style="color: #f1fa8c;">/.guix-profile/share"</span>
+<span style="color: #ff79c6;">fi</span>
+</pre>
+</div>
+
+<p>
+But this isn't all that's needed. For your shell to properly find all the commands you'll probably need to add some commands into your shell startup file. In the case of bash this file is <code>$HOME/.bashrc</code>.
+</p>
+<div class="org-src-container">
+<pre class="src src-bash"><span style="color: #ff79c6;">if</span> <span style="color: #61bfff;">[</span> -d <span style="color: #f1fa8c;">"/gnu"</span> <span style="color: #61bfff;">]</span> <span style="color: #ff79c6;">&amp;&amp;</span> <span style="color: #61bfff;">[</span> -d <span style="color: #f1fa8c;">"</span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">HOME</span><span style="color: #f1fa8c;">/.guix-profile"</span> <span style="color: #61bfff;">]</span> <span style="color: #ff79c6;">&amp;&amp;</span> <span style="color: #61bfff;">[</span><span style="color: #ff79c6;">[</span> <span style="color: #ff79c6;">$</span><span style="color: #f1fa8c;">-</span> <span style="color: #ff79c6;">==</span> *i* <span style="color: #ff79c6;">]</span><span style="color: #61bfff;">]</span><span style="color: #ff79c6;">;</span> <span style="color: #ff79c6;">then</span>
+    <span style="color: #ffc9e8; font-style: italic;">GUIX_PROFILE</span>=<span style="color: #f1fa8c;">"</span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">HOME</span><span style="color: #f1fa8c;">/.guix-profile"</span>
+    <span style="color: #bd93f9; font-weight: bold;">.</span> <span style="color: #f1fa8c;">"</span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">GUIX_PROFILE</span><span style="color: #f1fa8c;">/etc/profile"</span>
+    <span style="color: #ffc9e8; font-style: italic;">GUIX_PROFILE</span>=<span style="color: #f1fa8c;">"</span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">HOME</span><span style="color: #f1fa8c;">/.config/guix/current"</span>
+    <span style="color: #bd93f9; font-weight: bold;">.</span> <span style="color: #f1fa8c;">"</span><span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">GUIX_PROFILE</span><span style="color: #f1fa8c;">/etc/profile"</span>
+<span style="color: #ff79c6;">fi</span>
+</pre>
+</div>
+<p>
+Again we ensure the Guix profile is present, and we also ensure the shell we are entering is an interactive one. It's important that the current Guix is only sourced <i>after</i> the profile is, otherwise we could run into issues.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org8cd517b" class="outline-2">
+<h2 id="org8cd517b">Finding the origin of a package/service</h2>
+<div class="outline-text-2" id="text-org8cd517b">
+<p>
+When working with Guix packages (or services) you'll often need to import extra modules to get all the definitions you need. But how do you know which modules you should import? Fortunately Guix provides an easy way to find this information.
+</p>
+
+<p>
+To find the location of a package you can use <code>guix show</code> like so:
+</p>
+<div class="org-src-container">
+<pre class="src src-bash"><span style="color: #bd93f9; font-weight: bold;">guix</span> show <span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">PACKAGE</span> <span style="color: #ff79c6;">|</span> <span style="color: #bd93f9; font-weight: bold;">grep</span> location
+</pre>
+</div>
+<p>
+For example for <code>curl</code> as the package we get the following output
+</p>
+<div class="org-src-container">
+<pre class="src src-sh"><span style="color: #bd93f9; font-weight: bold;">location:</span> gnu/packages/curl.scm:65:2
+</pre>
+</div>
+<p>
+This tells us <code>curl</code> is defined in the <code>(gnu packages curl)</code> module.
+</p>
+
+<p>
+Unfortunately there is no equal functionality for services, but we can no less find this information easily.
+</p>
+<div class="org-src-container">
+<pre class="src src-bash"><span style="color: #bd93f9; font-weight: bold;">guix</span> system search <span style="color: #ff79c6;">$</span><span style="color: #8be9fd; font-style: italic;">SERVICE</span>
+</pre>
+</div>
+<p>
+You'll need to manually look for the location of the correct service in the output in this case.
+</p>
+
+<p>
+If you wish to do the reverse - see which modules provide which packages, you can do it like so:
+</p>
+<div class="org-src-container">
+<pre class="src src-bash"><span style="color: #bd93f9; font-weight: bold;">guix</span> package <span style="color: #8be9fd;">--list-available</span> <span style="color: #ff79c6;">|</span> <span style="color: #bd93f9; font-weight: bold;">grep</span> <span style="color: #f1fa8c;">"gnu/packages/admin.scm"</span>
+</pre>
+</div>
+<p>
+This lists all the packages that are defined in the <code>(gnu packages admin)</code> module.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgc51bb32" class="outline-2">
+<h2 id="orgc51bb32">Stripping unnecessary packages</h2>
+<div class="outline-text-2" id="text-orgc51bb32">
+<p>
+One of the issues users sometimes bring up is that some of the default packages are "bloated". What they usually mean by that is that certain services ship unnecessary dependencies.
+</p>
+
+<p>
+Take the Gnome service for example. It ships with Gnome's Epiphany web browser, Gnome Boxes, Gnome Maps and many other programs one might not necessarily want to use.
+Unfortunately, Guix doesn't provide a straightforward macro to address this issue, but the solution isn't very complicated.
+</p>
+
+<p>
+First we need to create a custom package with the modified dependency list. You can put the following in your <code>config.scm</code> for example:
+</p>
+<div class="org-src-container">
+<pre class="src src-scheme"><span style="color: #61bfff;">(</span><span style="color: #ff79c6;">define</span> <span style="color: #50fa7b;">my-gnome</span>
+  <span style="color: #ff79c6;">(</span>package
+   <span style="color: #50fa7b;">(</span>inherit gnome<span style="color: #50fa7b;">)</span>
+   <span style="color: #50fa7b;">(</span>name <span style="color: #f1fa8c;">"my-gnome"</span><span style="color: #50fa7b;">)</span>
+   <span style="color: #50fa7b;">(</span>propagated-inputs
+    <span style="color: #bd93f9;">(</span>modify-inputs <span style="color: #0189cc;">(</span>package-propagated-inputs gnome<span style="color: #0189cc;">)</span>
+                   <span style="color: #0189cc;">(</span>delete <span style="color: #f1fa8c;">"epiphany"</span><span style="color: #0189cc;">)</span>
+                   <span style="color: #0189cc;">(</span>delete <span style="color: #f1fa8c;">"gnome-weather"</span><span style="color: #0189cc;">)</span>
+                   <span style="color: #0189cc;">(</span>delete <span style="color: #f1fa8c;">"simple-scan"</span><span style="color: #0189cc;">)</span>
+                   <span style="color: #0189cc;">(</span>delete <span style="color: #f1fa8c;">"gnome-maps"</span><span style="color: #0189cc;">)</span>
+                   <span style="color: #0189cc;">(</span>delete <span style="color: #f1fa8c;">"cheese"</span><span style="color: #0189cc;">)</span>
+                   <span style="color: #0189cc;">(</span>delete <span style="color: #f1fa8c;">"gnome-boxes"</span><span style="color: #0189cc;">)</span>
+                   <span style="color: #0189cc;">(</span>delete <span style="color: #f1fa8c;">"gnome-console"</span><span style="color: #0189cc;">)</span>
+                   <span style="color: #0189cc;">(</span>delete <span style="color: #f1fa8c;">"gnome-contacts"</span><span style="color: #0189cc;">)</span>
+                   <span style="color: #0189cc;">(</span>append gnome-terminal<span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+</pre>
+</div>
+<p>
+Note that you'll need to import all the modules necessary for the definitions. In this case we would need <code>(gnu packages gnome)</code> for <code>gnome</code> as well as <code>gnome-terminal</code>.
+In some cases your package might use the regular <code>inputs</code> rather than <code>propagated-inputs</code>. It's best to consult the package definition with <code>guix edit gnome</code> to ensure you are modifying the correct value.
+</p>
+
+<p>
+Finally you'll need to tell the system service to replace its Gnome package with your customized variant, modify your service configuration like so:
+</p>
+<div class="org-src-container">
+<pre class="src src-scheme"><span style="color: #61bfff;">(</span>service gnome-desktop-service-type
+         <span style="color: #ff79c6;">(</span>gnome-configuration
+          <span style="color: #50fa7b;">(</span>gnome my-gnome<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+</pre>
+</div>
+<p>
+Reconfigure and you're done :).
+</p>
+</div>
+</div>
+
+<div id="outline-container-org0187ba0" class="outline-2">
+<h2 id="org0187ba0">Custom Guix startup message</h2>
+<div class="outline-text-2" id="text-org0187ba0">
+<p>
+Guix outputs a small message on boot before you log in. By default this message is
+</p>
+<blockquote>
+<p>
+This is the GNU system.  Welcome.
+</p>
+</blockquote>
+<p>
+but you can change this message to whatever string you want!
+</p>
+
+<p>
+Simply add an <code>(issue)</code> declaration into your <code>operating-system</code> (in your <code>config.scm</code>):
+</p>
+<div class="org-src-container">
+<pre class="src src-scheme"><span style="color: #61bfff;">(</span>operating-system
+  ...
+  <span style="color: #ff79c6;">(</span>issue <span style="color: #f1fa8c;">"Welcome to my custom fancy Guix system!\n"</span><span style="color: #ff79c6;">)</span>
+  ...<span style="color: #61bfff;">)</span>
+</pre>
+</div>
+<p>
+This value has to be a string.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org756e6fb" class="outline-2">
+<h2 id="org756e6fb">Freezing on boot</h2>
+<div class="outline-text-2" id="text-org756e6fb">
+<p>
+This is a fairly common issue and is actually one I ran into myself. Basically Guix will boot up, then hang before the login manager loads. The reason for this is an issue with graphics drivers, usually caused by missing certain proprietary firmware.
+</p>
+
+<p>
+You can get the system to boot into a graphical interface by adding the <code>nomodeset</code> kernel argument. As the system is booting up and Grub loads, hit <code>e</code> over the first entry. Then you can add <code>nomodeset</code> and boot the system.
+</p>
+
+<p>
+Once you boot the system the proper solution is to install the vanilla kernel with all the necessary blobs, instructions for this are available on the <a href="https://gitlab.com/nonguix/nonguix">Nonguix Gitlab repo</a>. When setting up make sure you get substitutes setup correctly as well.
+You should be able to boot the system normally once the vanilla kernel is in place.
+</p>
+</div>
+</div>

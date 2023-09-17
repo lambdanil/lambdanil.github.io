@@ -1,0 +1,156 @@
+---
+layout: post
+title: Giving openSUSE Aeon a second chance (a review, and a small blog update)
+permalink: /:title/
+tags: [linux, immutable]
+---
+<p>
+I have been rather busy the last month or so, but as I have more free time now I've decided to experiment with different Linux distros a little again.
+I had a great time on Debian. It was reliable, functional and fulfilled my needs well&#x2026; but I have decided to try something else, at least for a little while.
+</p>
+
+<p>
+openSUSE Aeon ended up being my final choice, mostly because of its rolling release nature combined with promises of high reliability, plus I'm interested in all the upcoming technologies in the Linux space.
+</p>
+
+<p>
+This is partially a follow up to the <a href="https://cuberjan.github.io/Immutable_Linux/">last post about immutable Linux</a>, but this time focused on the distribution rather than the idea.
+</p>
+
+<div id="outline-container-org4fefe88" class="outline-2">
+<h2 id="org4fefe88">Small blog update</h2>
+<div class="outline-text-2" id="text-org4fefe88">
+<p>
+I have a small blog update first :). I have a little more free time now, so in the upcoming months you can expect to see some more posts. I'm looking forward to continuing the Guix dive once I fully set up my environment - there is a lot of exciting
+stuff left to explore there. I also have some posts about Emacs planned, as well as some programming related stuff.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org62bbf57" class="outline-2">
+<h2 id="org62bbf57">Installation</h2>
+<div class="outline-text-2" id="text-org62bbf57">
+<p>
+There currently isn't a separate image for Aeon, rather you install it using the MicroOS image. The split from MicroOS is still relatively fresh, so I'm expecting this to change soon.
+</p>
+
+<p>
+openSUSE Aeon uses Yast as its installer. If you've ever installed any other openSUSE product you know what to expect. It's very powerful and exposes many options to the user during the installation. 
+That is actually a little puzzling, considering Aeon doesn't aim for such customizability. This means you could install the system with an unsupported configuration if you mess with certain options. If you just follow along the installer is just fine.
+I find it user-friendly enough, there wasn't anything particularly confusing about the process.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org2f13e2b" class="outline-2">
+<h2 id="org2f13e2b">Initial setup and the defaults</h2>
+<div class="outline-text-2" id="text-org2f13e2b">
+<p>
+On the first boot the system installs a few basic Flatpak applications, including Firefox, Gnome's Text Editor and Calculator. This process is fairly quick and entirely automatic. 
+I welcome this approach as I have previously had experiences with immutable systems shipping Firefox as part of the base system, which I don't consider optimal.
+</p>
+
+<p>
+A lot is ready out-of-the-box. This includes Flatpak, with proper full Flathub added in user mode. This means tons of software is available in the software center right away, no extra work needed. 
+<a href="https://github.com/89luca89/distrobox">Distrobox</a> is preinstalled for working with containers. It is mostly aimed at developers, though it is quite user friendly.
+</p>
+
+<p>
+Aeon also enables automatic updates by default.
+These send notification once finished. Fortunately they aren't disruptive in any way - the running system isn't affected (so there is no unexpected instability) and the restart isn't forced on the user. 
+Updates are applied on reboot, again in a completely non-disruptive way - no waiting, no progress bars.
+</p>
+
+<p>
+There is no swap partition (or any other form of swap) by default. This could (rarely) cause issues with desktop use, so I ended up manually configuring ZRAM. 
+I have seen some discussion about making this a default in the mailing lists. I didn't follow the entire development but personally I hope it works out, I think it would be a good addition to the defaults.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgaae3ee2" class="outline-2">
+<h2 id="orgaae3ee2">My development environment</h2>
+<div class="outline-text-2" id="text-orgaae3ee2">
+<p>
+Usually I handle my development environment with Guix, and I might just end up doing that on Aeon as well. For now I wanted to try the container workflow, so I decided to set it up in a container. 
+Distrobox makes creating and setting up the development container a breeze. Once inside you can install packages using <code>zypper</code> just like on a regular system. Deploying my Emacs configuration in this way was very straightforward. 
+I also set up my terminal to open a container shell by default so that all my software is accessible right away. After exporting Emacs' menu shortcuts it was pretty much ready to use.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org20c52db" class="outline-2">
+<h2 id="org20c52db">General desktop usage</h2>
+<div class="outline-text-2" id="text-org20c52db">
+<p>
+These days Flatpak is really mature and can handle the general desktop use case all on its own quite well.
+</p>
+
+<p>
+Web browsers (Firefox, Chromium), chatting applications (Discord), Spotify, multimedia consumption (VLC, mpv, ) and creation (Kdenlive, GIMP, Audacity), games (Steam, Lutris) - all of that works very well as a Flatpak.
+</p>
+
+<p>
+There were a few small issues I ran into:
+</p>
+<ul class="org-ul">
+<li>The Firefox Flatpak doesn't ship all the codecs and certain media wouldn't play at all. This can be fixed by manually installing the dependency - <code>flatpak install org.freedesktop.Platform.ffmpeg-full</code>.</li>
+<li>Steam didn't have access to my secondary drive I use for my Steam library among other things. With <a href="https://flathub.org/apps/com.github.tchx84.Flatseal">Flatseal</a> I could easily expose the drive to the sandbox so this didn't end up being an issue.</li>
+</ul>
+
+<p>
+Overall I'm happy with the usability of Flatpak and it handles all the common tasks without issues.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgc1b61f0" class="outline-2">
+<h2 id="orgc1b61f0">Stuff I liked</h2>
+<div class="outline-text-2" id="text-orgc1b61f0">
+<p>
+I find all the defaults very sensible (lack of swap aside). 
+The system practically maintains itself all on its own without ever interrupting my workflow. Setting everything up was surprisingly user friendly and I think this system could work well even for less technical users. 
+I rarely have to enter my password, it's a really small change but still noteworthy.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orga45cbe5" class="outline-2">
+<h2 id="orga45cbe5">Issues</h2>
+<div class="outline-text-2" id="text-orga45cbe5">
+<p>
+There were, again, a couple of smaller issues I ran into:
+</p>
+<ul class="org-ul">
+<li>SELinux woud block Lutris and other Flatpaks from working properly.
+<ul class="org-ul">
+<li>This is mentioned in the <a href="https://en.opensuse.org/Portal:Aeon">Aeon documentation</a> and apparently might be fixed soon. The current workaround is in the documentation too.</li>
+</ul></li>
+<li>Distrobox wouldn't handle locale properly by default.
+<ul class="org-ul">
+<li>This is fixed by installing the <code>glibc-locale</code> package, which can be automated in the Distrobox configuration. I filed a bug report, so hopefully this is resolved.</li>
+</ul></li>
+<li>Timezone was wrong in Distrobox.
+<ul class="org-ul">
+<li>I submitted a bug report, fix should land in Aeon very soon.</li>
+</ul></li>
+<li>Running services from Distrobox is a little messy.
+<ul class="org-ul">
+<li>Distrobox can now connect containers to systemd with the <code>--init</code> and <code>--root</code> flags. Still, it's necessary to create systemd services for containers providing extra services to automatically start. None of this is too well documented - maybe I could help out once I have it figured out.</li>
+</ul></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orgfc19463" class="outline-2">
+<h2 id="orgfc19463">Conclusion</h2>
+<div class="outline-text-2" id="text-orgfc19463">
+<p>
+Aeon is, in my opinion, the best immutable system currently available. It feels mature and usable out of the box. All of the defaults make sense.
+</p>
+
+<p>
+I promise I'll shut up about immutable distros now ;).
+</p>
+</div>
+</div>

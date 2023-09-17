@@ -1,0 +1,559 @@
+---
+layout: post
+title: Implementing an object system in Lisp
+permalink: /:title/
+tags: [programming, lisp, common lisp]
+---
+<p>
+The other day I decided I wanted to try and implement a custom object system in Common Lisp.
+To be clear this isn't for any practical purposes - Common Lisp already has the excellent CLOS and I can't possibly hope to compare with that, I just wanted to see how far I could take the powerful macro system.
+</p>
+
+<p>
+As implementing an object system isn't such a straightforward task I figured I should start with a solid design plan and then just implement features as I go along.
+</p>
+
+<div id="outline-container-orgc3578e2" class="outline-2">
+<h2 id="orgc3578e2">Features</h2>
+<div class="outline-text-2" id="text-orgc3578e2">
+<p>
+First I had to map out all the features I'd like to implement.
+</p>
+
+<p>
+I ended up with the following:
+</p>
+<ul class="org-ul">
+<li>Defining new objects</li>
+<li>Creating object instances
+<ul class="org-ul">
+<li>should allow using default forms if no other form is supplied</li>
+</ul></li>
+<li>Automatic creation of setters and getters</li>
+<li>Methods</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org3c5b13a" class="outline-2">
+<h2 id="org3c5b13a">Restrictions</h2>
+<div class="outline-text-2" id="text-org3c5b13a">
+<p>
+To make the process more interesting I decided to put in place a few small design restrictions. These don't serve much of a practical purpose.
+</p>
+<ul class="org-ul">
+<li>No use of arrays or any other mutable structure
+<ul class="org-ul">
+<li>each object should be an immutable list</li>
+</ul></li>
+<li>No use of loops/iteration
+<ul class="org-ul">
+<li>mapping is likely going to be a common occurrence</li>
+<li>tail-call optimized recursion will be used where unavoidable</li>
+</ul></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org3070faa" class="outline-2">
+<h2 id="org3070faa">The design</h2>
+<div class="outline-text-2" id="text-org3070faa">
+</div>
+<div id="outline-container-org7dd64c2" class="outline-3">
+<h3 id="org7dd64c2">Creating a new class</h3>
+<div class="outline-text-3" id="text-org7dd64c2">
+<p>
+New classes are going to be defined with the <code>make-object</code> macro. This macro will create multiple new functions and macros to handle this new object, more on these below.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org7b8ff26" class="outline-3">
+<h3 id="org7b8ff26">The objects</h3>
+<div class="outline-text-3" id="text-org7b8ff26">
+<p>
+So I'd first need to figure out how to store the objects. As I said before I'll be using standard lists to represent them.
+</p>
+
+<p>
+The simplest idea (and the one I ended up going with) is just to make a list of dotted pairs - a simple <code>(key . value)</code> layout. The first pair is going to determine the type of the object, meaning a simple object of 2 keys <code>x</code> and <code>y</code> would look as follows
+</p>
+<div class="org-src-container">
+<pre class="src src-common-lisp">'<span style="color: #61bfff;">(</span><span style="color: #ff79c6;">(</span>obj/type . type<span style="color: #ff79c6;">)</span> <span style="color: #ff79c6;">(</span>x . 1<span style="color: #ff79c6;">)</span> <span style="color: #ff79c6;">(</span>y . 2<span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+</pre>
+</div>
+<p>
+I chose to call the type <code>obj/type</code>. The type is also going to be a symbol, but the rest of the keys can be any value, even another object.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgd74d027" class="outline-3">
+<h3 id="orgd74d027">Object instances</h3>
+<div class="outline-text-3" id="text-orgd74d027">
+<p>
+When creating a new object I'll define a <code>make-&lt;object&gt;</code> macro, which is going to create a new instance of that object.
+</p>
+
+<p>
+The macro is going to have to handle the default arguments passed to it. The invocation should look like this
+</p>
+<div class="org-src-container">
+<pre class="src src-common-lisp"><span style="color: #61bfff;">(</span>make-&lt;object&gt; <span style="color: #ffb86c;">:key</span> 'value <span style="color: #ffb86c;">:key2</span> 'value2<span style="color: #61bfff;">)</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org137d136" class="outline-3">
+<h3 id="org137d136">Object keys (slots)</h3>
+<div class="outline-text-3" id="text-org137d136">
+<p>
+I'll need to store the slots an object can hold somewhere. In this case I'll simply create an <code>&lt;object&gt;-slots</code> for each new class, which will be a list holding the available keys. This could be as simple as
+</p>
+<div class="org-src-container">
+<pre class="src src-common-lisp">'<span style="color: #61bfff;">(</span>x y<span style="color: #61bfff;">)</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org4d7e721" class="outline-3">
+<h3 id="org4d7e721">Method design</h3>
+<div class="outline-text-3" id="text-org4d7e721">
+<p>
+This one gets really tricky&#x2026;
+</p>
+
+<p>
+On class creation a new macro <code>&lt;object&gt;-defmethod</code> is going to be exported. This macro is going to generate the appropriate internal function as the method, but there's a lot of extra challenges here&#x2026;
+</p>
+</div>
+
+<div id="outline-container-org630a52d" class="outline-4">
+<h4 id="org630a52d">The internal function</h4>
+<div class="outline-text-4" id="text-org630a52d">
+<p>
+The internal function is going to be defined as <code>&lt;object&gt;-&lt;method&gt;-intern</code>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org6a3761e" class="outline-4">
+<h4 id="org6a3761e">Binding values inside methods</h4>
+<div class="outline-text-4" id="text-org6a3761e">
+<p>
+When invoking a method on a specified object the object's values should be exposed somehow. C++ does this with its <code>this</code> pointer, which points to the current object. My idea is very similar - the method function is going to be wrapped with a <code>let</code>.
+</p>
+
+<p>
+This is going to lexically bind the slots in a <code>self-&lt;slot&gt;</code> format. This means that the slot <code>x</code> would be accessible inside a method as <code>self-x</code>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org84d23d6" class="outline-4">
+<h4 id="org84d23d6">Modifying objects inside methods</h4>
+<div class="outline-text-4" id="text-org84d23d6">
+<p>
+Of course methods need to be able to modify these objects. If I change the value of <code>self-x</code> inside a method then I expect the object I invoked the method on to change as well. Here things get even more complicated.
+</p>
+
+<p>
+At the end of each method I'll need to construct a brand new object from the lexically bound values. I'll also handle this construction with a macro. This macro is going to be bound with a simple <code>macrolet</code> and is going to be called <code>self</code>.
+This will allow us to get a copy of the current object inside the method with <code>(self)</code>.
+</p>
+
+<p>
+Now of course I'll need methods to return their values as well, meaning I'll have the internal function return a pair like so
+</p>
+<div class="org-src-container">
+<pre class="src src-common-lisp">'<span style="color: #61bfff;">(</span>new-object . return-value<span style="color: #61bfff;">)</span>
+</pre>
+</div>
+
+<p>
+The internal method function is then going to be wrapped in an evaluation macro. If we're not invoking from inside another method it's going to use a simple <code>setf</code> to set the object it was invoked with to the new list.
+In practice:
+</p>
+<div class="org-src-container">
+<pre class="src src-common-lisp"><span style="color: #6272a4;">;; </span><span style="color: #6272a4;">obj-incf-x is a method of obj, ins is an instance of the object</span>
+<span style="color: #61bfff;">(</span>obj-incf-x ins<span style="color: #61bfff;">)</span>
+<span style="color: #6272a4;">;; </span><span style="color: #6272a4;">this is going to result in</span>
+<span style="color: #61bfff;">(</span>setf ins <span style="color: #ff79c6;">(</span>obj-incf-x-internal ins<span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+</pre>
+</div>
+<p>
+If we're invoking the method call from another method then we need to modify <code>self</code> properly.
+I'm going to use a little hack here and simply tell the macro that if the instance symbol passed to it is <code>self</code> then it should instead set the lexically bound slots. Setting these slots will be done with a <code>&lt;object&gt;-modify-self</code> wrapper macro
+</p>
+<div class="org-src-container">
+<pre class="src src-common-lisp"><span style="color: #6272a4;">;; </span><span style="color: #6272a4;">obj-incf-x is a method of obj, ins is an instance of the object</span>
+<span style="color: #61bfff;">(</span>obj-defmethod new-method <span style="color: #ff79c6;">()</span>
+               <span style="color: #ff79c6;">(</span>obj-incf-x self<span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+<span style="color: #6272a4;">;; </span><span style="color: #6272a4;">the method invokation is going to result in</span>
+<span style="color: #61bfff;">(</span>setf self-slot1 new-value1<span style="color: #61bfff;">)</span>
+<span style="color: #61bfff;">(</span>setf self-slot2 new-value2<span style="color: #61bfff;">)</span>
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org59cf29d" class="outline-3">
+<h3 id="org59cf29d">Setters and getters</h3>
+<div class="outline-text-3" id="text-org59cf29d">
+<p>
+Setters and getters are going to be automatically generated methods. This is really straightforward
+</p>
+<div class="org-src-container">
+<pre class="src src-common-lisp"><span style="color: #61bfff;">(</span>obj-defmethod set-&lt;slot&gt; <span style="color: #ff79c6;">(</span>value<span style="color: #ff79c6;">)</span>
+               <span style="color: #ff79c6;">(</span>setf self-&lt;slot&gt; value<span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+
+<span style="color: #61bfff;">(</span>obj-defmethod get-&lt;slot&gt; <span style="color: #ff79c6;">()</span>
+               self-&lt;slot&gt;<span style="color: #61bfff;">)</span>
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org50d4e04" class="outline-2">
+<h2 id="org50d4e04">Implementation</h2>
+<div class="outline-text-2" id="text-org50d4e04">
+<p>
+Here begins the real fun&#x2026;
+</p>
+
+<p>
+Get ready for a lot of backquotes, regular quotes and commas.
+</p>
+
+<p>
+From here on out you're going to see less of my comments and more raw code. If you aren't an experienced Lisper you should turn away now!
+</p>
+</div>
+
+<div id="outline-container-org7494cbc" class="outline-3">
+<h3 id="org7494cbc">Helper functions</h3>
+<div class="outline-text-3" id="text-org7494cbc">
+<p>
+Here's a few helper functions I wrote through the process.
+</p>
+</div>
+
+<div id="outline-container-org1f9e5f0" class="outline-4">
+<h4 id="org1f9e5f0">General functions</h4>
+<div class="outline-text-4" id="text-org1f9e5f0">
+<p>
+This one just appends symbols together. For some reason this ugly "string conversion -&gt; concatenation -&gt; intern back to symbol" is the best way to do this.
+</p>
+<div class="org-src-container">
+<pre class="src src-common-lisp"><span style="color: #6272a4;">;; </span><span style="color: #6272a4;">Append multiple symbols, abused for macros</span>
+<span style="color: #61bfff;">(</span><span style="color: #ff79c6;">defun</span> <span style="color: #50fa7b;">symbol-append</span> <span style="color: #ff79c6;">(</span><span style="color: #bd93f9;">&amp;rest</span> symbols<span style="color: #ff79c6;">)</span> 
+  <span style="color: #ff79c6;">(</span>intern <span style="color: #50fa7b;">(</span>apply #'concatenate 'string 
+                 <span style="color: #bd93f9;">(</span>mapcar #'symbol-name symbols<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+</pre>
+</div>
+
+<p>
+I'll often need to map to 2 lists at once. Here I made a small recursive function to handle this.
+</p>
+<div class="org-src-container">
+<pre class="src src-common-lisp"><span style="color: #6272a4;">;; </span><span style="color: #6272a4;">Map to 2 lists and return a single list</span>
+<span style="color: #6272a4;">;; </span><span style="color: #6272a4;">(double-mapcar (lambda (first second)) first second)</span>
+<span style="color: #61bfff;">(</span><span style="color: #ff79c6;">defun</span> <span style="color: #50fa7b;">double-mapcar</span> <span style="color: #ff79c6;">(</span>func list1 list2 <span style="color: #bd93f9;">&amp;key</span> accum1<span style="color: #ff79c6;">)</span>
+  <span style="color: #ff79c6;">(</span><span style="color: #ff79c6;">if</span> list1 <span style="color: #50fa7b;">(</span>double-mapcar func <span style="color: #bd93f9;">(</span>cdr list1<span style="color: #bd93f9;">)</span> <span style="color: #bd93f9;">(</span>cdr list2<span style="color: #bd93f9;">)</span>
+                           <span style="color: #ffb86c;">:accum1</span> <span style="color: #bd93f9;">(</span>cons <span style="color: #0189cc;">(</span>funcall func <span style="color: #61bfff;">(</span>car list1<span style="color: #61bfff;">)</span> <span style="color: #61bfff;">(</span>car list2<span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span> accum1<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span>
+      <span style="color: #50fa7b;">(</span>reverse accum1<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+</pre>
+</div>
+
+<p>
+Lisp's <code>and</code> cannot be applied to lists because it's a macro. I fix this by redefining it as a function.
+</p>
+<div class="org-src-container">
+<pre class="src src-common-lisp"><span style="color: #6272a4;">;; </span><span style="color: #6272a4;">Allow applying 'and macro on a list</span>
+<span style="color: #6272a4;">;; </span><span style="color: #6272a4;">a little ugly</span>
+<span style="color: #61bfff;">(</span><span style="color: #ff79c6;">defun</span> <span style="color: #50fa7b;">unwrap-and</span> <span style="color: #ff79c6;">(</span><span style="color: #bd93f9;">&amp;rest</span> conds<span style="color: #ff79c6;">)</span>
+  <span style="color: #ff79c6;">(</span>eval `<span style="color: #50fa7b;">(</span>and ,@conds<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+</pre>
+</div>
+
+<p>
+Finally I'll need a key extraction macro. This one takes a list and converts every dotted pair to a <code>car</code> of that pair, while leaving non-pairs intact like so:
+</p>
+<div class="org-src-container">
+<pre class="src src-common-lisp"><span style="color: #61bfff;">(</span>name year <span style="color: #ff79c6;">(</span>language <span style="color: #f1fa8c;">"english"</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+<span style="color: #6272a4;">;; </span><span style="color: #6272a4;">after extracting we get:</span>
+<span style="color: #61bfff;">(</span>name year language<span style="color: #61bfff;">)</span>
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-common-lisp"><span style="color: #61bfff;">(</span><span style="color: #ff79c6;">defun</span> <span style="color: #50fa7b;">extract-keys</span> <span style="color: #ff79c6;">(</span>list<span style="color: #ff79c6;">)</span>
+  <span style="color: #ff79c6;">(</span>mapcar #'<span style="color: #50fa7b;">(</span><span style="color: #ff79c6;">lambda</span> <span style="color: #bd93f9;">(</span>item<span style="color: #bd93f9;">)</span> <span style="color: #bd93f9;">(</span><span style="color: #ff79c6;">if</span> <span style="color: #0189cc;">(</span>consp item<span style="color: #0189cc;">)</span> <span style="color: #0189cc;">(</span>car item<span style="color: #0189cc;">)</span> item<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span> list<span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org7ca99d7" class="outline-4">
+<h4 id="org7ca99d7">Slot mapping functions</h4>
+<div class="outline-text-4" id="text-org7ca99d7">
+<p>
+To make my work with slots a little easier I have a couple of functions to generate these slots for use with <code>let</code> and whatnot.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-common-lisp"><span style="color: #6272a4;">;; </span><span style="color: #6272a4;">Create a list of '((self-slot nil) (self-slot0 nil)) from '(slot slot0)</span>
+<span style="color: #61bfff;">(</span><span style="color: #ff79c6;">defun</span> <span style="color: #50fa7b;">map-slots</span> <span style="color: #ff79c6;">(</span>object-name slots<span style="color: #ff79c6;">)</span>
+  <span style="color: #ff79c6;">(</span>double-mapcar <span style="color: #50fa7b;">(</span><span style="color: #ff79c6;">lambda</span> <span style="color: #bd93f9;">(</span>slot value<span style="color: #bd93f9;">)</span> <span style="color: #bd93f9;">(</span>cons slot <span style="color: #0189cc;">(</span>list value<span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span>
+                 <span style="color: #50fa7b;">(</span>mapcar <span style="color: #bd93f9;">(</span><span style="color: #ff79c6;">lambda</span> <span style="color: #0189cc;">(</span>slot<span style="color: #0189cc;">)</span> <span style="color: #0189cc;">(</span>symbol-append 'self '- slot<span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span> slots<span style="color: #50fa7b;">)</span>
+                 <span style="color: #50fa7b;">(</span>mapcar <span style="color: #bd93f9;">(</span><span style="color: #ff79c6;">lambda</span> <span style="color: #0189cc;">(</span>slot<span style="color: #0189cc;">)</span> nil<span style="color: #bd93f9;">)</span> slots<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+
+<span style="color: #6272a4;">;; </span><span style="color: #6272a4;">Same as above but initializes values to match associated object; used for let bindings</span>
+<span style="color: #6272a4;">;; </span><span style="color: #6272a4;">'((self-slot) (cdr (assoc 'slot self)))</span>
+<span style="color: #61bfff;">(</span><span style="color: #ff79c6;">defun</span> <span style="color: #50fa7b;">map-slots1</span> <span style="color: #ff79c6;">(</span>object-name slots<span style="color: #ff79c6;">)</span>
+  <span style="color: #ff79c6;">(</span>double-mapcar <span style="color: #50fa7b;">(</span><span style="color: #ff79c6;">lambda</span> <span style="color: #bd93f9;">(</span>slot value<span style="color: #bd93f9;">)</span> <span style="color: #bd93f9;">(</span>cons slot <span style="color: #0189cc;">(</span>list value<span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span>
+                 <span style="color: #50fa7b;">(</span>mapcar <span style="color: #bd93f9;">(</span><span style="color: #ff79c6;">lambda</span> <span style="color: #0189cc;">(</span>slot<span style="color: #0189cc;">)</span> <span style="color: #0189cc;">(</span>symbol-append 'self '- slot<span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span> slots<span style="color: #50fa7b;">)</span>
+                 <span style="color: #50fa7b;">(</span>mapcar <span style="color: #bd93f9;">(</span><span style="color: #ff79c6;">lambda</span> <span style="color: #0189cc;">(</span>slot<span style="color: #0189cc;">)</span> `<span style="color: #0189cc;">(</span>cdr <span style="color: #61bfff;">(</span>assoc <span style="color: #ff79c6;">(</span>quote ,slot<span style="color: #ff79c6;">)</span> self/internal<span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span> slots<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+
+<span style="color: #6272a4;">;; </span><span style="color: #6272a4;">Generates setf list, this one is for the method-inside-method invocation</span>
+<span style="color: #6272a4;">;; </span><span style="color: #6272a4;">'((setf self-slot  (cdr (assoc 'slot  self)))</span>
+<span style="color: #6272a4;">;;   </span><span style="color: #6272a4;">(setf self-slot0 (cdr (assoc 'slot0 self))))</span>
+<span style="color: #61bfff;">(</span><span style="color: #ff79c6;">defun</span> <span style="color: #50fa7b;">map-slots2</span> <span style="color: #ff79c6;">(</span>object-name slots<span style="color: #ff79c6;">)</span>
+  <span style="color: #ff79c6;">(</span>double-mapcar <span style="color: #50fa7b;">(</span><span style="color: #ff79c6;">lambda</span> <span style="color: #bd93f9;">(</span>slot value<span style="color: #bd93f9;">)</span> `<span style="color: #bd93f9;">(</span>setf ,slot ,value<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span>
+                 <span style="color: #50fa7b;">(</span>mapcar <span style="color: #bd93f9;">(</span><span style="color: #ff79c6;">lambda</span> <span style="color: #0189cc;">(</span>slot<span style="color: #0189cc;">)</span> <span style="color: #0189cc;">(</span>symbol-append 'self '- slot<span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span> slots<span style="color: #50fa7b;">)</span>
+                 <span style="color: #50fa7b;">(</span>mapcar <span style="color: #bd93f9;">(</span><span style="color: #ff79c6;">lambda</span> <span style="color: #0189cc;">(</span>slot<span style="color: #0189cc;">)</span> `<span style="color: #0189cc;">(</span>cdr <span style="color: #61bfff;">(</span>assoc <span style="color: #ff79c6;">(</span>quote ,slot<span style="color: #ff79c6;">)</span> <span style="color: #ff79c6;">(</span>car self/internal<span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span> slots<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org977997b" class="outline-3">
+<h3 id="org977997b">The make-object macro</h3>
+<div class="outline-text-3" id="text-org977997b">
+<p>
+Here comes the biggest part. This is the macro that defines new classes. I'm going to take it apart piece by piece as best as I can.
+</p>
+
+<p>
+This first part looks scary but it isn't too complicated. Basically we bind a few variables we are going to use later. Unmatched parens mean the code continues in another block, it's not a mistake.
+</p>
+<div class="org-src-container">
+<pre class="src src-common-lisp"><span style="color: #6272a4;">;; </span><span style="color: #6272a4;">Object creation macro</span>
+<span style="color: #61bfff;">(</span><span style="color: #ff79c6;">defmacro</span> <span style="color: #50fa7b;">make-object</span> <span style="color: #ff79c6;">(</span>name init-keys<span style="color: #ff79c6;">)</span>
+  <span style="color: #ff79c6;">(</span><span style="color: #ff79c6;">let*</span> <span style="color: #50fa7b;">(</span><span style="color: #bd93f9;">(</span>keys <span style="color: #0189cc;">(</span>extract-keys init-keys<span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span> <span style="color: #6272a4;">;; </span><span style="color: #6272a4;">Extract keys from their initforms</span>
+         <span style="color: #bd93f9;">(</span>slots <span style="color: #0189cc;">(</span>map-slots name keys<span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span> <span style="color: #6272a4;">;; </span><span style="color: #6272a4;">basic slot mapping, see the slot mapping functions above</span>
+         <span style="color: #bd93f9;">(</span>object-slots <span style="color: #0189cc;">(</span>symbol-append name '- 'slots<span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span> <span style="color: #6272a4;">;; </span><span style="color: #6272a4;">defines an &lt;object&gt;-slots alias</span>
+         <span style="color: #bd93f9;">(</span>self-slots `<span style="color: #0189cc;">(</span>cons <span style="color: #61bfff;">(</span>cons 'cons <span style="color: #ff79c6;">(</span>cons ''obj/type <span style="color: #50fa7b;">(</span>list '<span style="color: #bd93f9;">(</span>quote ,name<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span> <span style="color: #6272a4;">;; </span><span style="color: #6272a4;">To be honest I don't remember what this does</span>
+                            <span style="color: #61bfff;">(</span>mapcar <span style="color: #ff79c6;">(</span><span style="color: #ff79c6;">lambda</span> <span style="color: #50fa7b;">(</span>slot<span style="color: #50fa7b;">)</span>
+                                      <span style="color: #50fa7b;">(</span>cons 'cons <span style="color: #bd93f9;">(</span>cons
+                                                   `<span style="color: #61bfff;">(</span>quote ,slot<span style="color: #61bfff;">)</span>
+                                                   <span style="color: #61bfff;">(</span>list <span style="color: #ff79c6;">(</span>symbol-append 'self '- slot<span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+                                    ,object-slots<span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span>
+</pre>
+</div>
+
+<p>
+Now we can start defining the functions and macros we need. I'll have to use a <code>progn</code> so I can evaluate all the multiple <code>defuns</code> and <code>defmacros</code> :).
+</p>
+<div class="org-src-container">
+<pre class="src src-common-lisp">`<span style="color: #61bfff;">(</span><span style="color: #ff79c6;">progn</span>
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org502b168" class="outline-4">
+<h4 id="org502b168">Instance creations</h4>
+<div class="outline-text-4" id="text-org502b168">
+<p>
+We start with the instance creation macro. This one is fairly straightforward.
+</p>
+<div class="org-src-container">
+<pre class="src src-common-lisp"><span style="color: #6272a4;">;; </span><span style="color: #6272a4;">make-&lt;object&gt;</span>
+<span style="color: #61bfff;">(</span><span style="color: #ff79c6;">defun</span> ,<span style="color: #ff79c6;">(</span>symbol-append 'make '- name<span style="color: #ff79c6;">)</span> <span style="color: #ff79c6;">(</span><span style="color: #bd93f9;">&amp;key</span> ,@keys<span style="color: #ff79c6;">)</span>
+  <span style="color: #ff79c6;">(</span>cons <span style="color: #50fa7b;">(</span>cons 'obj/type <span style="color: #bd93f9;">(</span>quote ,name<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span>
+        <span style="color: #50fa7b;">(</span>double-mapcar
+         <span style="color: #bd93f9;">(</span><span style="color: #ff79c6;">lambda</span> <span style="color: #0189cc;">(</span>key other-key<span style="color: #0189cc;">)</span>
+           <span style="color: #0189cc;">(</span><span style="color: #ff79c6;">let*</span> <span style="color: #61bfff;">(</span><span style="color: #ff79c6;">(</span>key-p <span style="color: #50fa7b;">(</span>consp key<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+                  <span style="color: #ff79c6;">(</span>extracted-key
+                   <span style="color: #50fa7b;">(</span><span style="color: #ff79c6;">if</span> key-p <span style="color: #bd93f9;">(</span>car key<span style="color: #bd93f9;">)</span> key<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+             <span style="color: #61bfff;">(</span><span style="color: #ff79c6;">if</span> other-key
+                 <span style="color: #ff79c6;">(</span>cons extracted-key other-key<span style="color: #ff79c6;">)</span> <span style="color: #6272a4;">;; </span><span style="color: #6272a4;">when key is supplied</span>
+               <span style="color: #ff79c6;">(</span>cons extracted-key            <span style="color: #6272a4;">;; </span><span style="color: #6272a4;">when not supplied</span>
+                     <span style="color: #50fa7b;">(</span><span style="color: #ff79c6;">if</span> key-p <span style="color: #bd93f9;">(</span>eval <span style="color: #61bfff;">(</span>cadr key<span style="color: #61bfff;">)</span><span style="color: #bd93f9;">)</span> nil<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span> <span style="color: #6272a4;">;; </span><span style="color: #6272a4;">ensure the initform is evaluated</span>
+         <span style="color: #bd93f9;">(</span>quote ,init-keys<span style="color: #bd93f9;">)</span>
+         <span style="color: #bd93f9;">(</span>list ,@keys<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org414b641" class="outline-4">
+<h4 id="org414b641">Slot assignment</h4>
+<div class="outline-text-4" id="text-org414b641">
+<div class="org-src-container">
+<pre class="src src-common-lisp"><span style="color: #6272a4;">;; </span><span style="color: #6272a4;">Create &lt;object&gt;-slots as well as its function</span>
+<span style="color: #61bfff;">(</span><span style="color: #ff79c6;">defvar</span> ,object-slots <span style="color: #ff79c6;">(</span>quote ,keys<span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+<span style="color: #61bfff;">(</span><span style="color: #ff79c6;">defun</span> ,object-slots <span style="color: #ff79c6;">()</span> <span style="color: #ff79c6;">(</span>quote ,keys<span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org5f22cbd" class="outline-4">
+<h4 id="org5f22cbd">Modify-self</h4>
+<div class="outline-text-4" id="text-org5f22cbd">
+<p>
+This is for those cases when we are calling a method from inside another method. It wraps around method invocations and remaps the <code>self</code> slots to the new values.
+</p>
+<div class="org-src-container">
+<pre class="src src-common-lisp"><span style="color: #6272a4;">;; </span><span style="color: #6272a4;">modify-self macro; sets self- variables to returned value; for internal use</span>
+<span style="color: #6272a4;">;; </span><span style="color: #6272a4;">should only be used with matching methods</span>
+<span style="color: #6272a4;">;;</span><span style="color: #6272a4;">obj/&lt;object&gt;-modify-self</span>
+<span style="color: #61bfff;">(</span><span style="color: #ff79c6;">defmacro</span> ,<span style="color: #ff79c6;">(</span>symbol-append 'obj/ name '-modify-self<span style="color: #ff79c6;">)</span> <span style="color: #ff79c6;">(</span><span style="color: #bd93f9;">&amp;rest</span> body<span style="color: #ff79c6;">)</span>
+  `<span style="color: #ff79c6;">(</span><span style="color: #ff79c6;">let*</span> <span style="color: #50fa7b;">(</span><span style="color: #bd93f9;">(</span>self/internal <span style="color: #0189cc;">(</span><span style="color: #ff79c6;">progn</span> ,@body<span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span>
+     ,@<span style="color: #50fa7b;">(</span>map-slots2 <span style="color: #bd93f9;">(</span>quote ,name<span style="color: #bd93f9;">)</span> ,object-slots<span style="color: #50fa7b;">)</span>
+     self/internal<span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org4b256bc" class="outline-4">
+<h4 id="org4b256bc">Defining methods</h4>
+<div class="outline-text-4" id="text-org4b256bc">
+<p>
+Here's the <code>defmethod</code> macro in all its "beauty" (that word probably doesn't belong here).
+</p>
+
+<div class="org-src-container">
+<pre class="src src-common-lisp"><span style="color: #6272a4;">;; </span><span style="color: #6272a4;">&lt;object&gt;-defmethod</span>
+<span style="color: #6272a4;">;; </span><span style="color: #6272a4;">Creates an internal function and an invoker macro</span>
+<span style="color: #6272a4;">;; </span><span style="color: #6272a4;">The invoker macro wraps around the function and applies its return values,</span>
+<span style="color: #6272a4;">;;   </span><span style="color: #6272a4;">either over the object which was invoked or 'self if inside method.</span>
+
+<span style="color: #6272a4;">;;</span><span style="color: #6272a4;">&lt;object&gt;-defmethod</span>
+<span style="color: #61bfff;">(</span><span style="color: #ff79c6;">defmacro</span> ,<span style="color: #ff79c6;">(</span>symbol-append name '- 'defmethod<span style="color: #ff79c6;">)</span> <span style="color: #ff79c6;">(</span>method-name args <span style="color: #bd93f9;">&amp;rest</span> body<span style="color: #ff79c6;">)</span>
+  `<span style="color: #ff79c6;">(</span><span style="color: #ff79c6;">progn</span>
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org8d14445" class="outline-5">
+<h5 id="org8d14445">The internal method function</h5>
+<div class="outline-text-5" id="text-org8d14445">
+<div class="org-src-container">
+<pre class="src src-common-lisp"><span style="color: #6272a4;">;; </span><span style="color: #6272a4;">Internal method function</span>
+<span style="color: #6272a4;">;; </span><span style="color: #6272a4;">Wraps around the method body; assigns 'self- variables with a let*,</span>
+<span style="color: #6272a4;">;;   </span><span style="color: #6272a4;">assigns the (self) macro.</span>
+<span style="color: #6272a4;">;; </span><span style="color: #6272a4;">(self) produces an object from the local 'self- variables</span>
+<span style="color: #6272a4;">;;</span><span style="color: #6272a4;">obj/&lt;object&gt;-&lt;method-name&gt;-intern (self args)</span>
+<span style="color: #61bfff;">(</span><span style="color: #ff79c6;">defun</span> ,<span style="color: #ff79c6;">(</span>symbol-append 'obj/ <span style="color: #50fa7b;">(</span>quote ,name<span style="color: #50fa7b;">)</span> '- method-name '-intern<span style="color: #ff79c6;">)</span> ,<span style="color: #ff79c6;">(</span>cons 'self/internal args<span style="color: #ff79c6;">)</span>
+  <span style="color: #ff79c6;">(</span><span style="color: #ff79c6;">macrolet</span> <span style="color: #50fa7b;">(</span><span style="color: #bd93f9;">(</span>self <span style="color: #0189cc;">()</span> '<span style="color: #0189cc;">(</span>list ,@,self-slots<span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span> <span style="color: #6272a4;">;; </span><span style="color: #6272a4;">(self) macro</span>
+            <span style="color: #6272a4;">;; </span><span style="color: #6272a4;">bind self to this package so symbol comparisons work</span>
+            <span style="color: #50fa7b;">(</span><span style="color: #ff79c6;">let*</span> ,<span style="color: #bd93f9;">(</span>cons '<span style="color: #0189cc;">(</span>self nil<span style="color: #0189cc;">)</span> <span style="color: #0189cc;">(</span>map-slots1 <span style="color: #61bfff;">(</span>quote ,name<span style="color: #61bfff;">)</span> ,object-slots<span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span> <span style="color: #6272a4;">;; </span><span style="color: #6272a4;">'self-* bindings</span>
+              <span style="color: #bd93f9;">(</span><span style="color: #ff79c6;">let</span> <span style="color: #0189cc;">(</span><span style="color: #61bfff;">(</span>res/internal <span style="color: #ff79c6;">(</span><span style="color: #ff79c6;">progn</span> ,@body<span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span>
+                <span style="color: #6272a4;">;; </span><span style="color: #6272a4;">call (self) to return new object</span>
+                <span style="color: #6272a4;">;; </span><span style="color: #6272a4;">We also pass the return value of the function</span>
+                <span style="color: #6272a4;">;; </span><span style="color: #6272a4;">Since it's not possible to cons a nil we send back a special 'obj/nil symbol,</span>
+                <span style="color: #6272a4;">;;   </span><span style="color: #6272a4;">which is then checked by the wrapper to return nil when necessary.</span>
+                `<span style="color: #0189cc;">(</span>,<span style="color: #61bfff;">(</span>self<span style="color: #61bfff;">)</span> . ,<span style="color: #61bfff;">(</span><span style="color: #ff79c6;">if</span> res/internal res/internal 'obj/nil<span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org48d749b" class="outline-5">
+<h5 id="org48d749b">The method invoker</h5>
+<div class="outline-text-5" id="text-org48d749b">
+<p>
+This is what I was talking about earlier - either we <code>setf</code> the symbol or use <code>modify-self</code>.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-common-lisp"><span style="color: #6272a4;">;; </span><span style="color: #6272a4;">Invoker macro</span>
+<span style="color: #6272a4;">;;</span><span style="color: #6272a4;">&lt;object&gt;-&lt;method-name&gt; (obj &amp;rest args)</span>
+<span style="color: #61bfff;">(</span><span style="color: #ff79c6;">defmacro</span> ,<span style="color: #ff79c6;">(</span>symbol-append <span style="color: #50fa7b;">(</span>quote ,name<span style="color: #50fa7b;">)</span> '- method-name<span style="color: #ff79c6;">)</span> <span style="color: #ff79c6;">(</span>obj <span style="color: #bd93f9;">&amp;rest</span> args<span style="color: #ff79c6;">)</span>
+  <span style="color: #ff79c6;">(</span><span style="color: #ff79c6;">if</span> <span style="color: #50fa7b;">(</span>not <span style="color: #bd93f9;">(</span>eq obj 'self<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span> <span style="color: #6272a4;">;; </span><span style="color: #6272a4;">Check the 'self special case</span>
+
+      <span style="color: #6272a4;">;; </span><span style="color: #6272a4;">Wrap with standard setf</span>
+      `<span style="color: #50fa7b;">(</span><span style="color: #ff79c6;">let</span> <span style="color: #bd93f9;">(</span><span style="color: #0189cc;">(</span>obj/result
+              <span style="color: #61bfff;">(</span>,<span style="color: #ff79c6;">(</span>symbol-append 'obj/ <span style="color: #50fa7b;">(</span>quote ,<span style="color: #bd93f9;">(</span>quote ,name<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span> '- <span style="color: #50fa7b;">(</span>quote ,method-name<span style="color: #50fa7b;">)</span> '- 'intern<span style="color: #ff79c6;">)</span> ,obj ,@args<span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span>
+         <span style="color: #bd93f9;">(</span>setf ,obj <span style="color: #0189cc;">(</span>car obj/result<span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span> <span style="color: #6272a4;">;;</span><span style="color: #6272a4;">(car obj/result))</span>
+         <span style="color: #bd93f9;">(</span><span style="color: #ff79c6;">if</span> <span style="color: #0189cc;">(</span>eq <span style="color: #61bfff;">(</span>cdr obj/result<span style="color: #61bfff;">)</span> 'obj/nil<span style="color: #0189cc;">)</span> nil <span style="color: #0189cc;">(</span>cdr obj/result<span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span>
+
+    <span style="color: #6272a4;">;; </span><span style="color: #6272a4;">Wrap with modify-self (when 'self is used)</span>
+    `<span style="color: #50fa7b;">(</span><span style="color: #ff79c6;">let</span> <span style="color: #bd93f9;">(</span><span style="color: #0189cc;">(</span>res <span style="color: #61bfff;">(</span>cdr <span style="color: #ff79c6;">(</span>,<span style="color: #50fa7b;">(</span>symbol-append 'obj/ <span style="color: #bd93f9;">(</span>quote ,<span style="color: #61bfff;">(</span>quote ,name<span style="color: #61bfff;">)</span><span style="color: #bd93f9;">)</span> '-modify-self<span style="color: #50fa7b;">)</span>
+                      <span style="color: #50fa7b;">(</span>,<span style="color: #bd93f9;">(</span>symbol-append 'obj/ <span style="color: #61bfff;">(</span>quote ,<span style="color: #ff79c6;">(</span>quote ,name<span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span> '- <span style="color: #61bfff;">(</span>quote ,method-name<span style="color: #61bfff;">)</span> '- 'intern<span style="color: #bd93f9;">)</span>
+                       <span style="color: #bd93f9;">(</span>self<span style="color: #bd93f9;">)</span> ,@args<span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span>
+       <span style="color: #bd93f9;">(</span><span style="color: #ff79c6;">if</span> <span style="color: #0189cc;">(</span>eq res 'obj/nil<span style="color: #0189cc;">)</span> nil res<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span><span style="color: #ff5555; font-weight: bold;">))</span>
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org2d96ec0" class="outline-4">
+<h4 id="org2d96ec0">Getters and setters</h4>
+<div class="outline-text-4" id="text-org2d96ec0">
+<p>
+There isn't much complexity here, just a simple method generator. I use an ugly hack with <code>eval</code>, this could probably be avoided somehow.
+</p>
+<div class="org-src-container">
+<pre class="src src-common-lisp"><span style="color: #6272a4;">;; </span><span style="color: #6272a4;">Define internal setter functions by mapping over defined slots.</span>
+<span style="color: #6272a4;">;;</span><span style="color: #6272a4;">&lt;object&gt;-set-&lt;var&gt;-intern</span>
+<span style="color: #61bfff;">(</span>mapcar <span style="color: #ff79c6;">(</span><span style="color: #ff79c6;">lambda</span> <span style="color: #50fa7b;">(</span>var<span style="color: #50fa7b;">)</span> <span style="color: #50fa7b;">(</span>eval `<span style="color: #bd93f9;">(</span>,<span style="color: #0189cc;">(</span>symbol-append <span style="color: #61bfff;">(</span>quote ,name<span style="color: #61bfff;">)</span> '- 'defmethod<span style="color: #0189cc;">)</span> <span style="color: #6272a4;">;; </span><span style="color: #6272a4;">ugly eval hack!</span>
+                         ,<span style="color: #0189cc;">(</span>symbol-append 'set '- var '- 'intern<span style="color: #0189cc;">)</span>
+                         <span style="color: #0189cc;">(</span>,var<span style="color: #0189cc;">)</span> <span style="color: #0189cc;">(</span>setf ,<span style="color: #61bfff;">(</span>symbol-append 'self '- var<span style="color: #61bfff;">)</span> ,var<span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+        ,object-slots<span style="color: #61bfff;">)</span>
+
+<span style="color: #6272a4;">;; </span><span style="color: #6272a4;">Create a setter macro which invokes the appropriate internal function.</span>
+<span style="color: #6272a4;">;;</span><span style="color: #6272a4;">&lt;object&gt;-set</span>
+<span style="color: #61bfff;">(</span><span style="color: #ff79c6;">defmacro</span> ,<span style="color: #ff79c6;">(</span>symbol-append name '- 'set<span style="color: #ff79c6;">)</span> <span style="color: #ff79c6;">(</span>,name var val<span style="color: #ff79c6;">)</span>
+  `<span style="color: #ff79c6;">(</span>,<span style="color: #50fa7b;">(</span>symbol-append <span style="color: #bd93f9;">(</span>quote ,name<span style="color: #bd93f9;">)</span> '- 'set '- var '- 'intern<span style="color: #50fa7b;">)</span> ,,name ,val<span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span>
+
+<span style="color: #6272a4;">;; </span><span style="color: #6272a4;">Define internal getter functions by mapping over defined slots.</span>
+<span style="color: #6272a4;">;;</span><span style="color: #6272a4;">&lt;object&gt;-get-&lt;var&gt;-intern</span>
+<span style="color: #61bfff;">(</span>mapcar <span style="color: #ff79c6;">(</span><span style="color: #ff79c6;">lambda</span> <span style="color: #50fa7b;">(</span>var<span style="color: #50fa7b;">)</span> <span style="color: #50fa7b;">(</span>eval `<span style="color: #bd93f9;">(</span>,<span style="color: #0189cc;">(</span>symbol-append <span style="color: #61bfff;">(</span>quote ,name<span style="color: #61bfff;">)</span> '- 'defmethod<span style="color: #0189cc;">)</span> <span style="color: #6272a4;">;; </span><span style="color: #6272a4;">ugly eval hack again!</span>
+                         ,<span style="color: #0189cc;">(</span>symbol-append 'get '- var '- 'intern<span style="color: #0189cc;">)</span>
+                         <span style="color: #0189cc;">()</span> ,<span style="color: #0189cc;">(</span>symbol-append 'self '- var<span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+        ,object-slots<span style="color: #61bfff;">)</span>
+
+<span style="color: #6272a4;">;; </span><span style="color: #6272a4;">Create a setter macro which invokes the appropriate internal function.</span>
+<span style="color: #6272a4;">;;</span><span style="color: #6272a4;">&lt;object&gt;-set</span>
+<span style="color: #61bfff;">(</span><span style="color: #ff79c6;">defmacro</span> ,<span style="color: #ff79c6;">(</span>symbol-append name '- 'get<span style="color: #ff79c6;">)</span> <span style="color: #ff79c6;">(</span>,name var<span style="color: #ff79c6;">)</span>
+  `<span style="color: #ff79c6;">(</span>,<span style="color: #50fa7b;">(</span>symbol-append <span style="color: #bd93f9;">(</span>quote ,name<span style="color: #bd93f9;">)</span> '- 'get '- var '- 'intern<span style="color: #50fa7b;">)</span> ,,name<span style="color: #ff79c6;">)</span><span style="color: #61bfff;">)</span><span style="color: #ff5555; font-weight: bold;">)))</span>
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org71a72d5" class="outline-2">
+<h2 id="org71a72d5">Conclusion</h2>
+<div class="outline-text-2" id="text-org71a72d5">
+<p>
+All that was left to do was to wrap this up as a nice library and I'm done!
+</p>
+
+<p>
+I'll make it clear now that this object system is terribly slow, inefficient and inflexible and you shouldn't use it.
+If you wanted to try it anyway for some reason all the code (and a usage example) can be found on this project's <a href="https://github.com/CuBeRJAN/not-clos">Github repository</a>.
+</p>
+
+<p>
+As you can see we could utilize the power of Lisp macros to its full extent, implementing a complex object system in less than 200 LOC. I've tried my best to keep this as readable as I could, but unfortunately the complexity here made it
+really difficult. I hope you can make at least some sense of all I wrote here.
+</p>
+
+<p>
+This was an interesting learning experience for sure. I think it also showcases the dangers of Lisp macros - a lot of this code isn't very readable at all. If I were to re-do this now I'd definitely split up the macro a lot more and implement some more
+generic functions with the hope of keeping everything properly readable but that's an idea for another time.
+</p>
+</div>
+</div>
