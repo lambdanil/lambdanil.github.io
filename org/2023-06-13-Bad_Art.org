@@ -1,0 +1,39 @@
+#+OPTIONS: toc:nil num:nil
+#+BEGIN_EXPORT html
+---
+layout: post
+title: Don't ridicule bad art
+permalink: /:title/
+tags: [philosophy, art]
+---
+#+END_EXPORT
+As a musician and a (mediocre) songwriter I often have to wonder about the quality of the music I produce.
+
+The issue with music (and art in general, of course) is that it's very personal, and what one may see as bad another may see as an uncontested masterpiece. So can you somehow define what is "good" art in an objective way?
+
+This is, of course, not a new question. It has been discussed for centuries, probably even millennia; but I'd still like to explain my perspective on the issue. But to understand it, we should first looks at the problems.
+
+Let's define what a "good" piece of art means from a /subjective/ perspective first. To me a good piece of art is one that evokes a particular feeling, whatever that feeling may be. Some art makes me happy, some makes me sad,
+some just makes me think - in the end all of these end up being a meaningful and memorable experience, and I think that's what defines "good" art to me, so to speak - it's memorable and meaningful (both of which are highly subjective qualities).
+
+The problem is that there just isn't a single objective metric we can put to use here. Take music for instance - we can objectively compare the popularity of songs, but that doesn't necessarily speak about their qualities.
+Just because a song is popular doesn't mean one is more likely to enjoy it. Sometimes a song which people don't generally enjoy becomes popular for one reason or another, often unrelated to the song itself.
+So popularity isn't a metric of quality.
+
+If we can't determine metric to judge art, maybe we should backtrack a little and ask: what is art?. I think art is, first and foremost, a way of expressing something. Every single piece of art that exists expresses something -
+whether it's an idea, a feeling or a certain atmosphere. This is the one thing all art has in common, across all art forms and all of known history. This perspective creates a clear problem - where do we draw the line?
+/Where/ does art end? What is no longer art?
+
+You see the issue has somewhat shifted here. It's no longer about comparing art, but actually defining art. I may see something you see as meaningless as an artistic masterpiece, and neither of us is wrong.
+I don't actually think we can define whether something is art or not objectively.
+
+Thinking about the implications of all this leads me to my point, the one I (strongly ;)) hinted at with the title of this post.
+
+*Don't unnecessarily ridicule bad art.*
+
+Just because you don't enjoy an art piece or see any redeeming quality in it doesn't mean it deserves ridicule.
+"Bad" is entirely subjective, and unnecessarily ridiculing what you don't enjoy leads to people being afraid of putting their creation out there, which I think is a great tragedy (think of all the great art we will miss out on!).
+
+I believe every art piece is worth being displayed and every art piece is worth being discussed and criticized.
+
+And to the artists: *don't be afraid to put your art out there*.

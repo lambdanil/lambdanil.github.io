@@ -1,0 +1,62 @@
+#+OPTIONS: toc:nil num:nil
+#+BEGIN_EXPORT html
+---
+layout: post
+title: My System Configuration
+permalink: /:title/
+tags: [emacs, dotfiles]
+---
+#+END_EXPORT
+
+This is an extended excerpt from my personal dotfiles, one which I think is worth a separate post.
+Here is a link to the full configuration for those interested https://raw.githack.com/CuBeRJAN/emacs-stuff/main/README.html.
+
+---
+
+Let's talk about my system configuration - how I handle it and why.
+
+** The why
+There are multiple important ideas in place here.
+
+*** Reproducibility
+I should be able to deploy this configuration quickly and easily, achieving an identical (= reasonably close to identical) result every time.
+Most importantly all of the relevant dotfiles should be present and should be set up in a way that allows them to work when deployed anywhere. Every file that is relevant to reproducing this configuration should be present.
+To ensure this is the case I sometimes try to set up my environment in a virtual machine so that I can check if I missed any important files.
+
+*** Separation
+The user environment should exist almost entirely separately from the system environment. 
+
+*** Modularity
+I should be able to easily pick which parts of the configuration I want to deploy.
+
+*** Organization
+There should be no confusion over how to deploy this system, nor should there be any confusion over where individual files belong, etc. All files should have their own clearly defined place.
+
+*** Maintainability
+The configuration should be easy to keep current, it should also be robust and reliable.
+
+
+** The implementation
+I'll start by outlining the structure, then I'll go over each step and explain its role.
+
+*** README.org
+I chose to implement my configuration in ~org~ as it allows me to clearly document every single little piece of the system, something which is very important to me.
+
+The centerpiece of this implementation is the ~README.org~ file. This file includes all of the plaintext dotfiles that are part of this system, as well as information about every other file.
+Using ~org~ to describe these files allows for the configuration to remain readable and properly organized. Each chapter in this file corresponds to a single "module" (more on these below).
+
+This ~org~ file is then ~tangled~ into the ~configs~ directory, where the individual files are placed into separate directories, or as I called them above, "modules".
+
+*** Modules
+Each module is a group of files that fullfill a certain role.
+These modules should be self-reliant and shouldn't depend on other modules. In practice there are a few exceptions - for example some modules rely on the ~guix~ module to ship dependencies.
+Non-plaintext modules are also present in the ~configs~ directory. These aren't tangled but are still described in the ~org~ file.
+These are mostly things that cannot be defined in plaintext such as fonts, icons, wallpapers and similar.
+
+All of these modules are symlinked into the home directory using GNU Stow. Using the modules in this way allows picking out specific parts of the configuration.
+
+*** Packages
+The GNU Guix package manager is used for installing dependencies. This means the dependencies for this environment can be installed anywhere where Guix can run, further separating the user environment from the rest of the system and ensuring better reliability.
+
+** Conclusion
+I have put a lot of effort into keeping my configuration clean and organized, so much so that it almost reads more like a book than a program. I think literate configuration is a very great tool, and one everyone interested should try.

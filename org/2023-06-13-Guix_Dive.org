@@ -1,0 +1,548 @@
+#+OPTIONS: toc:nil num:nil
+#+BEGIN_EXPORT html
+---
+layout: post
+title: Diving into the Guix internals
+permalink: /:title/
+tags: [guix, scheme]
+---
+#+END_EXPORT
+One of the great things about Guix is that it uses Scheme (Guile specifically) as its implementation language.
+Due to the functional design of the system this decision actually impacts not only developers, but also users of Guix and Guix System, so the language choice is a lot more important here than in other projects.
+What's great about Scheme is that it's an established language with an existing ecosystem and tooling. What's more than that, is that it also has a very functional REPL, which can be integrated with Emacs using Geiser.
+The usability of this tooling extends all the way to almost all parts of the Guix source - this means I can take it apart piece by piece using the existing tools, which is very convenient.
+This realization is actually where my idea to "dive in" with a REPL was born.
+
+Let's spin up Emacs and get hacking!
+
+* The setup
+So of course before any hacking begins I'll have to prepare my Emacs environment for the task. There's a few steps I need to take, though all of them pretty straightforward.
+
+Most of the steps here are taken right from the Guix manual, see https://guix.gnu.org/en/manual/en/guix.html#The-Perfect-Setup.
+
+I'll first need to set up all the necessary dependencies - fortunately Guix makes this very straightforward.
+#+begin_src bash
+  guix install guix guile
+#+end_src
+
+Next I'll need the actual Guix development repositories cloned locally, this is a quick process too.
+#+begin_src bash
+  cd $HOME
+  git clone https://git.savannah.gnu.org/git/guix.git
+#+end_src
+
+Finally I could set up Geiser inside Emacs. Here I use the path I cloned the repository to, ~$HOME/guix~ in my case.
+#+begin_src emacs-lisp
+  (with-eval-after-load 'geiser-guile
+    (add-to-list 'geiser-guile-load-path "~/guix"))
+#+end_src
+
+I'll also compile all the Guix files now, so I can work in the REPL uninterrupted by compiles. I can use ~guix shell~ to ensure I have the fully correct development environment.
+#+begin_src bash
+  cd ~/guix
+  guix shell -D guix --pure
+  ./bootstrap
+  make clean
+  make -j10
+  exit # leave the Guix shell
+#+end_src
+This takes a while but finishes successfully eventually.
+
+I also have a couple of my own little modules for Guix as well as nonguix, but since I won't be diving into these I won't bother cloning them now.
+
+* The starting point
+So where exactly does one start hacking on such a complex project? Well I decided to start with the part I was already most familiar with - the Guix System configuration. Here's my current configuration for reference (yes, it's a little lengthy!).
+#+begin_src scheme
+  (add-to-load-path "/etc/guix-modules")
+
+  (use-modules (gnu)
+	       (gnu services)
+	       (gnu services dbus)
+	       (gnu packages gnome)
+	       (nongnu packages linux)
+	       (nongnu system linux-initrd)
+	       (gnu services virtualization)
+	       (gnu services shepherd)
+	       (gnu services admin)
+	       (guix channels)
+	       (gnu services mcron)
+	       (gnu services docker)
+	       (nil services mount-rshared)
+	       (nil packages gnome)
+	       (gnu packages fonts)
+	       (gnu packages networking)
+	       (guix gexp)
+	       (guix packages)
+	       (srfi srfi-1))
+  (use-service-modules linux desktop networking ssh xorg)
+  (use-package-modules linux package-management)
+
+  (define %my-services
+    (modify-services %desktop-services
+		     (delete gdm-service-type)
+		     (guix-service-type config => (guix-configuration
+						   (inherit config)
+						   (substitute-urls
+						    (append (list "https://substitutes.nonguix.org")
+							    %default-substitute-urls))
+						   (authorized-keys
+						    (append (list (local-file "./signing-key.pub"))
+							    %default-authorized-guix-keys))))
+		     (dbus-root-service-type config =>
+					     (dbus-configuration (inherit config)
+								 (services (list libratbag blueman))))))
+
+  (operating-system
+
+   (locale "cs_CZ.utf8")
+   (timezone "Europe/Prague")
+   (keyboard-layout (keyboard-layout "cz"))
+
+   (host-name "eternity")
+
+   (kernel linux)
+   (initrd microcode-initrd)
+   (firmware (list linux-firmware))
+
+   (groups 
+    (cons* 
+     (user-group (name "games")) ;; For libratbagd
+     (user-group (name "realtime"))
+     %base-groups))
+
+   (users (cons* (user-account
+		  (name "nil")
+		  (comment "(lambda () nil)")
+		  (group "users")
+		  (home-directory "/home/nil")
+		  (supplementary-groups
+		   '("wheel" "netdev" "audio" "video" "lp" "libvirt" "kvm" "games" "docker" "realtime")))
+		 %base-user-accounts))
+
+   (packages
+    (append
+     (map specification->package
+	  (list
+	   "nss-certs"
+	   "xf86-video-amdgpu"
+	   "amdgpu-firmware"
+	   "bluez"
+	   "blueman"
+	   "vim"
+	   "sway"
+	   "wofi"
+	   "libratbag"
+	   "git"))
+     %base-packages))
+
+   (services
+    (append
+     (list
+      (service gdm-service-type
+	       (gdm-configuration
+		(wayland? #t)))
+      (service bluetooth-service-type
+	       (bluetooth-configuration
+		(auto-enable? #f)))
+
+      mount-rshared-service
+
+      (pam-limits-service
+       (list (pam-limits-entry "*" 'hard 'nofile 524288)
+	     (pam-limits-entry "@realtime" 'both 'rtprio 99)
+	     (pam-limits-entry "@realtime" 'both 'memlock 'unlimited)))
+
+      (extra-special-file "/lib64/ld-linux-x86-64.so.2"
+			  (file-append glibc "/lib/ld-linux-x86-64.so.2"))
+
+      (set-xorg-configuration
+       (xorg-configuration
+	(keyboard-layout keyboard-layout)))
+
+      (service virtlog-service-type
+	       (virtlog-configuration
+		(max-clients 1000)))
+
+      (service libvirt-service-type
+	       (libvirt-configuration
+		(unix-sock-group "libvirt")
+		(tls-port "16555")))
+
+      (service docker-service-type)
+
+      (service zram-device-service-type
+	       (zram-device-configuration
+		(size "8172M")
+		(compression-algorithm 'zstd))))
+     %my-services))
+
+   (bootloader
+    (bootloader-configuration
+     (bootloader grub-efi-bootloader)
+     (targets '("/boot/efi"))
+     (timeout 3)
+     (keyboard-layout keyboard-layout)))
+   (file-systems
+    (cons*   
+     (file-system
+      (mount-point "/")
+      (device
+       (uuid ""
+	     'btrfs))
+      (type "btrfs"))
+     (file-system
+      (mount-point "/boot/efi")
+      (device
+       (uuid ""
+	     'fat32))
+      (type "vfat"))
+     (file-system ;; Second hard drive
+      (mount-point "/mnt/media/nil/external")
+      (device
+       (uuid ""
+	     'ext4))
+      (type "ext4"))
+     %base-file-systems)))
+#+end_src
+
+I start up a Geiser REPL and begin by importing all my modules, basically just copy-pasting from the header of this file. I had to remove a few modules that I didn't have definitions locally available for.
+#+begin_src scheme
+    (use-modules (gnu)
+		 (gnu services)
+		 (gnu services dbus)
+		 (gnu packages gnome)
+		 (gnu services virtualization)
+		 (gnu services shepherd)
+		 (gnu services admin)
+		 (guix channels)
+		 (gnu services mcron)
+		 (gnu services docker)
+		 (gnu packages fonts)
+		 (gnu packages networking)
+		 (guix gexp)
+		 (guix packages)
+		 (srfi srfi-1))
+    (use-service-modules linux desktop networking ssh xorg)
+    (use-package-modules linux package-management)
+#+end_src
+
+* The hacking begins - the operating system record
+
+I think the best place to begin is the actual ~operating-system~ declaration. Using ~xref-find-definitions~ (bound to ~M-.~ by default)  I can jump straight to where it's defined. Here's what the definition looks like (be warned, another lengthy definition below!):
+
+#+begin_src scheme
+  (define-record-type* <operating-system> operating-system
+    make-operating-system
+    operating-system?
+    this-operating-system
+
+    (kernel operating-system-kernel                 ; package
+	    (default linux-libre))
+    (kernel-loadable-modules operating-system-kernel-loadable-modules
+			     (default '()))                ; list of packages
+    (kernel-arguments operating-system-user-kernel-arguments
+		      (default %default-kernel-arguments)) ; list of gexps/strings
+    (hurd operating-system-hurd
+	  (default #f))                             ; package
+    (bootloader operating-system-bootloader)        ; <bootloader-configuration>
+    (label operating-system-label                   ; string
+	   (thunked)
+	   (default (operating-system-default-label this-operating-system)))
+
+    (keyboard-layout operating-system-keyboard-layout ;#f | <keyboard-layout>
+		     (default #f))
+    (initrd operating-system-initrd                 ; (list fs) -> file-like
+	    (default base-initrd))
+    (initrd-modules operating-system-initrd-modules ; list of strings
+		    (thunked)                       ; it's system-dependent
+		    (default %base-initrd-modules))
+
+    (firmware operating-system-firmware             ; list of packages
+	      (default %base-firmware))
+
+    (host-name operating-system-host-name)          ; string
+    (hosts-file %operating-system-hosts-file         ; deprecated
+		(default #f)
+		(sanitize warn-hosts-file-field-deprecation))
+
+    (mapped-devices operating-system-mapped-devices ; list of <mapped-device>
+		    (default '()))
+    (file-systems operating-system-file-systems)    ; list of fs
+    (swap-devices operating-system-swap-devices     ; list of string | <swap-space>
+		  (default '())
+		  (delayed)
+		  (sanitize warn-swap-devices-change))
+
+    (users operating-system-users                   ; list of user accounts
+	   (default %base-user-accounts))
+    (groups operating-system-groups                 ; list of user groups
+	    (default %base-groups))
+
+    (skeletons operating-system-skeletons           ; list of name/file-like value
+	       (default (default-skeletons)))
+    (issue operating-system-issue                   ; string
+	   (default %default-issue))
+
+    (packages operating-system-packages             ; list of (PACKAGE OUTPUT...)
+	      (default %base-packages))             ; or just PACKAGE
+
+    (timezone operating-system-timezone
+	      (default "Etc/UTC"))                  ; string
+    (locale   operating-system-locale               ; string
+	      (default "en_US.utf8"))
+    (locale-definitions operating-system-locale-definitions ; list of <locale-definition>
+			(default %default-locale-definitions))
+    (locale-libcs operating-system-locale-libcs     ; list of <packages>
+		  (default %default-locale-libcs))
+    (name-service-switch operating-system-name-service-switch ; <name-service-switch>
+			 (default %default-nss))
+
+    (essential-services operating-system-essential-services ; list of services
+			(thunked)
+			(default (operating-system-default-essential-services
+				  this-operating-system)))
+    (services operating-system-user-services        ; list of services
+	      (thunked)                     ;allow for system-dependent services
+	      (default %base-services))
+
+    (pam-services operating-system-pam-services     ; list of PAM services
+		  (default (base-pam-services)))
+    (setuid-programs operating-system-setuid-programs
+		     (default %setuid-programs)     ; list of <setuid-program>
+		     (sanitize ensure-setuid-program-list))
+
+    (sudoers-file operating-system-sudoers-file     ; file-like
+		  (default %sudoers-specification))
+
+    (location operating-system-location             ; <location>
+	      (default (and=> (current-source-location)
+			      source-properties->location))
+	      (innate)))
+#+end_src
+I can immediately spot some familiar pieces here.
+
+So ~operating-system~ is actually a *Scheme record*. These are used very often in the Guix source code, and we'll see them a lot.
+A record is a fairly straightforward kind of object, one consisting of 2 parts - the keys and their values. Each key has a single value assigned to it.
+
+One of the very first keys here looks like this:
+#+begin_src scheme
+      (kernel-arguments operating-system-user-kernel-arguments
+			(default %default-kernel-arguments)) ; list of gexps/strings
+#+end_src
+
+Even without great understanding of the record syntax it's clear what's going on here. We define a key, something that appears to be its accessor and lastly a ~(default)~ section.
+The comments here are helpful too, telling us what the supplied type is supposed to be.
+
+We can see ~%default-kernel-arguments~ is being used here. We can check its value by evaluating it within the REPL.
+#+begin_src scheme
+  scheme@(guile-user)> %default-kernel-arguments
+  $5 = ("modprobe.blacklist=usbmouse,usbkbd" "quiet")
+#+end_src
+So the ~%default-kernel-arguments~ is just a list of strings.
+
+From this we can see that adding a custom kernel argument in the ~config.scm~ would be as simple as adding a string to this list like so: 
+#+begin_src scheme
+  (operating-system
+    ...
+
+    (kernel-arguments (cons "nomodeset" %default-kernel-arguments))
+    
+    ...
+    )
+#+end_src
+
+I've already learned something cool about how Guix handles kernel arguments and the system declaration!
+
+* Hacking continued - a look into the package values
+With this basic knowledge I can look at some of the more interesting default values that are part of my configuration.
+
+Let's start by peeking into the default package list, stored as ~%base-packages~.
+#+begin_src scheme
+  scheme@(guile-user)> %base-packages
+  $6 = (#<package guix-icons@0.1 gnu/packages/package-management.scm:629 7f1836ad24d0> #<package less@608 gnu/packages/less.scm:38 7f183a855210> #<package mg@20221112 gnu/packages/text-editors.scm:502 7f1836bad370> #<package nano@7.2 gnu/packages/nano.scm:32 7f18313429a0> #<package nvi@1.81.6 gnu/packages/nvi.scm:32 7f183042bd10> #<package man-db@2.11.1 gnu/packages/man.scm:128 7f182f1f2d10> #<package info-reader@6.8 gnu/packages/texinfo.scm:195 7f182f720bb0> #<package bash-completion@2.11 gnu/packages/bash.scm:301 7f182f513370> #<package kbd@2.5.1 gnu/packages/linux.scm:3908 7f18311676e0> #<package sudo@1.9.13p2 gnu/packages/admin.scm:1958 7f182fc84d10> #<package guile-readline@3.0.9 gnu/packages/guile.scm:483 7f182f01c0b0> #<package guile-colorized@0.1 gnu/packages/guile-xyz.scm:1130 7f182f55fc60> #<package pciutils@3.8.0 gnu/packages/pciutils.scm:82 7f1836d19210> #<package usbutils@015 gnu/packages/linux.scm:2372 7f183114d420> #<package util-linux-with-udev@2.37.4 gnu/packages/linux.scm:2218 7f183114d790> #<package kmod@29 gnu/packages/linux.scm:4035 7f18311674d0> #<package eudev@3.2.11 gnu/packages/linux.scm:4145 7f1831167370> #<package inetutils@2.3 gnu/packages/admin.scm:893 7f182fc83b00> #<package isc-dhcp@4.4.3-P1 gnu/packages/admin.scm:1399 7f182fc83420> #<package iproute2@6.0.0 gnu/packages/linux.scm:3087 7f1831166630> #<package wget@1.21.3.24 gnu/packages/wget.scm:47 7f182f321f20> #<package iw@5.19 gnu/packages/linux.scm:3389 7f1831166160> #<package wireless-tools@30.pre9 gnu/packages/linux.scm:4507 7f1831181dc0> #<package procps@4.0.3 gnu/packages/linux.scm:2327 7f183114d4d0> #<package psmisc@23.5 gnu/packages/linux.scm:2044 7f183114d8f0> #<package which@2.21 gnu/packages/base.scm:1399 7f1830412000> #<package shadow@4.13 gnu/packages/admin.scm:950 7f182fc83a50> #<package e2fsprogs@1.46.4 gnu/packages/linux.scm:2446 7f183114d2c0> #<package guile@3.0.9 gnu/packages/guile.scm:317 7f182f01c2c0> #<package bash@5.1.16 gnu/packages/bash.scm:133 7f182f5136e0> #<package coreutils@9.1 gnu/packages/base.scm:365 7f182f1fd9a0> #<package findutils@4.9.0 gnu/packages/base.scm:327 7f182f1fda50> #<package grep@3.8 gnu/packages/base.scm:108 7f182f1fddc0> #<package sed@4.8 gnu/packages/base.scm:163 7f182f1fdd10> #<package diffutils@3.8 gnu/packages/base.scm:299 7f182f1fdb00> #<package patch@2.7.6 gnu/packages/base.scm:269 7f182f1fdbb0> #<package gawk@5.2.1 gnu/packages/gawk.scm:40 7f182f16b370> #<package tar@1.34 gnu/packages/base.scm:204 7f182f1fdc60> #<package gzip@1.12 gnu/packages/compression.scm:251 7f182f416630> #<package bzip2@1.0.8 gnu/packages/compression.scm:288 7f182f416580> #<package xz@5.2.8 gnu/packages/compression.scm:494 7f182f416370> #<package lzip@1.23 gnu/packages/compression.scm:625 7f182f4160b0>)
+#+end_src
+
+This output isn't particularly easy to parse, but it does tell us a few things. Probably the most important part is that packages are actually records too! This means we can also use a simple accessor to access different keys and their values.
+
+I'm not entirely sure what the keys and their accessors are at this point, but I'll guess there's a ~package-name~ function. With this I can get a better look at the default package list.
+#+begin_src scheme
+  scheme@(guile-user)> (map package-name %base-packages)
+  $7 = ("guix-icons" "less" "mg" "nano" "nvi" "man-db" "info-reader" "bash-completion" "kbd" "sudo" "guile-readline" "guile-colorized" "pciutils" "usbutils" "util-linux-with-udev" "kmod" "eudev" "inetutils" "isc-dhcp" "iproute2" "wget" "iw" "wireless-tools" "procps" "psmisc" "which" "shadow" "e2fsprogs" "guile" "bash" "coreutils" "findutils" "grep" "sed" "diffutils" "patch" "gawk" "tar" "gzip" "bzip2" "xz" "lzip")
+#+end_src
+Great, this is much more readable!
+
+Seeing as ~%base-packages~ is actually just a list, I can also see how easy it is to manipulate it - let's remove ~nano~ from the default packages using a simple lambda filter.
+#+begin_src scheme
+  (remove (lambda (pkg) (string= (package-name pkg) "nano")) %base-packages)
+#+end_src
+This returns a brand new package list with ~nano~ missing this time. Pretty cool, I could definitely use this to strip out some unnecessary packages out of my system ;).
+
+Basic list manipulation is actually very powerful within Guix. It's also going to allow me to modify the service list, among many other things - but more on that later.
+
+* Package specification
+Looking into the ~packages~ section of my system configuration I notice the use of a specification function.
+
+#+begin_src scheme
+  (packages
+   (append
+    (map specification->package
+	 (list
+	  "nss-certs"
+	  "xf86-video-amdgpu"
+	  "amdgpu-firmware"
+	  "bluez"
+	  "blueman"
+	  "vim"
+	  "sway"
+	  "wofi"
+	  "libratbag"
+	  "git"))
+    %base-packages))
+#+end_src
+
+In essence it looks like ~(specification->package)~ takes a package name string and returns the first matching package definition it finds. I can verify this by looking at the definition of this function.
+#+begin_src scheme
+  (define (specification->package spec)
+    "Return a package matching SPEC.  SPEC may be a package name, or a package
+  name followed by an at-sign and a version number.  If the version number is not
+  present, return the preferred newest version."
+    (let ((name version (package-name->name+version spec)))
+      (%find-package spec name version)))
+#+end_src
+I won't bother digging in deeper into the ~%find-package~ function now.
+
+* Package record
+Let's look into the ~package~ record next. This one already looks very familiar to me, as I'm somewhat well versed in packaging for Guix by now.
+
+#+begin_src scheme
+  (define-record-type* <package>
+    package make-package
+    package?
+    this-package
+    (name   package-name)                   ; string
+    (version package-version)               ; string
+    (source package-source)                 ; <origin> instance
+    (build-system package-build-system)     ; <build-system> instance
+    (arguments package-arguments            ; arguments for the build method
+	       (default '()) (thunked))
+
+    (inputs package-inputs                  ; input packages or derivations
+	    (default '()) (thunked)
+	    (sanitize sanitize-inputs))
+    (propagated-inputs package-propagated-inputs    ; same, but propagated
+		       (default '()) (thunked)
+		       (sanitize sanitize-inputs))
+    (native-inputs package-native-inputs    ; native input packages/derivations
+		   (default '()) (thunked)
+		   (sanitize sanitize-inputs))
+
+    (outputs package-outputs                ; list of strings
+	     (default '("out")))
+
+						    ; lists of
+						    ; <search-path-specification>,
+						    ; for native and cross
+						    ; inputs
+    (native-search-paths package-native-search-paths (default '()))
+    (search-paths package-search-paths (default '()))
+
+    ;; The 'replacement' field is marked as "innate" because it never makes
+    ;; sense to inherit a replacement as is.  See the 'package/inherit' macro.
+    (replacement package-replacement                ; package | #f
+		 (default #f) (thunked) (innate))
+
+    (synopsis package-synopsis
+	      (sanitize validate-texinfo))          ; one-line description
+    (description package-description
+		 (sanitize validate-texinfo))       ; one or two paragraphs
+    (license package-license                        ; (list of) <license>
+	     (sanitize validate-license))
+    (home-page package-home-page)                   ; string
+    (supported-systems package-supported-systems    ; list of strings
+		       (default %supported-systems))
+
+    (properties package-properties (default '()))   ; alist for anything else
+
+    (location package-location-vector
+	      (default (current-location-vector))
+	      (innate) (sanitize sanitize-location))
+    (definition-location package-definition-location-code
+			 (default (current-definition-location))
+			 (innate)))
+#+end_src
+So packages really are just bog standard records!
+
+So yet again we can use this knowledge to do some fancy stuff. Let's check the inputs of the ~curl~ package as an example. 
+#+begin_src scheme
+  scheme@(guile-user)> ,use(gnu packages curl)
+
+  scheme@(guile-user)> (map car (package-inputs curl))
+  $14 = ("gnutls" "libidn" "mit-krb5" "nghttp2" "zlib")
+#+end_src
+Notice that I first had to import the correct module to get the ~curl~ definition. If you ever need to find which module contains a package, you can easily obtain this information using ~guix show <package>~. 
+
+Here's a fairly small package I wrote, you can see the practical usage of the record very clearly here.
+You may be unfamiliar with a lot of these functions, but don't worry about that for now - just notice how the ~package~ record is used, that's the important part.
+(also nevermind the ugly hacks, this is a package strictly for personal use...).
+#+begin_src scheme
+  (define-public brogue-ce
+    (package
+     (name "brogue-ce")
+     (version "1.12")
+     (source (origin
+	      (method url-fetch)
+	      (uri (string-append "https://github.com/tmewett/BrogueCE/archive/refs/tags/v" version
+				  ".tar.gz"))
+	      (sha256
+	       (base32
+		"0a6l7j91iq0mv7zrxnlxx6ll5rfwvgfyk5h1gc9m5qzll1n3zvdf"))))
+     (build-system gnu-build-system)
+     (arguments
+      (list 
+       #:make-flags #~(list "CC=gcc")
+       #:tests? #f
+       #:phases
+       #~(modify-phases %standard-phases
+			(delete 'configure)
+			(add-before 'build 'change-datadir-path
+				    (lambda _
+				      (map
+				       (lambda (substitutes)
+					 (substitute* "config.mk"
+						      (((car substitutes))
+						       (cdr substitutes))))
+				       `(("^DATADIR := ." . ,(string-append "DATADIR := " #$output "/share"))
+					 ("^RELEASE := NO" . "RELEASE := YES")))))
+			(replace 'install
+				 (lambda _
+				   (mkdir-p (string-append #$output "/bin"))
+				   (copy-file "bin/brogue" (string-append #$output "/bin/.brogue_real"))
+				   (call-with-output-file (string-append #$output "/bin/brogue") ; Wrap around executable and execute in ~/.local
+				     (lambda (file)
+				       (format file "~A" (string-append
+							  "mkdir -p \"$HOME/.local/share/brogue\" && cd \"$HOME/.local/share/brogue\" && "
+							  #$output "/bin/.brogue_real"))))
+				   (invoke "chmod" "+x" (string-append #$output "/bin/brogue"))
+				   (copy-recursively "bin/assets" (string-append #$output "/share/assets"))
+				   (make-desktop-entry-file
+				    (string-append  #$output "/share/applications/brogue.desktop")
+				    #:name "Brogue"
+				    #:exec "brogue"
+				    #:categories '("RolePlaying" "Game")
+				    #:keywords
+				    '("adventure" "singleplayer")
+				    #:comment
+				    '((#f "Brave the Dungeons of Doom!"))))))))
+     (inputs (list (sdl-union (list sdl2 sdl2-image))))
+     (synopsis "Brogue CE: A dungeon crawler roguelike")
+     (description "Community fork of Brogue")
+     (home-page "https://github.com/tmewett/BrogueCE")
+     (license agpl3)))
+#+end_src
+
+I won't be digging deeper into the keys here now, but it's certainly very interesting to see how relatively simple and understandable the implementation is under the hood.
+
+* End of part 1
+There's still a lot left to explore, but I think we all need a break now.  Next time I'll look deeper into the ~services~ section, and I'll show some more practical applications of what we've learned so far.
+
+

@@ -1,0 +1,168 @@
+#+OPTIONS: toc:nil num:nil
+#+BEGIN_EXPORT html
+---
+layout: post
+title: Guix Tips and Common Mistakes
+permalink: /:title/
+tags: [scheme, guix]
+---
+#+END_EXPORT
+I have spent some time in online spaces dedicated to the discussion of Guix. As such, I am familiar with a lot of the mistakes new Guix users make, and I would like to go over some of the most common ones now.
+
+Please note that this list isn't final and I might add new entries over time.
+
+* Modifying lists
+Many times I have seen people do something like this in their Guix System configuration:
+#+begin_src scheme
+  (modify-services %desktop-services
+		   (delete gdm-service-type))
+
+  (operating-system
+   ...
+
+   (services
+    (append
+     (list
+      ...))
+    %desktop-services)
+   ...)
+#+end_src
+The intent here is, to remove the GDM service from the system. When the user then reconfigures the system, they'll be surprised to see GDM starting again.
+The issue with this approach is pretty simple - the ~modify~ macros are non-destructive.
+
+What this means in this case is that ~modify-services~ produces a brand new list, while ~%desktop-services~ stays unmodified.
+If you want to properly remove GDM from your list of services, you should instead define a new list like so:
+#+begin_src scheme
+  (define %my-services
+    (modify-services %desktop-services
+		     (delete gdm-service-type)))
+#+end_src
+Then you can use your new ~%my-services~ list in place of the old ~%desktop-services~ in the ~services~ declaration.
+
+* Using Guix to build software
+Sometimes users will install development libraries with Guix, only to find they are unable to compile their projects. The solution here is very straightforward, you need to add the Guix libraries into your library path.
+
+Usually this can be done very easily with a single command.
+#+begin_src bash
+  export LD_LIBRARY_PATH="$HOME/.guix-profile/lib/"
+#+end_src
+This is assuming the default Guix profile path.
+
+* Setting up the Guix environment correctly
+On foreign distributions running Guix is is necessary to source your profile correctly, otherwise you won't be able to access programs installed via Guix in the terminal, or even in your application menu.
+The Guix documentation goes over this issue only very briefly, and without much concrete explanation. Here's my approach to sourcing my Guix profile correctly.
+
+First I'll need to add Guix into the login environment. This part can be a little complicated, as the login environment is handled differently by different login managers and desktop environments.
+A solution that generally works for GDM, as well as for non-graphical tty login is to use your shell's startup file. In the case of bash that is ~$HOME/.bash_profile~. You'll want to add the following.
+#+begin_src bash
+  if [ -d "/gnu" ] && [ -d "$HOME/.guix-profile" ]; then
+      source "$HOME/.guix-profile/etc/profile"
+      source "$HOME/.config/guix/current/etc/profile"
+  fi
+#+end_src
+This ensures that the Guix profile actually exists first.
+Note that using the shell login file this way isn't supported by all login managers - in those cases you should find how to set up the environment correctly specifically for your login manager.
+
+In some cases this approach can actually cause issues on foreign distributions as the system confuses Guix and native binaries. I have seen this cause strange bugs on Gnome as an example.
+In those cases you should instead use a more minimal setup like so:
+#+begin_src bash
+  if [ -d "/gnu" ] && [ -d "$HOME/.guix-profile" ]; then
+      export PATH="$PATH:$HOME/.guix-profile/bin"
+      export XDG_DATA_DIRS="$XDG_DATA_DIRS:$HOME/.guix-profile/share"
+  fi
+#+end_src
+
+But this isn't all that's needed. For your shell to properly find all the commands you'll probably need to add some commands into your shell startup file. In the case of bash this file is ~$HOME/.bashrc~.
+#+begin_src bash
+  if [ -d "/gnu" ] && [ -d "$HOME/.guix-profile" ] && [[ $- == *i* ]]; then
+      GUIX_PROFILE="$HOME/.guix-profile"
+      . "$GUIX_PROFILE/etc/profile"
+      GUIX_PROFILE="$HOME/.config/guix/current"
+      . "$GUIX_PROFILE/etc/profile"
+  fi
+#+end_src
+Again we ensure the Guix profile is present, and we also ensure the shell we are entering is an interactive one. It's important that the current Guix is only sourced /after/ the profile is, otherwise we could run into issues.
+
+* Finding the origin of a package/service
+When working with Guix packages (or services) you'll often need to import extra modules to get all the definitions you need. But how do you know which modules you should import? Fortunately Guix provides an easy way to find this information.
+
+To find the location of a package you can use ~guix show~ like so:
+#+begin_src bash
+  guix show $PACKAGE | grep location
+#+end_src
+For example for ~curl~ as the package we get the following output
+#+begin_src sh
+  location: gnu/packages/curl.scm:65:2
+#+end_src
+This tells us ~curl~ is defined in the ~(gnu packages curl)~ module.
+
+Unfortunately there is no equal functionality for services, but we can no less find this information easily.
+#+begin_src bash
+  guix system search $SERVICE
+#+end_src
+You'll need to manually look for the location of the correct service in the output in this case.
+
+If you wish to do the reverse - see which modules provide which packages, you can do it like so:
+#+begin_src bash
+  guix package --list-available | grep "gnu/packages/admin.scm"
+#+end_src
+This lists all the packages that are defined in the ~(gnu packages admin)~ module.
+
+* Stripping unnecessary packages
+One of the issues users sometimes bring up is that some of the default packages are "bloated". What they usually mean by that is that certain services ship unnecessary dependencies.
+
+Take the Gnome service for example. It ships with Gnome's Epiphany web browser, Gnome Boxes, Gnome Maps and many other programs one might not necessarily want to use.
+Unfortunately, Guix doesn't provide a straightforward macro to address this issue, but the solution isn't very complicated.
+
+First we need to create a custom package with the modified dependency list. You can put the following in your ~config.scm~ for example:
+#+begin_src scheme
+  (define my-gnome
+    (package
+     (inherit gnome)
+     (name "my-gnome")
+     (propagated-inputs
+      (modify-inputs (package-propagated-inputs gnome)
+		     (delete "epiphany")
+		     (delete "gnome-weather")
+		     (delete "simple-scan")
+		     (delete "gnome-maps")
+		     (delete "cheese")
+		     (delete "gnome-boxes")
+		     (delete "gnome-console")
+		     (delete "gnome-contacts")
+		     (append gnome-terminal)))))
+#+end_src
+Note that you'll need to import all the modules necessary for the definitions. In this case we would need ~(gnu packages gnome)~ for ~gnome~ as well as ~gnome-terminal~.
+In some cases your package might use the regular ~inputs~ rather than ~propagated-inputs~. It's best to consult the package definition with ~guix edit gnome~ to ensure you are modifying the correct value.
+
+Finally you'll need to tell the system service to replace its Gnome package with your customized variant, modify your service configuration like so:
+#+begin_src scheme
+  (service gnome-desktop-service-type
+	   (gnome-configuration
+	    (gnome my-gnome)))
+#+end_src
+Reconfigure and you're done :).
+
+* Custom Guix startup message
+Guix outputs a small message on boot before you log in. By default this message is
+#+begin_quote
+This is the GNU system.  Welcome.
+#+end_quote
+but you can change this message to whatever string you want!
+
+Simply add an ~(issue)~ declaration into your ~operating-system~ (in your ~config.scm~):
+#+begin_src scheme
+  (operating-system
+    ...
+    (issue "Welcome to my custom fancy Guix system!\n")
+    ...)
+#+end_src
+This value has to be a string.
+
+* Freezing on boot
+This is a fairly common issue and is actually one I ran into myself. Basically Guix will boot up, then hang before the login manager loads. The reason for this is an issue with graphics drivers, usually caused by missing certain proprietary firmware.
+
+You can get the system to boot into a graphical interface by adding the ~nomodeset~ kernel argument. As the system is booting up and Grub loads, hit ~e~ over the first entry. Then you can add ~nomodeset~ and boot the system.
+
+Once you boot the system the proper solution is to install the vanilla kernel with all the necessary blobs, instructions for this are available on the [[https://gitlab.com/nonguix/nonguix][Nonguix Gitlab repo]]. When setting up make sure you get substitutes setup correctly as well.
+You should be able to boot the system normally once the vanilla kernel is in place.

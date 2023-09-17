@@ -1,16 +1,17 @@
 ---
 layout: page
 title: About me
-subtitle: Why you'd want to go on a date with me
+subtitle: Who even am I?
 ---
 
-My name is Inigo Montoya. I have the following qualities:
+Online I usually go by "(λ () nil)".
 
-- I rock a great mustache
-- I'm extremely loyal to my family
+I'm from the Czech Republic (or Czechia, whichever you prefer), and I'm a programmer among other things.
 
-What else do you need?
+Some of my favorite software includes Emacs and Guix, with my favorite languages being Common Lisp, Python and C.
 
-### My story
+This is my personal blog - a place for all my random thoughts and ideas about anything from software to philosophy and whatever may cross my mind.
 
-To be honest, I'm having some trouble remembering right now, so why don't you just watch [my movie](https://en.wikipedia.org/wiki/The_Princess_Bride_%28film%29) and it will answer **all** your questions.
+
+Here's a random image of Lain.
+![Lain](assets/img/lain.png)

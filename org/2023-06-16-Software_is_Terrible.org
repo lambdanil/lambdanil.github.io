@@ -1,0 +1,51 @@
+#+OPTIONS: toc:nil num:nil
+#+BEGIN_EXPORT html
+---
+layout: post
+title: Modern software is terrible
+permalink: /:title/
+tags: [software]
+---
+#+END_EXPORT
+The more time I spend diving into software the more I dislike what modern it has become.
+
+* What is well-written software?
+Let's first define what it means for a piece of software to be "good" or "well-written" (I'll use these 2 as synonyms).
+
+There's the programming perspective - 
+good software is software that is built on consistent logical principles. In practice this means a modular, highly extensible codebase. A lot of abstractions, which in themselves are separated in different layers, 
+allowing programmers working in the higher level of abstraction to consider the lower level as merely an implementation detail.
+
+Then there's the organization perspective. Software projects should be properly organized with a clear development strategy behind them. All software should be properly documented and should also be written in such a way that it is in itself
+documentation for the programmers. The source code for software should be accessible for all its users without exceptions.
+
+* Time - the enemy of good software
+*Good software takes its time.*
+
+Yes, it saves time over the long term - that is when it comes time to extend it or maintain it, but the software industry is too short sighted. Quick and dirty, "temporary" solutions are preferred over properly designed ones just to get a product
+out the door.
+"Temporary" becomes permanent and issues pile up over time, leading to an ugly mess no one wants to deal with. That's when software gets "rewritten" and replaced by a new solution.
+One that is, at least for some time, significantly buggier and less functional. This time it surely will be different we say, /this time we'll get it right/!
+
+But then time starts to push. "It's been so long and it isn't functional yet!", some say. So the rush begins... And as a consequence we fall for the same traps again.
+Riddled with temporary solutions that will last another eternity the software is released, doomed to the same fate as every other time.
+
+/The cycle begins anew, we have learned nothing and nothing has changed./
+
+* Performance - the other enemy of good software
+Performance /is/ important, but not more than good code.
+
+Hardware gets better, cheaper and more accessible. Bad code only gets better through extreme effort.
+The common obsession with squeezing out every last bit of performance is a waste of time and often results in performance hacks or subpar solutions. 
+Yet again this all piles up over time. What once helped improve performance by a few percent is now causing bugs and slowing software down. The languages we once valued for their speed are now hindering development. 
+We are doing things in a way that no longer makes sense, simply because decades ago it helped our programs run /slightly/ faster.
+
+*Legacy software isn't legacy because it's old but because it was poorly written.*
+
+* What's the solution?
+The only good solution is very radical, time consuming and difficult - a major rewrite effort. No more compromises this time, no more temporary solutions, no more ugly hacks. This time we *would* get it right, however long it would take. 
+This obviously isn't viable, not with the current state of the industry, not really within any industry pressured by time and money - but it's a nice ideal to strive for if not anything more.
+
+With that said I would personally rather distance myself from the industry and continue to hack on what little worthwhile is left - maybe one day things will get better.
+
+I hate software and you should too.

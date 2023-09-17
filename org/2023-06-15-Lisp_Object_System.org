@@ -1,0 +1,342 @@
+#+OPTIONS: toc:nil num:nil
+#+BEGIN_EXPORT html
+---
+layout: post
+title: Implementing an object system in Lisp
+permalink: /:title/
+tags: [programming, lisp, common lisp]
+---
+#+END_EXPORT
+The other day I decided I wanted to try and implement a custom object system in Common Lisp.
+To be clear this isn't for any practical purposes - Common Lisp already has the excellent CLOS and I can't possibly hope to compare with that, I just wanted to see how far I could take the powerful macro system.
+
+As implementing an object system isn't such a straightforward task I figured I should start with a solid design plan and then just implement features as I go along.
+
+* Features
+First I had to map out all the features I'd like to implement.
+
+I ended up with the following:
+- Defining new objects
+- Creating object instances
+  - should allow using default forms if no other form is supplied
+- Automatic creation of setters and getters
+- Methods
+
+* Restrictions
+To make the process more interesting I decided to put in place a few small design restrictions. These don't serve much of a practical purpose.
+- No use of arrays or any other mutable structure
+  - each object should be an immutable list
+- No use of loops/iteration
+  - mapping is likely going to be a common occurrence
+  - tail-call optimized recursion will be used where unavoidable
+
+* The design
+** Creating a new class
+New classes are going to be defined with the ~make-object~ macro. This macro will create multiple new functions and macros to handle this new object, more on these below.
+
+** The objects
+So I'd first need to figure out how to store the objects. As I said before I'll be using standard lists to represent them.
+
+The simplest idea (and the one I ended up going with) is just to make a list of dotted pairs - a simple ~(key . value)~ layout. The first pair is going to determine the type of the object, meaning a simple object of 2 keys ~x~ and ~y~ would look as follows
+#+begin_src common-lisp
+  '((obj/type . type) (x . 1) (y . 2))
+#+end_src
+I chose to call the type ~obj/type~. The type is also going to be a symbol, but the rest of the keys can be any value, even another object.
+
+** Object instances
+When creating a new object I'll define a ~make-<object>~ macro, which is going to create a new instance of that object.
+
+The macro is going to have to handle the default arguments passed to it. The invocation should look like this
+#+begin_src common-lisp
+  (make-<object> :key 'value :key2 'value2)
+#+end_src
+
+** Object keys (slots)
+I'll need to store the slots an object can hold somewhere. In this case I'll simply create an ~<object>-slots~ for each new class, which will be a list holding the available keys. This could be as simple as
+#+begin_src common-lisp
+  '(x y)
+#+end_src
+
+** Method design
+This one gets really tricky...
+
+On class creation a new macro ~<object>-defmethod~ is going to be exported. This macro is going to generate the appropriate internal function as the method, but there's a lot of extra challenges here...
+
+*** The internal function
+The internal function is going to be defined as ~<object>-<method>-intern~.
+
+*** Binding values inside methods
+When invoking a method on a specified object the object's values should be exposed somehow. C++ does this with its ~this~ pointer, which points to the current object. My idea is very similar - the method function is going to be wrapped with a ~let~.
+
+This is going to lexically bind the slots in a ~self-<slot>~ format. This means that the slot ~x~ would be accessible inside a method as ~self-x~.
+
+*** Modifying objects inside methods
+Of course methods need to be able to modify these objects. If I change the value of ~self-x~ inside a method then I expect the object I invoked the method on to change as well. Here things get even more complicated.
+
+At the end of each method I'll need to construct a brand new object from the lexically bound values. I'll also handle this construction with a macro. This macro is going to be bound with a simple ~macrolet~ and is going to be called ~self~.
+This will allow us to get a copy of the current object inside the method with ~(self)~.
+
+Now of course I'll need methods to return their values as well, meaning I'll have the internal function return a pair like so
+#+begin_src common-lisp
+  '(new-object . return-value)
+#+end_src
+
+The internal method function is then going to be wrapped in an evaluation macro. If we're not invoking from inside another method it's going to use a simple ~setf~ to set the object it was invoked with to the new list.
+In practice:
+#+begin_src common-lisp
+  ;; obj-incf-x is a method of obj, ins is an instance of the object
+  (obj-incf-x ins)
+  ;; this is going to result in
+  (setf ins (obj-incf-x-internal ins))
+#+end_src
+If we're invoking the method call from another method then we need to modify ~self~ properly.
+I'm going to use a little hack here and simply tell the macro that if the instance symbol passed to it is ~self~ then it should instead set the lexically bound slots. Setting these slots will be done with a ~<object>-modify-self~ wrapper macro
+#+begin_src common-lisp
+  ;; obj-incf-x is a method of obj, ins is an instance of the object
+  (obj-defmethod new-method ()
+		 (obj-incf-x self))
+  ;; the method invokation is going to result in
+  (setf self-slot1 new-value1)
+  (setf self-slot2 new-value2)
+#+end_src
+
+** Setters and getters
+Setters and getters are going to be automatically generated methods. This is really straightforward
+#+begin_src common-lisp
+  (obj-defmethod set-<slot> (value)
+		 (setf self-<slot> value))
+
+  (obj-defmethod get-<slot> ()
+		 self-<slot>)
+#+end_src
+
+* Implementation
+Here begins the real fun...
+
+Get ready for a lot of backquotes, regular quotes and commas.
+
+From here on out you're going to see less of my comments and more raw code. If you aren't an experienced Lisper you should turn away now!
+
+** Helper functions
+Here's a few helper functions I wrote through the process.
+
+*** General functions
+This one just appends symbols together. For some reason this ugly "string conversion -> concatenation -> intern back to symbol" is the best way to do this.
+#+begin_src common-lisp
+  ;; Append multiple symbols, abused for macros
+  (defun symbol-append (&rest symbols) 
+    (intern (apply #'concatenate 'string 
+		   (mapcar #'symbol-name symbols))))
+#+end_src
+
+I'll often need to map to 2 lists at once. Here I made a small recursive function to handle this.
+#+begin_src common-lisp
+  ;; Map to 2 lists and return a single list
+  ;; (double-mapcar (lambda (first second)) first second)
+  (defun double-mapcar (func list1 list2 &key accum1)
+    (if list1 (double-mapcar func (cdr list1) (cdr list2)
+			     :accum1 (cons (funcall func (car list1) (car list2)) accum1))
+	(reverse accum1)))
+#+end_src
+
+Lisp's ~and~ cannot be applied to lists because it's a macro. I fix this by redefining it as a function.
+#+begin_src common-lisp
+  ;; Allow applying 'and macro on a list
+  ;; a little ugly
+  (defun unwrap-and (&rest conds)
+    (eval `(and ,@conds)))
+#+end_src
+
+Finally I'll need a key extraction macro. This one takes a list and converts every dotted pair to a ~car~ of that pair, while leaving non-pairs intact like so:
+#+begin_src common-lisp
+  (name year (language "english"))
+  ;; after extracting we get:
+  (name year language)
+#+end_src
+
+#+begin_src common-lisp
+  (defun extract-keys (list)
+    (mapcar #'(lambda (item) (if (consp item) (car item) item)) list))
+#+end_src
+
+*** Slot mapping functions
+To make my work with slots a little easier I have a couple of functions to generate these slots for use with ~let~ and whatnot.
+
+#+begin_src common-lisp
+  ;; Create a list of '((self-slot nil) (self-slot0 nil)) from '(slot slot0)
+  (defun map-slots (object-name slots)
+    (double-mapcar (lambda (slot value) (cons slot (list value)))
+		   (mapcar (lambda (slot) (symbol-append 'self '- slot)) slots)
+		   (mapcar (lambda (slot) nil) slots)))
+
+  ;; Same as above but initializes values to match associated object; used for let bindings
+  ;; '((self-slot) (cdr (assoc 'slot self)))
+  (defun map-slots1 (object-name slots)
+    (double-mapcar (lambda (slot value) (cons slot (list value)))
+		   (mapcar (lambda (slot) (symbol-append 'self '- slot)) slots)
+		   (mapcar (lambda (slot) `(cdr (assoc (quote ,slot) self/internal))) slots)))
+
+  ;; Generates setf list, this one is for the method-inside-method invocation
+  ;; '((setf self-slot  (cdr (assoc 'slot  self)))
+  ;;   (setf self-slot0 (cdr (assoc 'slot0 self))))
+  (defun map-slots2 (object-name slots)
+    (double-mapcar (lambda (slot value) `(setf ,slot ,value))
+		   (mapcar (lambda (slot) (symbol-append 'self '- slot)) slots)
+		   (mapcar (lambda (slot) `(cdr (assoc (quote ,slot) (car self/internal)))) slots)))
+#+end_src
+
+** The make-object macro
+Here comes the biggest part. This is the macro that defines new classes. I'm going to take it apart piece by piece as best as I can.
+
+This first part looks scary but it isn't too complicated. Basically we bind a few variables we are going to use later. Unmatched parens mean the code continues in another block, it's not a mistake.
+#+begin_src common-lisp
+  ;; Object creation macro
+  (defmacro make-object (name init-keys)
+    (let* ((keys (extract-keys init-keys)) ;; Extract keys from their initforms
+	   (slots (map-slots name keys)) ;; basic slot mapping, see the slot mapping functions above
+	   (object-slots (symbol-append name '- 'slots)) ;; defines an <object>-slots alias
+	   (self-slots `(cons (cons 'cons (cons ''obj/type (list '(quote ,name)))) ;; To be honest I don't remember what this does
+			      (mapcar (lambda (slot)
+					(cons 'cons (cons
+						     `(quote ,slot)
+						     (list (symbol-append 'self '- slot)))))
+				      ,object-slots))))
+#+end_src
+
+Now we can start defining the functions and macros we need. I'll have to use a ~progn~ so I can evaluate all the multiple ~defuns~ and ~defmacros~ :).
+#+begin_src common-lisp
+  `(progn
+#+end_src
+
+*** Instance creations
+We start with the instance creation macro. This one is fairly straightforward.
+#+begin_src common-lisp
+  ;; make-<object>
+  (defun ,(symbol-append 'make '- name) (&key ,@keys)
+    (cons (cons 'obj/type (quote ,name))
+	  (double-mapcar
+	   (lambda (key other-key)
+	     (let* ((key-p (consp key))
+		    (extracted-key
+		     (if key-p (car key) key)))
+	       (if other-key
+		   (cons extracted-key other-key) ;; when key is supplied
+		 (cons extracted-key            ;; when not supplied
+		       (if key-p (eval (cadr key)) nil))))) ;; ensure the initform is evaluated
+	   (quote ,init-keys)
+	   (list ,@keys))))
+#+end_src
+
+*** Slot assignment
+#+begin_src common-lisp
+  ;; Create <object>-slots as well as its function
+  (defvar ,object-slots (quote ,keys))
+  (defun ,object-slots () (quote ,keys))
+#+end_src
+
+*** Modify-self
+This is for those cases when we are calling a method from inside another method. It wraps around method invocations and remaps the ~self~ slots to the new values.
+#+begin_src common-lisp
+  ;; modify-self macro; sets self- variables to returned value; for internal use
+  ;; should only be used with matching methods
+  ;;obj/<object>-modify-self
+  (defmacro ,(symbol-append 'obj/ name '-modify-self) (&rest body)
+    `(let* ((self/internal (progn ,@body)))
+       ,@(map-slots2 (quote ,name) ,object-slots)
+       self/internal))
+#+end_src
+
+*** Defining methods
+Here's the ~defmethod~ macro in all its "beauty" (that word probably doesn't belong here).
+
+#+begin_src common-lisp
+  ;; <object>-defmethod
+  ;; Creates an internal function and an invoker macro
+  ;; The invoker macro wraps around the function and applies its return values,
+  ;;   either over the object which was invoked or 'self if inside method.
+
+  ;;<object>-defmethod
+  (defmacro ,(symbol-append name '- 'defmethod) (method-name args &rest body)
+    `(progn
+#+end_src
+
+**** The internal method function
+#+begin_src common-lisp
+  ;; Internal method function
+  ;; Wraps around the method body; assigns 'self- variables with a let*,
+  ;;   assigns the (self) macro.
+  ;; (self) produces an object from the local 'self- variables
+  ;;obj/<object>-<method-name>-intern (self args)
+  (defun ,(symbol-append 'obj/ (quote ,name) '- method-name '-intern) ,(cons 'self/internal args)
+    (macrolet ((self () '(list ,@,self-slots))) ;; (self) macro
+	      ;; bind self to this package so symbol comparisons work
+	      (let* ,(cons '(self nil) (map-slots1 (quote ,name) ,object-slots)) ;; 'self-* bindings
+		(let ((res/internal (progn ,@body)))
+		  ;; call (self) to return new object
+		  ;; We also pass the return value of the function
+		  ;; Since it's not possible to cons a nil we send back a special 'obj/nil symbol,
+		  ;;   which is then checked by the wrapper to return nil when necessary.
+		  `(,(self) . ,(if res/internal res/internal 'obj/nil))))))
+#+end_src
+
+**** The method invoker
+This is what I was talking about earlier - either we ~setf~ the symbol or use ~modify-self~.
+
+#+begin_src common-lisp
+  ;; Invoker macro
+  ;;<object>-<method-name> (obj &rest args)
+  (defmacro ,(symbol-append (quote ,name) '- method-name) (obj &rest args)
+    (if (not (eq obj 'self)) ;; Check the 'self special case
+
+	;; Wrap with standard setf
+	`(let ((obj/result
+		(,(symbol-append 'obj/ (quote ,(quote ,name)) '- (quote ,method-name) '- 'intern) ,obj ,@args)))
+	   (setf ,obj (car obj/result)) ;;(car obj/result))
+	   (if (eq (cdr obj/result) 'obj/nil) nil (cdr obj/result)))
+
+      ;; Wrap with modify-self (when 'self is used)
+      `(let ((res (cdr (,(symbol-append 'obj/ (quote ,(quote ,name)) '-modify-self)
+			(,(symbol-append 'obj/ (quote ,(quote ,name)) '- (quote ,method-name) '- 'intern)
+			 (self) ,@args)))))
+	 (if (eq res 'obj/nil) nil res))))))
+#+end_src
+
+*** Getters and setters
+There isn't much complexity here, just a simple method generator. I use an ugly hack with ~eval~, this could probably be avoided somehow.
+#+begin_src common-lisp
+  ;; Define internal setter functions by mapping over defined slots.
+  ;;<object>-set-<var>-intern
+  (mapcar (lambda (var) (eval `(,(symbol-append (quote ,name) '- 'defmethod) ;; ugly eval hack!
+			   ,(symbol-append 'set '- var '- 'intern)
+			   (,var) (setf ,(symbol-append 'self '- var) ,var))))
+	  ,object-slots)
+
+  ;; Create a setter macro which invokes the appropriate internal function.
+  ;;<object>-set
+  (defmacro ,(symbol-append name '- 'set) (,name var val)
+    `(,(symbol-append (quote ,name) '- 'set '- var '- 'intern) ,,name ,val))
+
+  ;; Define internal getter functions by mapping over defined slots.
+  ;;<object>-get-<var>-intern
+  (mapcar (lambda (var) (eval `(,(symbol-append (quote ,name) '- 'defmethod) ;; ugly eval hack again!
+			   ,(symbol-append 'get '- var '- 'intern)
+			   () ,(symbol-append 'self '- var))))
+	  ,object-slots)
+
+  ;; Create a setter macro which invokes the appropriate internal function.
+  ;;<object>-set
+  (defmacro ,(symbol-append name '- 'get) (,name var)
+    `(,(symbol-append (quote ,name) '- 'get '- var '- 'intern) ,,name)))))
+#+end_src
+
+* Conclusion
+All that was left to do was to wrap this up as a nice library and I'm done!
+
+I'll make it clear now that this object system is terribly slow, inefficient and inflexible and you shouldn't use it.
+If you wanted to try it anyway for some reason all the code (and a usage example) can be found on this project's [[https://github.com/CuBeRJAN/not-clos][Github repository]].
+
+As you can see we could utilize the power of Lisp macros to its full extent, implementing a complex object system in less than 200 LOC. I've tried my best to keep this as readable as I could, but unfortunately the complexity here made it
+really difficult. I hope you can make at least some sense of all I wrote here.
+
+This was an interesting learning experience for sure. I think it also showcases the dangers of Lisp macros - a lot of this code isn't very readable at all. If I were to re-do this now I'd definitely split up the macro a lot more and implement some more
+generic functions with the hope of keeping everything properly readable but that's an idea for another time.

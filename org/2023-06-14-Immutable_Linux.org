@@ -1,0 +1,82 @@
+#+OPTIONS: toc:nil num:nil
+#+BEGIN_EXPORT html
+---
+layout: post
+title: The immutable Linux experience
+permalink: /:title/
+tags: [linux, immutability]
+---
+#+END_EXPORT
+I'm quite the distrohopper, or at least I have been for a while. These days I like to think I'm "cured" so to speak, but the itch to distrohop is surely going to come back and I'll likely find myself on Guix again, shortly before running into annoying
+issues and returning back to Debian. But this time it isn't about either of these distros because this time I tried something different - an immutable distro.
+
+The distribution I chose was openSUSE's MicroOS Desktop (now renamed to openSUSE Aeon). My reason for this choice is that I always had great experiences with openSUSE and I was interested in the rolling-release nature of Aeon.
+I'd like to go over my experience with this system and the changes immutable distributions introduce in general.
+
+* What is immutability?
+This question has lately been a common one in the Linux community. Defining immutability is somewhat difficult as there are many approaches to making an immutable Linux distro, but the core idea is as follows.
+
+The system parts of the filesystem (mostly ~/usr~) are completely read-only, at least to the user. Updating the system is no longer handled by a standard package manager as it essentially becomes unusable in this configuration.
+Updates to the system are instead handled by a dedicated tool (which may or may not use the package manager in some way under the hood). The advantage of this approach is that it allows the dedicated update utility to have more flexibility in how
+it works with the underlying system, thus allowing for features like transactional, atomic updates and a system that doesn't change at runtime.
+
+I have seen people mix up immutability and image-based root a lot, while these often go hand in hand they are separate ideas and not every immutable system is necessarily image-based (and vice-versa to some degree).
+
+** So what does that mean?
+Transactional updates are updates which are either fully applied or not at all. This means if the update fails halfway through none of the update is deployed and it is instead entirely discarded, meaning the system is always in a consistent state.
+Atomic just means the updates are all applied at once. Static runtime means that the running system is never affected by these updates, not until a reboot.
+This is done to ensure runtime stability and predictability.
+
+* What about packages?
+So if there's no package manager, how are programs installed?
+
+Typically programs are installed through distribution-agnostic methods. Usually this means either using Flatpak or running programs in containers. This might sound like a hassle but with the current state of Flatpak it's a lot less of an issue than
+you might think, at least in most cases. There are of course other, more unusual options. We'll get to those too, don't worry!
+
+* Why all of this?
+Why would you want any of this anyway?
+
+The main ideas here are reliability, reproducibility and predictability of the base system. Considering the relative independence of the user environment this also means that updates can be handled entirely automatically without disturbing the
+user in any way.
+
+A pretty common misconception is that immutable systems are only for Linux beginners but I can't agree with this. This approach to handling the system has its advantages even for technical users who just want a reliable, hassle-free
+desktop or server. Yes, tinkering with the system becomes more difficult, but not significantly so. There's still a lot of tinkering you can do!
+
+* The system-user separation
+One of the most logical steps I see in this approach is bringing a clear separation between system and user packages.
+
+Think about it this way - your user has a separate directory for their files and a completely separate environment. You place your configurations in your home folder but the system configurations belong in ~/etc~ with the system environment defined
+in ~/etc/profile*~ - there's a solid degree of separation between the 2.
+
+Yet when it comes to package management it's an entirely different story. The same package manager that handles critical parts of the system (kernel, bootloader, even the DE) is also used to install
+your personal programs like Firefox, Steam, etc. This doesn't really make sense and it is becoming a problem in a world of complex programs with growing lists of dependencies (remember the whole Linus Linux challenge fiasco?).
+
+Flatpak along with other recent software distribution methods aim to solve this problem by having your user packages completely separate from the system. Immutable distributions then sort of grow as an evolution of this idea -
+if the user isn't using the package manager, why not remove it find a better way to handle system upgrades?
+
+* My take on immutability
+Of course it wouldn't be me if I just used the system as intended...
+
+Rather than using containers to install my CLI and development tools I opted for Guix instead. Guix is a transactional package manager (but also a GNU/Linux distro) that lives entirely separate from the standard system.
+The biggest issue with using Guix is that installing it requires tinkering with the base system a little bit. Fortunately in the case of Aeon this wasn't a difficult problem to solve and the impact on the base system was only very minimal.
+With Guix and Flatpak the majority of the software I need can be installed and set up perfectly fine and I personally definitely prefer this solution over containers for installing CLI tools and such.
+
+* The current issues
+The biggest issue with immutable systems right now is that not everything can live separate of the system.
+
+A good example of this is virtualization. I know Gnome Boxes has a Flatpak but unfortunately I found it a bit buggy and too limiting
+compared to Virt-manager. But Virt-manager doesn't have a Flatpak and installing it via Guix or containers isn't really possible either. Thus installing Virt-manager would require tinkering with the underlying system, something that is strongly
+discouraged and feels like a hack more than anything else.
+
+Another example is drivers. Drivers can't live separate from the base system, it's simply not possible (at least not with the current way of doing things). This means that installing drivers you'll need to tinker with the base system as well.
+Tinkering with the base system on immutable roots can be troublesome as it creates unsupported configurations and in some cases (like when using ostree on Silverblue) it becomes a lot trickier than just messing around with a standard distribution.
+
+If you hop between different desktop environments (or window managers) you'll also have a nicer time on a standard system.
+
+* Am I going immutable?
+For me the answer has to be a no, at least for the time being. The biggest issue for me is that I tinker with my system too much. Jumping between different desktop environments, trying out different window managers, running custom kernels -
+all of this becomes a little trickier with immutable systems. Maybe once I settle on a single setup I'll just install an immutable distro, throw Guix on top and be happy with it,
+but for now I require more flexibility and I'm willing to pay the price (more maintenance) for it. The idea of keeping my environment separate is something I really like and I'll continue to use Guix and Flatpak over the standard package managers.
+
+If you have spare time you should definitely try an immutable distribution. It doesn't matter if you're a beginner or a Linux veteran, an immutable system may just be what your worflow needs! I myself can definitely recommend openSUSE Aeon
+as a starting point. It's polished, functional and shows the capabilities of immutability quite well (the automated updates are implemented really well).

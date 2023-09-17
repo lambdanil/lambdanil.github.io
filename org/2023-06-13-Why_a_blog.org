@@ -1,0 +1,21 @@
+#+OPTIONS: toc:nil num:nil
+#+BEGIN_EXPORT html
+---
+layout: post
+title: Why a blog?
+permalink: /:title/
+tags: [meta]
+---
+#+END_EXPORT
+We already have many great (and sometimes not so great) blogs out there, what's the purpose of starting another one?
+
+Well, as cliché as it sounds - this one is mine.
+
+It isn't so much about becoming a popular blogger (who could expect to become popular blogging about Emacs anyway?) as it is about expressing my ideas and beliefs and putting them out there for others to read.
+
+I want to keep track of my thoughts, organize them and maybe produce something of value every now and then. Maybe some interesting discussions will spawn from this,
+or maybe I'll forever be the only person reading this blog. Either way it fulfills its goal as a writing outlet for my thoughts and ideas.
+
+I'm sure I'll write many bad posts, ones I'll eventually look back at and have to wonder "what was I thinking?" but that's all part of the process, seeing my evolution as a writer, programmer and as a person above all.
+
+In the end don't expect the most original blog, don't expect anything revolutionary or even anything necessarily good - look at this as a playground for my ideas, a place where I can put my stuff "on paper" and expose it to the outer world - however bland it may be.
