@@ -63,7 +63,7 @@ I allowed auto-login with GDM and also added the services for ~tlp~ (for power m
 
 * Issues encountered
 ** CPU throttling
-The T480 has a firmware bug which leads the the CPU throttling heavily (at about 70°C). This seriously impacts performance. 
+The T480 has a firmware bug which leads the the CPU throttling heavily (at about 70°C). This quite seriously impacts performance. 
 Fortunately there is a tool called [[https://github.com/erpalma/throttled][throttled]] which can be used to work around this issue. Unfortunately, this tool isn't available for Guix, so I ended up hacking together my own solution. 
 I added a small shell script into the program's directory and start it automatically at boot. The proper solution would be to package the service for Guix, but I think I'll leave that to future me.
 #+begin_src sh
