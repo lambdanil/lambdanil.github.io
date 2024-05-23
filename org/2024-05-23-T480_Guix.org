@@ -1,0 +1,89 @@
+
+#+OPTIONS: toc:nil num:nil
+#+BEGIN_EXPORT html
+---
+layout: post
+title: Guix on Thinkpad T480
+permalink: /:title/
+tags: [emacs]
+---
+#+END_EXPORT
+I've recently purchased a used T480 to fulfill my computing needs on the go. I went for an older Thinkpad as they are known for good build quality, reliability, good Linux support and are also available for pretty cheap prices used.
+
+Now I'd like to go over some of the challenges I've encountered while setting up Guix on this machine.
+
+* Initial installation
+The initial installation of Guix was pretty straightforward. Originally I wanted to use the latest ~iso~ image, but unfortunately the download link didn't work, so I ended up going with the older 1.4.0 image. Guix refused to boot at first
+because of secure boot, but that was easily solvable by disabling secure boot in the BIOS.
+
+Using the graphical installer I haven't encountered any issues. I will note that because Guix only uses free (as in freedom) software by default, proprietary drivers are not available. In the case of my T480 that resulted in the WiFi being unusable, 
+meaning I had to install over a wired connection. I'll be able to fix that post-installation by adding the [[https://gitlab.com/nonguix/nonguix][nonguix]] channel, which provides the vanilla kernel, proprietary drivers and even some proprietary applications.
+
+Guix offers the option for an encrypted installation in its graphical installer, so that wasn't a problem either.
+
+* Post-install setup
+It was now time to put the OS in an updated and functional state. I started with a simple ~guix pull~, then continued to pull my [[https://github.com/lambdanil/emacs-stuff][existing configuration files]] from Github. After adding some firmware packages and updating the disk 
+configuration to reflect the new setup, I was able to reconfigure the system with substitutes[fn:1] using the instructions provided by nonguix.
+
+[fn:1]: Substitutes are prebuilt package derivations, used to avoid compiling software locally.
+
+I allowed auto-login with GDM and also added the services for ~tlp~ (for power management) and ~i3lock~ (lockscreen I use with ~xfce~).
+#+begin_src scheme
+  (modify-services %desktop-services
+		   ...
+		   (gdm-service-type config => 
+				     (gdm-configuration
+				      (inherit config)
+				      (wayland? #f)
+				      (default-user "nil")
+				      (auto-login? #t)))
+		   ...)
+
+  ...
+
+  (services
+   ...
+   (service screen-locker-service-type
+	    (screen-locker-configuration
+	     (name "i3lock")
+	     (program (file-append i3lock "/bin/i3lock"))))
+
+   (service tlp-service-type
+	    (tlp-configuration
+	     (tlp-enable? #t)
+	     (cpu-scaling-governor-on-ac (list "performance"))
+	     (cpu-scaling-governor-on-bat (list "powersave"))
+	     (energy-perf-policy-on-ac "")
+	     (cpu-boost-on-ac? #t)
+	     (cpu-boost-on-bat? #f)
+	     (start-charge-thresh-bat0 70)
+	     (stop-charge-thresh-bat0 75)
+	     (start-charge-thresh-bat1 70)
+	     (stop-charge-thresh-bat1 75)))
+   ...)
+#+end_src
+
+* Issues encountered
+** CPU throttling
+The T480 has a firmware bug which leads the the CPU throttling heavily (at about 70°C). This seriously impacts performance. 
+Fortunately there is a tool called [[https://github.com/erpalma/throttled][throttled]] which can be used to work around this issue. Unfortunately, this tool isn't available for Guix, so I ended up hacking together my own solution. 
+I added a small shell script into the program's directory and start it automatically at boot. The proper solution would be to package the service for Guix, but I think I'll leave that to future me.
+#+begin_src sh
+  #!/bin/sh
+  sudo guix shell gcc-toolchain pkg-config cairo gobject-introspection dbus -- /opt/throttled/venv/bin/python /opt/throttled/throttled.py --config /home/nil/conf/throttled.conf
+#+end_src
+
+** Disk decryption password
+The decryption password has to be entered twice on boot, once to get into Grub, then once when booting the OS. I haven't found a solution for this, but it's only a minor issue.
+
+** Video acceleration
+Even after installing all the drivers required, Firefox still wouldn't use hardware video acceleration. It turned out to be caused by Firefox failing to load the appropriate library from Guix, 
+which I could solve by setting a few environment variables.
+#+begin_src sh
+  export LIBVA_DRIVER_NAME=iHD
+  export LD_PRELOAD=/home/nil/.guix-profile/lib/dri/iHD_drv_video.so
+#+end_src
+After this Firefox has no problems with video acceleration.
+
+* Conclusion
+Overall I was able to get Guix running pretty much perfectly on this hardware. While it was certainly quite far from a "just works" experience, it wasn't that complicated and I can definitely recommend giving Guix a try.

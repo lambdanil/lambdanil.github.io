@@ -1,0 +1,149 @@
+---
+layout: post
+title: Guix on Thinkpad T480
+permalink: /:title/
+tags: [emacs]
+---
+<p>
+I've recently purchased a used T480 to fulfill my computing needs on the go. I went for an older Thinkpad as they are known for good build quality, reliability, good Linux support and are also available for pretty cheap prices used.
+</p>
+
+<p>
+Now I'd like to go over some of the challenges I've encountered while setting up Guix on this machine.
+</p>
+
+<div id="outline-container-org31a9427" class="outline-2">
+<h2 id="org31a9427">Initial installation</h2>
+<div class="outline-text-2" id="text-org31a9427">
+<p>
+The initial installation of Guix was pretty straightforward. Originally I wanted to use the latest <code>iso</code> image, but unfortunately the download link didn't work, so I ended up going with the older 1.4.0 image. Guix refused to boot at first
+because of secure boot, but that was easily solvable by disabling secure boot in the BIOS.
+</p>
+
+<p>
+Using the graphical installer I haven't encountered any issues. I will note that because Guix only uses free (as in freedom) software by default, proprietary drivers are not available. In the case of my T480 that resulted in the WiFi being unusable, 
+meaning I had to install over a wired connection. I'll be able to fix that post-installation by adding the <a href="https://gitlab.com/nonguix/nonguix">nonguix</a> channel, which provides the vanilla kernel, proprietary drivers and even some proprietary applications.
+</p>
+
+<p>
+Guix offers the option for an encrypted installation in its graphical installer, so that wasn't a problem either.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org7659b6b" class="outline-2">
+<h2 id="org7659b6b">Post-install setup</h2>
+<div class="outline-text-2" id="text-org7659b6b">
+<p>
+It was now time to put the OS in an updated and functional state. I started with a simple <code>guix pull</code>, then continued to pull my <a href="https://github.com/lambdanil/emacs-stuff">existing configuration files</a> from Github. After adding some firmware packages and updating the disk 
+configuration to reflect the new setup, I was able to reconfigure the system with substitutes<sup><a id="fnr.1" class="footref" href="#fn.1" role="doc-backlink">1</a></sup> using the instructions provided by nonguix.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org72f6dbf" class="outline-2">
+<h2 id="org72f6dbf">Issues encountered</h2>
+<div class="outline-text-2" id="text-org72f6dbf">
+</div>
+<div id="outline-container-orged2210f" class="outline-3">
+<h3 id="orged2210f">CPU throttling</h3>
+<div class="outline-text-3" id="text-orged2210f">
+<p>
+The T480 has a firmware bug which leads the the CPU throttling heavily (at about 70°C). This seriously impacts performance. 
+Fortunately there is a tool called <a href="https://github.com/erpalma/throttled">throttled</a> which can be used to work around this issue. Unfortunately, this tool isn't available for Guix, so I ended up hacking together my own solution. 
+I added a small shell script into the program's directory and start it automatically at boot. The proper solution would be to package the service for Guix, but I think I'll leave that to future me.
+</p>
+<div class="org-src-container">
+<pre class="src src-sh"><span style="color: #6272a4;">#!/bin/sh</span>
+<span style="color: #bd93f9; font-weight: bold;">sudo</span> guix shell gcc-toolchain pkg-config cairo gobject-introspection dbus <span style="color: #8be9fd;">--</span> /opt/throttled/venv/bin/python /opt/throttled/throttled.py <span style="color: #8be9fd;">--config</span> /home/nil/conf/throttled.conf
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgdbfe2a9" class="outline-3">
+<h3 id="orgdbfe2a9">Disk decryption password</h3>
+<div class="outline-text-3" id="text-orgdbfe2a9">
+<p>
+The decryption password has to be entered twice on boot, once to get into Grub, then once when booting the OS. I haven't found a solution for this, but it's only a minor issue.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org600925a" class="outline-3">
+<h3 id="org600925a">Video acceleration</h3>
+<div class="outline-text-3" id="text-org600925a">
+<p>
+Even after installing all the drivers required, Firefox still wouldn't use hardware video acceleration. It turned out to be caused by Firefox failing to load the appropriate library from Guix, 
+which I could solve by setting a few environment variables.
+</p>
+<div class="org-src-container">
+<pre class="src src-sh"><span style="color: #ff79c6;">export</span> <span style="color: #ffc9e8; font-style: italic;">LIBVA_DRIVER_NAME</span>=iHD
+<span style="color: #ff79c6;">export</span> <span style="color: #ffc9e8; font-style: italic;">LD_PRELOAD</span>=/home/nil/.guix-profile/lib/dri/iHD_drv_video.so
+</pre>
+</div>
+<p>
+After this Firefox has no problems with video acceleration.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgb0940c2" class="outline-2">
+<h2 id="orgb0940c2">Conclusion</h2>
+<div class="outline-text-2" id="text-orgb0940c2">
+<p>
+Overall I was able to get Guix running pretty much perfectly on this hardware. While it was certainly quite far from a "just works" experience, it wasn't that complicated and I can definitely recommend giving Guix a try.
+</p>
+</div>
+</div>
+<div id="footnotes">
+<h2 class="footnotes">Footnotes: </h2>
+<div id="text-footnotes">
+
+<div class="footdef"><sup><a id="fn.1" class="footnum" href="#fnr.1" role="doc-backlink">1</a></sup> <div class="footpara" role="doc-footnote"><p class="footpara">
+: Substitutes are prebuilt package derivations, used to avoid compiling software locally.
+</p>
+
+<p class="footpara">
+I allowed auto-login with GDM and also added the services for <code>tlp</code> (for power management) and <code>i3lock</code> (lockscreen I use with <code>xfce</code>).
+</p>
+<div class="org-src-container">
+<pre class="src src-scheme"><span style="color: #61bfff;">(</span>modify-services %desktop-services
+                 ...
+                 <span style="color: #ff79c6;">(</span>gdm-service-type config =&gt; 
+                                   <span style="color: #50fa7b;">(</span>gdm-configuration
+                                    <span style="color: #bd93f9;">(</span>inherit config<span style="color: #bd93f9;">)</span>
+                                    <span style="color: #bd93f9;">(</span>wayland? #f<span style="color: #bd93f9;">)</span>
+                                    <span style="color: #bd93f9;">(</span>default-user <span style="color: #f1fa8c;">"nil"</span><span style="color: #bd93f9;">)</span>
+                                    <span style="color: #bd93f9;">(</span>auto-login? #t<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+                 ...<span style="color: #61bfff;">)</span>
+
+...
+
+<span style="color: #61bfff;">(</span>services
+ ...
+ <span style="color: #ff79c6;">(</span>service screen-locker-service-type
+          <span style="color: #50fa7b;">(</span>screen-locker-configuration
+           <span style="color: #bd93f9;">(</span>name <span style="color: #f1fa8c;">"i3lock"</span><span style="color: #bd93f9;">)</span>
+           <span style="color: #bd93f9;">(</span>program <span style="color: #0189cc;">(</span>file-append i3lock <span style="color: #f1fa8c;">"/bin/i3lock"</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+
+ <span style="color: #ff79c6;">(</span>service tlp-service-type
+          <span style="color: #50fa7b;">(</span>tlp-configuration
+           <span style="color: #bd93f9;">(</span>tlp-enable? #t<span style="color: #bd93f9;">)</span>
+           <span style="color: #bd93f9;">(</span>cpu-scaling-governor-on-ac <span style="color: #0189cc;">(</span>list <span style="color: #f1fa8c;">"performance"</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span>
+           <span style="color: #bd93f9;">(</span>cpu-scaling-governor-on-bat <span style="color: #0189cc;">(</span>list <span style="color: #f1fa8c;">"powersave"</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span>
+           <span style="color: #bd93f9;">(</span>energy-perf-policy-on-ac <span style="color: #f1fa8c;">""</span><span style="color: #bd93f9;">)</span>
+           <span style="color: #bd93f9;">(</span>cpu-boost-on-ac? #t<span style="color: #bd93f9;">)</span>
+           <span style="color: #bd93f9;">(</span>cpu-boost-on-bat? #f<span style="color: #bd93f9;">)</span>
+           <span style="color: #bd93f9;">(</span>start-charge-thresh-bat0 70<span style="color: #bd93f9;">)</span>
+           <span style="color: #bd93f9;">(</span>stop-charge-thresh-bat0 75<span style="color: #bd93f9;">)</span>
+           <span style="color: #bd93f9;">(</span>start-charge-thresh-bat1 70<span style="color: #bd93f9;">)</span>
+           <span style="color: #bd93f9;">(</span>stop-charge-thresh-bat1 75<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+ ...<span style="color: #61bfff;">)</span>
+</pre>
+</div></div></div>
+
+
+</div>
+</div>
