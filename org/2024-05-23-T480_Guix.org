@@ -25,8 +25,6 @@ Guix offers the option for an encrypted installation in its graphical installer,
 It was now time to put the OS in an updated and functional state. I started with a simple ~guix pull~, then continued to pull my [[https://github.com/lambdanil/emacs-stuff][existing configuration files]] from Github. After adding some firmware packages and updating the disk 
 configuration to reflect the new setup, I was able to reconfigure the system with substitutes[fn:1] using the instructions provided by nonguix.
 
-[fn:1]: Substitutes are prebuilt package derivations, used to avoid compiling software locally.
-
 I allowed auto-login with GDM and also added the services for ~tlp~ (for power management) and ~i3lock~ (lockscreen I use with ~xfce~).
 #+begin_src scheme
   (modify-services %desktop-services
@@ -87,3 +85,5 @@ After this Firefox has no problems with video acceleration.
 
 * Conclusion
 Overall I was able to get Guix running pretty much perfectly on this hardware. While it was certainly quite far from a "just works" experience, it wasn't that complicated and I can definitely recommend giving Guix a try.
+
+[fn:1]: Substitutes are prebuilt package derivations, used to avoid compiling software locally.

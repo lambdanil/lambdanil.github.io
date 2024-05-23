@@ -38,6 +38,45 @@ Guix offers the option for an encrypted installation in its graphical installer,
 It was now time to put the OS in an updated and functional state. I started with a simple <code>guix pull</code>, then continued to pull my <a href="https://github.com/lambdanil/emacs-stuff">existing configuration files</a> from Github. After adding some firmware packages and updating the disk 
 configuration to reflect the new setup, I was able to reconfigure the system with substitutes<sup><a id="fnr.1" class="footref" href="#fn.1" role="doc-backlink">1</a></sup> using the instructions provided by nonguix.
 </p>
+
+<p>
+I allowed auto-login with GDM and also added the services for <code>tlp</code> (for power management) and <code>i3lock</code> (lockscreen I use with <code>xfce</code>).
+</p>
+<div class="org-src-container">
+<pre class="src src-scheme"><span style="color: #61bfff;">(</span>modify-services %desktop-services
+                 ...
+                 <span style="color: #ff79c6;">(</span>gdm-service-type config =&gt; 
+                                   <span style="color: #50fa7b;">(</span>gdm-configuration
+                                    <span style="color: #bd93f9;">(</span>inherit config<span style="color: #bd93f9;">)</span>
+                                    <span style="color: #bd93f9;">(</span>wayland? #f<span style="color: #bd93f9;">)</span>
+                                    <span style="color: #bd93f9;">(</span>default-user <span style="color: #f1fa8c;">"nil"</span><span style="color: #bd93f9;">)</span>
+                                    <span style="color: #bd93f9;">(</span>auto-login? #t<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+                 ...<span style="color: #61bfff;">)</span>
+
+...
+
+<span style="color: #61bfff;">(</span>services
+ ...
+ <span style="color: #ff79c6;">(</span>service screen-locker-service-type
+          <span style="color: #50fa7b;">(</span>screen-locker-configuration
+           <span style="color: #bd93f9;">(</span>name <span style="color: #f1fa8c;">"i3lock"</span><span style="color: #bd93f9;">)</span>
+           <span style="color: #bd93f9;">(</span>program <span style="color: #0189cc;">(</span>file-append i3lock <span style="color: #f1fa8c;">"/bin/i3lock"</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+
+ <span style="color: #ff79c6;">(</span>service tlp-service-type
+          <span style="color: #50fa7b;">(</span>tlp-configuration
+           <span style="color: #bd93f9;">(</span>tlp-enable? #t<span style="color: #bd93f9;">)</span>
+           <span style="color: #bd93f9;">(</span>cpu-scaling-governor-on-ac <span style="color: #0189cc;">(</span>list <span style="color: #f1fa8c;">"performance"</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span>
+           <span style="color: #bd93f9;">(</span>cpu-scaling-governor-on-bat <span style="color: #0189cc;">(</span>list <span style="color: #f1fa8c;">"powersave"</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span>
+           <span style="color: #bd93f9;">(</span>energy-perf-policy-on-ac <span style="color: #f1fa8c;">""</span><span style="color: #bd93f9;">)</span>
+           <span style="color: #bd93f9;">(</span>cpu-boost-on-ac? #t<span style="color: #bd93f9;">)</span>
+           <span style="color: #bd93f9;">(</span>cpu-boost-on-bat? #f<span style="color: #bd93f9;">)</span>
+           <span style="color: #bd93f9;">(</span>start-charge-thresh-bat0 70<span style="color: #bd93f9;">)</span>
+           <span style="color: #bd93f9;">(</span>stop-charge-thresh-bat0 75<span style="color: #bd93f9;">)</span>
+           <span style="color: #bd93f9;">(</span>start-charge-thresh-bat1 70<span style="color: #bd93f9;">)</span>
+           <span style="color: #bd93f9;">(</span>stop-charge-thresh-bat1 75<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+ ...<span style="color: #61bfff;">)</span>
+</pre>
+</div>
 </div>
 </div>
 
@@ -103,46 +142,7 @@ Overall I was able to get Guix running pretty much perfectly on this hardware. W
 
 <div class="footdef"><sup><a id="fn.1" class="footnum" href="#fnr.1" role="doc-backlink">1</a></sup> <div class="footpara" role="doc-footnote"><p class="footpara">
 : Substitutes are prebuilt package derivations, used to avoid compiling software locally.
-</p>
-
-<p class="footpara">
-I allowed auto-login with GDM and also added the services for <code>tlp</code> (for power management) and <code>i3lock</code> (lockscreen I use with <code>xfce</code>).
-</p>
-<div class="org-src-container">
-<pre class="src src-scheme"><span style="color: #61bfff;">(</span>modify-services %desktop-services
-                 ...
-                 <span style="color: #ff79c6;">(</span>gdm-service-type config =&gt; 
-                                   <span style="color: #50fa7b;">(</span>gdm-configuration
-                                    <span style="color: #bd93f9;">(</span>inherit config<span style="color: #bd93f9;">)</span>
-                                    <span style="color: #bd93f9;">(</span>wayland? #f<span style="color: #bd93f9;">)</span>
-                                    <span style="color: #bd93f9;">(</span>default-user <span style="color: #f1fa8c;">"nil"</span><span style="color: #bd93f9;">)</span>
-                                    <span style="color: #bd93f9;">(</span>auto-login? #t<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
-                 ...<span style="color: #61bfff;">)</span>
-
-...
-
-<span style="color: #61bfff;">(</span>services
- ...
- <span style="color: #ff79c6;">(</span>service screen-locker-service-type
-          <span style="color: #50fa7b;">(</span>screen-locker-configuration
-           <span style="color: #bd93f9;">(</span>name <span style="color: #f1fa8c;">"i3lock"</span><span style="color: #bd93f9;">)</span>
-           <span style="color: #bd93f9;">(</span>program <span style="color: #0189cc;">(</span>file-append i3lock <span style="color: #f1fa8c;">"/bin/i3lock"</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
-
- <span style="color: #ff79c6;">(</span>service tlp-service-type
-          <span style="color: #50fa7b;">(</span>tlp-configuration
-           <span style="color: #bd93f9;">(</span>tlp-enable? #t<span style="color: #bd93f9;">)</span>
-           <span style="color: #bd93f9;">(</span>cpu-scaling-governor-on-ac <span style="color: #0189cc;">(</span>list <span style="color: #f1fa8c;">"performance"</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span>
-           <span style="color: #bd93f9;">(</span>cpu-scaling-governor-on-bat <span style="color: #0189cc;">(</span>list <span style="color: #f1fa8c;">"powersave"</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span>
-           <span style="color: #bd93f9;">(</span>energy-perf-policy-on-ac <span style="color: #f1fa8c;">""</span><span style="color: #bd93f9;">)</span>
-           <span style="color: #bd93f9;">(</span>cpu-boost-on-ac? #t<span style="color: #bd93f9;">)</span>
-           <span style="color: #bd93f9;">(</span>cpu-boost-on-bat? #f<span style="color: #bd93f9;">)</span>
-           <span style="color: #bd93f9;">(</span>start-charge-thresh-bat0 70<span style="color: #bd93f9;">)</span>
-           <span style="color: #bd93f9;">(</span>stop-charge-thresh-bat0 75<span style="color: #bd93f9;">)</span>
-           <span style="color: #bd93f9;">(</span>start-charge-thresh-bat1 70<span style="color: #bd93f9;">)</span>
-           <span style="color: #bd93f9;">(</span>stop-charge-thresh-bat1 75<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
- ...<span style="color: #61bfff;">)</span>
-</pre>
-</div></div></div>
+</p></div></div>
 
 
 </div>
