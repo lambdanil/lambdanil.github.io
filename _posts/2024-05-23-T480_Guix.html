@@ -43,38 +43,38 @@ configuration to reflect the new setup, I was able to reconfigure the system wit
 I allowed auto-login with GDM and also added the services for <code>tlp</code> (for power management) and <code>i3lock</code> (lockscreen I use with <code>xfce</code>).
 </p>
 <div class="org-src-container">
-<pre class="src src-scheme"><span style="color: #61bfff;">(</span>modify-services %desktop-services
+<pre class="src src-scheme"><span style="color: #707183;">(</span>modify-services %desktop-services
                  ...
-                 <span style="color: #ff79c6;">(</span>gdm-service-type config =&gt; 
-                                   <span style="color: #50fa7b;">(</span>gdm-configuration
-                                    <span style="color: #bd93f9;">(</span>inherit config<span style="color: #bd93f9;">)</span>
-                                    <span style="color: #bd93f9;">(</span>wayland? #f<span style="color: #bd93f9;">)</span>
-                                    <span style="color: #bd93f9;">(</span>default-user <span style="color: #f1fa8c;">"nil"</span><span style="color: #bd93f9;">)</span>
-                                    <span style="color: #bd93f9;">(</span>auto-login? #t<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
-                 ...<span style="color: #61bfff;">)</span>
+                 <span style="color: #7388D6;">(</span>gdm-service-type config =&gt; 
+                                   <span style="color: #909183;">(</span>gdm-configuration
+                                    <span style="color: #709870;">(</span>inherit config<span style="color: #709870;">)</span>
+                                    <span style="color: #709870;">(</span>wayland? #f<span style="color: #709870;">)</span>
+                                    <span style="color: #709870;">(</span>default-user <span style="color: #008000;">"nil"</span><span style="color: #709870;">)</span>
+                                    <span style="color: #709870;">(</span>auto-login? #t<span style="color: #709870;">)</span><span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
+                 ...<span style="color: #707183;">)</span>
 
 ...
 
-<span style="color: #61bfff;">(</span>services
+<span style="color: #707183;">(</span>services
  ...
- <span style="color: #ff79c6;">(</span>service screen-locker-service-type
-          <span style="color: #50fa7b;">(</span>screen-locker-configuration
-           <span style="color: #bd93f9;">(</span>name <span style="color: #f1fa8c;">"i3lock"</span><span style="color: #bd93f9;">)</span>
-           <span style="color: #bd93f9;">(</span>program <span style="color: #0189cc;">(</span>file-append i3lock <span style="color: #f1fa8c;">"/bin/i3lock"</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
+ <span style="color: #7388D6;">(</span>service screen-locker-service-type
+          <span style="color: #909183;">(</span>screen-locker-configuration
+           <span style="color: #709870;">(</span>name <span style="color: #008000;">"i3lock"</span><span style="color: #709870;">)</span>
+           <span style="color: #709870;">(</span>program <span style="color: #907373;">(</span>file-append i3lock <span style="color: #008000;">"/bin/i3lock"</span><span style="color: #907373;">)</span><span style="color: #709870;">)</span><span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
 
- <span style="color: #ff79c6;">(</span>service tlp-service-type
-          <span style="color: #50fa7b;">(</span>tlp-configuration
-           <span style="color: #bd93f9;">(</span>tlp-enable? #t<span style="color: #bd93f9;">)</span>
-           <span style="color: #bd93f9;">(</span>cpu-scaling-governor-on-ac <span style="color: #0189cc;">(</span>list <span style="color: #f1fa8c;">"performance"</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span>
-           <span style="color: #bd93f9;">(</span>cpu-scaling-governor-on-bat <span style="color: #0189cc;">(</span>list <span style="color: #f1fa8c;">"powersave"</span><span style="color: #0189cc;">)</span><span style="color: #bd93f9;">)</span>
-           <span style="color: #bd93f9;">(</span>energy-perf-policy-on-ac <span style="color: #f1fa8c;">""</span><span style="color: #bd93f9;">)</span>
-           <span style="color: #bd93f9;">(</span>cpu-boost-on-ac? #t<span style="color: #bd93f9;">)</span>
-           <span style="color: #bd93f9;">(</span>cpu-boost-on-bat? #f<span style="color: #bd93f9;">)</span>
-           <span style="color: #bd93f9;">(</span>start-charge-thresh-bat0 70<span style="color: #bd93f9;">)</span>
-           <span style="color: #bd93f9;">(</span>stop-charge-thresh-bat0 75<span style="color: #bd93f9;">)</span>
-           <span style="color: #bd93f9;">(</span>start-charge-thresh-bat1 70<span style="color: #bd93f9;">)</span>
-           <span style="color: #bd93f9;">(</span>stop-charge-thresh-bat1 75<span style="color: #bd93f9;">)</span><span style="color: #50fa7b;">)</span><span style="color: #ff79c6;">)</span>
- ...<span style="color: #61bfff;">)</span>
+ <span style="color: #7388D6;">(</span>service tlp-service-type
+          <span style="color: #909183;">(</span>tlp-configuration
+           <span style="color: #709870;">(</span>tlp-enable? #t<span style="color: #709870;">)</span>
+           <span style="color: #709870;">(</span>cpu-scaling-governor-on-ac <span style="color: #907373;">(</span>list <span style="color: #008000;">"performance"</span><span style="color: #907373;">)</span><span style="color: #709870;">)</span>
+           <span style="color: #709870;">(</span>cpu-scaling-governor-on-bat <span style="color: #907373;">(</span>list <span style="color: #008000;">"powersave"</span><span style="color: #907373;">)</span><span style="color: #709870;">)</span>
+           <span style="color: #709870;">(</span>energy-perf-policy-on-ac <span style="color: #008000;">""</span><span style="color: #709870;">)</span>
+           <span style="color: #709870;">(</span>cpu-boost-on-ac? #t<span style="color: #709870;">)</span>
+           <span style="color: #709870;">(</span>cpu-boost-on-bat? #f<span style="color: #709870;">)</span>
+           <span style="color: #709870;">(</span>start-charge-thresh-bat0 70<span style="color: #709870;">)</span>
+           <span style="color: #709870;">(</span>stop-charge-thresh-bat0 75<span style="color: #709870;">)</span>
+           <span style="color: #709870;">(</span>start-charge-thresh-bat1 70<span style="color: #709870;">)</span>
+           <span style="color: #709870;">(</span>stop-charge-thresh-bat1 75<span style="color: #709870;">)</span><span style="color: #909183;">)</span><span style="color: #7388D6;">)</span>
+ ...<span style="color: #707183;">)</span>
 </pre>
 </div>
 </div>
@@ -88,13 +88,13 @@ I allowed auto-login with GDM and also added the services for <code>tlp</code> (
 <h3 id="orged2210f">CPU throttling</h3>
 <div class="outline-text-3" id="text-orged2210f">
 <p>
-The T480 has a firmware bug which leads the the CPU throttling heavily (at about 70°C). This quite seriously impacts performance. 
+The T480 has a firmware bug which leads the the CPU throttling heavily (at about 70°C). This seriously impacts performance. 
 Fortunately there is a tool called <a href="https://github.com/erpalma/throttled">throttled</a> which can be used to work around this issue. Unfortunately, this tool isn't available for Guix, so I ended up hacking together my own solution. 
 I added a small shell script into the program's directory and start it automatically at boot. The proper solution would be to package the service for Guix, but I think I'll leave that to future me.
 </p>
 <div class="org-src-container">
-<pre class="src src-sh"><span style="color: #6272a4;">#!/bin/sh</span>
-<span style="color: #bd93f9; font-weight: bold;">sudo</span> guix shell gcc-toolchain pkg-config cairo gobject-introspection dbus <span style="color: #8be9fd;">--</span> /opt/throttled/venv/bin/python /opt/throttled/throttled.py <span style="color: #8be9fd;">--config</span> /home/nil/conf/throttled.conf
+<pre class="src src-sh"><span style="color: #8D8D84; font-style: italic;">#!/bin/sh</span>
+<span style="color: #006DAF;">sudo</span> guix shell gcc-toolchain pkg-config cairo gobject-introspection dbus <span style="color: #D0372D;">--</span> /opt/throttled/venv/bin/python /opt/throttled/throttled.py <span style="color: #D0372D;">--config</span> /home/nil/conf/throttled.conf
 </pre>
 </div>
 </div>
@@ -117,8 +117,8 @@ Even after installing all the drivers required, Firefox still wouldn't use hardw
 which I could solve by setting a few environment variables.
 </p>
 <div class="org-src-container">
-<pre class="src src-sh"><span style="color: #ff79c6;">export</span> <span style="color: #ffc9e8; font-style: italic;">LIBVA_DRIVER_NAME</span>=iHD
-<span style="color: #ff79c6;">export</span> <span style="color: #ffc9e8; font-style: italic;">LD_PRELOAD</span>=/home/nil/.guix-profile/lib/dri/iHD_drv_video.so
+<pre class="src src-sh"><span style="color: #0000FF; font-weight: bold;">export</span> <span style="color: #BA36A5; font-style: italic;">LIBVA_DRIVER_NAME</span>=iHD
+<span style="color: #0000FF; font-weight: bold;">export</span> <span style="color: #BA36A5; font-style: italic;">LD_PRELOAD</span>=/home/nil/.guix-profile/lib/dri/iHD_drv_video.so
 </pre>
 </div>
 <p>
